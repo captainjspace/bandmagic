@@ -56,7 +56,10 @@ export default async function HomePage() {
                   </div>
                 </div>
               </div>
-              <span className="text-neutral-600 group-hover:text-neutral-400 text-lg mt-0.5 shrink-0">→</span>
+              <a href={`/admin/${release.id}`} onClick={e => e.stopPropagation()}
+                className="text-neutral-600 hover:text-neutral-400 text-xs px-2 py-1 rounded hover:bg-neutral-800 transition-colors shrink-0 mt-0.5">
+                Edit
+              </a>
             </div>
           </a>
         ))}

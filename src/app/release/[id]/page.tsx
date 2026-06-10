@@ -136,7 +136,10 @@ export default function ReleasePage({ params }: { params: Promise<{ id: string }
   return (
     <div>
       <div className="mb-8">
-        <a href="/" className="text-neutral-500 text-xs hover:text-neutral-300 transition-colors">← Releases</a>
+        <div className="flex items-center justify-between">
+          <a href="/" className="text-neutral-500 text-xs hover:text-neutral-300 transition-colors">← Releases</a>
+          <a href={`/admin/${releaseId}`} className="text-neutral-500 text-xs hover:text-neutral-300 transition-colors">Edit</a>
+        </div>
         <h1 className="text-2xl font-bold text-neutral-100 mt-2">{release.title}</h1>
         {release.description && <p className="text-neutral-500 text-sm mt-1">{release.description}</p>}
         <p className="text-neutral-600 text-xs mt-2">{new Date(release.createdAt).toLocaleDateString()}</p>
@@ -178,7 +181,7 @@ export default function ReleasePage({ params }: { params: Promise<{ id: string }
                   </span>
                 )}
               </div>
-              <TrackPlayer path={active.path} title={active.title} />
+              <TrackPlayer key={active.path} path={active.path} title={active.title} />
               <div className="border-t border-neutral-800 pt-4">
                 <p className="text-neutral-600 text-xs uppercase tracking-wider mb-3">Notes</p>
                 <NoteThread releaseId={releaseId} trackPath={active.path} />

@@ -45,3 +45,13 @@ export async function addNote(releaseId: string, note: Omit<Note, 'id'>): Promis
   const doc = await ref.get();
   return { id: doc.id, ...doc.data() } as Note;
 }
+
+export async function updateRelease(id: string, patch: Partial<Omit<Release, 'id'>>): Promise<Release> {
+  await db().collection('releases').doc(id).update(patch);
+  const doc = await db().collection('releases').doc(id).get();
+  return { id: doc.id, ...doc.data() } as Release;
+}
+
+export async function deleteRelease(id: string): Promise<void> {
+  await db().collection('releases').doc(id).delete();
+}
