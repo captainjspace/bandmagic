@@ -131,7 +131,8 @@ export default function ReleasePage({ params }: { params: Promise<{ id: string }
     return <p className="text-neutral-500 text-sm">Loading...</p>;
   }
 
-  const active = release.tracks.find(t => t.path === activeTrack);
+  const validTracks = release.tracks.filter(t => t.path?.trim());
+  const active = validTracks.find(t => t.path === activeTrack);
 
   return (
     <div>
@@ -149,7 +150,7 @@ export default function ReleasePage({ params }: { params: Promise<{ id: string }
         {/* Tracklist */}
         <div className="space-y-1">
           <p className="text-neutral-600 text-xs uppercase tracking-wider mb-3">Tracks</p>
-          {release.tracks.map((track, i) => (
+          {validTracks.map((track, i) => (
             <button key={track.path} onClick={() => setActiveTrack(track.path)}
               className={`w-full text-left px-3 py-2.5 rounded transition-colors flex items-start gap-3 ${
                 activeTrack === track.path

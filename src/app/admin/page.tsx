@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, useCallback } from 'react';
+import { TrackSearch } from '@/components/TrackSearch';
+import type { CatalogEntry } from '@/types';
 
 interface TrackEntry {
   _id: string;
@@ -9,8 +11,10 @@ interface TrackEntry {
   stage: string;
 }
 
+const uid = () => Math.random().toString(36).slice(2) + Date.now().toString(36);
+
 function newTrack(): TrackEntry {
-  return { _id: crypto.randomUUID(), path: '', title: '', stage: 'mixing' };
+  return { _id: uid(), path: '', title: '', stage: 'mixing' };
 }
 
 export default function AdminPage() {
@@ -24,6 +28,16 @@ export default function AdminPage() {
   const removeTrack = (id: string) => setTracks(prev => prev.filter(t => t._id !== id));
   const updateTrack = useCallback((id: string, field: keyof Omit<TrackEntry, '_id'>, value: string) =>
     setTracks(prev => prev.map(t => t._id === id ? { ...t, [field]: value } : t)), []);
+  const selectTrack = useCallback((id: string, entry: CatalogEntry) =>
+    setTracks(prev => prev.map(t => t._id === id
+      ? { ...t, path: entry.path, title: entry.title, stage: entry.stage }
+      : t)), []);
+  const clearTrack = useCallback((id: string) =>
+    setTracks(prev => prev.map(t => t._id === id ? { ...t, path: '', title: '' } : t)), []);
+
+  const sync = async () => {
+    await fetch('/api/admin/sync', { method: 'POST' });
+  };
 
   const validTracks = tracks.filter(t => t.path.trim());
 
@@ -72,7 +86,11 @@ export default function AdminPage() {
           <h1 className="text-2xl font-bold text-neutral-100">New Release</h1>
           <p className="text-neutral-500 text-sm mt-1">Curate tracks and notify the band.</p>
         </div>
-        <a href="/" className="text-neutral-500 text-xs hover:text-neutral-300 transition-colors mt-1">← Releases</a>
+        <div className="flex items-center gap-3 mt-1">
+          <button type="button" onClick={sync}
+            className="text-xs text-neutral-600 hover:text-neutral-400 transition-colors">↻ Sync catalog</button>
+          <a href="/" className="text-neutral-500 text-xs hover:text-neutral-300 transition-colors">← Releases</a>
+        </div>
       </div>
 
       {status === 'done' && (
@@ -132,9 +150,10 @@ export default function AdminPage() {
                       className="text-neutral-600 hover:text-red-400 text-xs px-1 transition-colors">✕</button>
                   )}
                 </div>
-                <input value={track.path} onChange={e => updateTrack(track._id, 'path', e.target.value)}
-                  className="w-full bg-neutral-900 border border-neutral-700 rounded px-2 py-1.5 text-xs text-neutral-400 font-mono focus:outline-none focus:border-green-600"
-                  placeholder="2026/mixing/song-name/mix-003.mp3" />
+                <TrackSearch
+                  value={track.path}
+                  onSelect={entry => selectTrack(track._id, entry)}
+                  onClear={() => clearTrack(track._id)} />
               </div>
             ))}
           </div>

@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import type { Release } from '@/types';
+import type { Release, CatalogEntry } from '@/types';
+import { TrackSearch } from '@/components/TrackSearch';
 
 interface TrackEntry {
   _id: string;
@@ -10,8 +11,10 @@ interface TrackEntry {
   stage: string;
 }
 
+const uid = () => Math.random().toString(36).slice(2) + Date.now().toString(36);
+
 function newTrack(): TrackEntry {
-  return { _id: crypto.randomUUID(), path: '', title: '', stage: 'mixing' };
+  return { _id: uid(), path: '', title: '', stage: 'mixing' };
 }
 
 function fromRelease(release: Release): { title: string; description: string; tracks: TrackEntry[] } {
@@ -19,7 +22,7 @@ function fromRelease(release: Release): { title: string; description: string; tr
     title: release.title,
     description: release.description ?? '',
     tracks: release.tracks.length > 0
-      ? release.tracks.map(t => ({ _id: crypto.randomUUID(), path: t.path, title: t.title, stage: t.stage ?? 'mixing' }))
+      ? release.tracks.map(t => ({ _id: uid(), path: t.path, title: t.title, stage: t.stage ?? 'mixing' }))
       : [newTrack()],
   };
 }
@@ -50,6 +53,12 @@ export default function EditReleasePage({ params }: { params: Promise<{ id: stri
   const removeTrack = (id: string) => setTracks(prev => prev.filter(t => t._id !== id));
   const updateTrack = useCallback((id: string, field: keyof Omit<TrackEntry, '_id'>, value: string) =>
     setTracks(prev => prev.map(t => t._id === id ? { ...t, [field]: value } : t)), []);
+  const selectTrack = useCallback((id: string, entry: CatalogEntry) =>
+    setTracks(prev => prev.map(t => t._id === id
+      ? { ...t, path: entry.path, title: entry.title, stage: entry.stage }
+      : t)), []);
+  const clearTrack = useCallback((id: string) =>
+    setTracks(prev => prev.map(t => t._id === id ? { ...t, path: '', title: '' } : t)), []);
 
   const validTracks = tracks.filter(t => t.path.trim());
 
@@ -146,9 +155,10 @@ export default function EditReleasePage({ params }: { params: Promise<{ id: stri
                   <button type="button" onClick={() => removeTrack(track._id)}
                     className="text-neutral-600 hover:text-red-400 text-xs px-1 transition-colors">✕</button>
                 </div>
-                <input value={track.path} onChange={e => updateTrack(track._id, 'path', e.target.value)}
-                  className="w-full bg-neutral-900 border border-neutral-700 rounded px-2 py-1.5 text-xs text-neutral-400 font-mono focus:outline-none focus:border-green-600"
-                  placeholder="2026/mixing/song-name/mix-003.mp3" />
+                <TrackSearch
+                  value={track.path}
+                  onSelect={entry => selectTrack(track._id, entry)}
+                  onClear={() => clearTrack(track._id)} />
               </div>
             ))}
           </div>

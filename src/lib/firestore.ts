@@ -1,5 +1,5 @@
 import { Firestore, Timestamp } from '@google-cloud/firestore';
-import type { Release, Note } from '@/types';
+import type { Release, Note, CatalogEntry } from '@/types';
 
 let _db: Firestore | null = null;
 function db() {
@@ -54,4 +54,22 @@ export async function updateRelease(id: string, patch: Partial<Omit<Release, 'id
 
 export async function deleteRelease(id: string): Promise<void> {
   await db().collection('releases').doc(id).delete();
+}
+
+export async function getCatalog(): Promise<CatalogEntry[]> {
+  const snap = await db().collection('catalog').orderBy('song').get();
+  return snap.docs.map(d => ({ id: d.id, ...d.data() } as CatalogEntry));
+}
+
+export async function syncCatalog(entries: Omit<CatalogEntry, 'id'>[]): Promise<number> {
+  const syncedAt = new Date().toISOString();
+  for (let i = 0; i < entries.length; i += 400) {
+    const batch = db().batch();
+    for (const entry of entries.slice(i, i + 400)) {
+      const ref = db().collection('catalog').doc(encodeURIComponent(entry.path));
+      batch.set(ref, { ...entry, syncedAt });
+    }
+    await batch.commit();
+  }
+  return entries.length;
 }

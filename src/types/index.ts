@@ -28,3 +28,14 @@ export interface GCSObject {
   updated: string;
   contentType?: string;
 }
+
+export interface CatalogEntry {
+  id: string;
+  path: string;
+  song: string;
+  stage: string;
+  mix: string;
+  title: string;
+  size?: number;
+  syncedAt?: string;
+}

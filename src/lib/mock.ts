@@ -1,4 +1,4 @@
-import type { Release, Note } from '@/types';
+import type { Release, Note, CatalogEntry } from '@/types';
 
 export const mockReleases: Release[] = [
   {
@@ -26,3 +26,14 @@ export const mockReleases: Release[] = [
 ];
 
 export const mockNotes: Note[] = [];
+
+export const mockCatalog: CatalogEntry[] = mockReleases[0].tracks
+  .filter(t => t.path?.trim())
+  .map(t => ({
+    id: encodeURIComponent(t.path),
+    path: t.path,
+    song: t.path.split('/').pop()?.replace(/\.[^.]+$/, '') ?? t.path,
+    stage: t.stage ?? 'mixing',
+    mix: t.path.split('/').pop()?.replace(/\.[^.]+$/, '') ?? '',
+    title: t.title,
+  }));

@@ -14,7 +14,9 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
-  const author = req.headers.get('x-goog-authenticated-user-email')?.replace('accounts.google.com:', '') ?? 'unknown';
+  const author = req.headers.get('x-goog-authenticated-user-email')?.replace('accounts.google.com:', '')
+    ?? process.env.LOCAL_USER_EMAIL
+    ?? 'unknown';
 
   if (config.useMock) {
     return NextResponse.json({ id: 'mock-new', ...body, createdBy: author }, { status: 201 });
