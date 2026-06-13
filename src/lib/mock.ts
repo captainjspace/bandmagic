@@ -12,7 +12,6 @@ export const mockReleases: Release[] = [
       { path: '2026/MAGICAL.mp3', title: 'Magical' },
       { path: '2026/MagiCali.mp3', title: 'MagiCali' },
       { path: '2026/MagiCali2.mp3', title: 'MagiCali 2' },
-      { path: '2026/MagiCali2.wav', title: 'MagiCali 2 (WAV)' },
       { path: '2026/Rainbow Galaxy.mp3', title: 'Rainbow Galaxy' },
       { path: '2026/StraightJazzCock-FakePurpleTele.mp3', title: 'Straight Jazz Cock — Fake Purple Tele' },
       { path: '2026/childofthe80s.mp3', title: 'Child of the 80s' },

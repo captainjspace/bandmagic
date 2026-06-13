@@ -1,5 +1,120 @@
 @import "tailwindcss";
 
+@font-face {
+  font-family: 'AgincourtStd';
+  src: url('/fonts/AgincourtStd-Regular.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@layer base {
+  :root {
+    /* brand color primitives */
+    --rb-yellow: oklch(0.87 0.18 100.2);
+    --rb-purple: oklch(0.57 0.29 306.86);
+    --rb-red:    oklch(0.54 0.22 28.76);
+    --rb-blue:   oklch(0.56 0.22 259.44);
+
+    /* feature title design tokens */
+    --feature-title-typeface-style-stack:          'AgincourtStd', serif;
+    --feature-title-typeface-style-font-weight:    400;
+    --feature-title-typeface-style-font-style:     normal;
+    --feature-title-typeface-size-number:          36px;
+    --feature-title-typeface-size-number-unitless: 36;
+    --feature-title-uppercase-boolean:             false;
+    --menu-item-typeface-style:                    normal;
+  }
+
+  body {
+    color: oklch(90.5% 0.182 98.111);
+  }
+  div {
+    color: oklab(0.42 0.17 0.02);
+  }
+  span {
+    color: var(--rb-purple);
+  }
+  p {
+    color: var(--rb-blue);
+  }
+  a, label, input, textarea {
+    color: var(--rb-yellow);
+  }
+  h1 {
+    color: var(--rb-blue);
+  }
+  h2 {
+    color: var(--rb-red);
+  }
+  h3 {
+    color: oklab(0.42 0.17 0.02);
+  }
+  h4 {
+    color: var(--rb-purple);
+  }
+}
+
+@layer components {
+  .text-gradient-brand {
+    @apply inline-block text-transparent bg-clip-text
+           bg-gradient-to-r from-rbblue-500 via-rbyellow-700 to-rbpurple-700;
+  }
+
+  .stage-writing      { @apply text-blue-400   border-blue-800;    }
+  .stage-writing-bg   { @apply bg-blue-950/30;                     }
+  .stage-tracking     { @apply text-yellow-400  border-yellow-800;  }
+  .stage-tracking-bg  { @apply bg-yellow-950/30;                   }
+  .stage-mixing       { @apply text-orange-400  border-orange-800;  }
+  .stage-mixing-bg    { @apply bg-orange-950/30;                   }
+  .stage-mastering    { @apply text-green-400   border-green-800;   }
+  .stage-mastering-bg { @apply bg-green-950/30;                    }
+  .stage-unknown      { @apply text-neutral-400 border-neutral-700; }
+
+}
+
 @theme inline {
-  --font-mono: var(--font-mono);
+  --font-mono:      var(--font-mono);
+  --font-agincourt: var(--feature-title-typeface-style-stack);
+
+  --text-feature-title: var(--feature-title-typeface-size-number);
+
+  /* rbyellow scale — 500 is the brand anchor oklch(0.87 0.18 100.2) */
+  --color-rbyellow-100: oklch(0.96 0.05 100);
+  --color-rbyellow-200: oklch(0.93 0.09 100);
+  --color-rbyellow-300: oklch(0.91 0.13 100);
+  --color-rbyellow-400: oklch(0.89 0.16 100);
+  --color-rbyellow-500: var(--rb-yellow);
+  --color-rbyellow-600: oklch(0.80 0.19 100);
+  --color-rbyellow-700: oklch(0.72 0.19 100);
+  --color-rbyellow-800: oklch(0.62 0.18 100);
+  --color-rbyellow-900: oklch(0.50 0.15 100);
+  --color-rbyellow-950: oklch(0.38 0.12 100);
+
+  /* rbpurple scale — 500 is oklch(0.57 0.29 306.86) */
+  --color-rbpurple-100: oklch(0.95 0.07 307);
+  --color-rbpurple-300: oklch(0.78 0.17 307);
+  --color-rbpurple-500: var(--rb-purple);
+  --color-rbpurple-700: oklch(0.42 0.25 307);
+  --color-rbpurple-900: oklch(0.28 0.18 307);
+
+  /* rbred scale — 500 is oklch(0.54 0.22 28.76) */
+  --color-rbred-100: oklch(0.94 0.06 29);
+  --color-rbred-300: oklch(0.75 0.15 29);
+  --color-rbred-500: var(--rb-red);
+  --color-rbred-700: oklch(0.40 0.20 29);
+  --color-rbred-900: oklch(0.27 0.14 29);
+
+  /* rbblue scale — 500 is oklch(0.56 0.22 259.44) */
+  --color-rbblue-100: oklch(0.94 0.06 259);
+  --color-rbblue-300: oklch(0.76 0.14 259);
+  --color-rbblue-500: var(--rb-blue);
+  --color-rbblue-700: oklch(0.41 0.20 259);
+  --color-rbblue-900: oklch(0.27 0.14 259);
+
+  --animate-fade-in-scale: fade-in-scale 0.3s ease-out;
+  @keyframes fade-in-scale {
+    0%   { opacity: 0; transform: scale(0.95); }
+    100% { opacity: 1; transform: scale(1);    }
+  }
 }

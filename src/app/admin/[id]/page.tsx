@@ -1,20 +1,50 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import type { Release, CatalogEntry } from '@/types';
+import Link from 'next/link';
+import type { Release, CatalogEntry, DocLink } from '@/types';
 import { TrackSearch } from '@/components/TrackSearch';
+
+/** element colors */
+const colors = {
+  page: {
+    title:      'text-neutral-100',
+    releaseId:  'text-neutral-500',
+    navLink:    'text-neutral-500 hover:text-neutral-300',
+    fieldLabel: 'text-neutral-500',
+    hint:       'text-neutral-600',
+    count:      'text-neutral-600',
+  },
+  status: {
+    success:     'text-green-400',
+    successLink: 'text-green-400 hover:text-green-300 underline',
+    error:       'text-red-400',
+  },
+  trackCard: {
+    addBtn:    'text-green-500 hover:text-green-400',
+    removeBtn: 'text-neutral-600 hover:text-red-400',
+  },
+  docLinks: {
+    label:     'text-neutral-600',
+    typeSelect:'text-neutral-400',
+    input:     'text-neutral-300',
+    addBtn:    'text-neutral-600 hover:text-green-500',
+    removeBtn: 'text-neutral-600 hover:text-red-400',
+  },
+};
 
 interface TrackEntry {
   _id: string;
   path: string;
   title: string;
   stage: string;
+  docLinks: DocLink[];
 }
 
 const uid = () => Math.random().toString(36).slice(2) + Date.now().toString(36);
 
 function newTrack(): TrackEntry {
-  return { _id: uid(), path: '', title: '', stage: 'mixing' };
+  return { _id: uid(), path: '', title: '', stage: 'mixing', docLinks: [] };
 }
 
 function fromRelease(release: Release): { title: string; description: string; tracks: TrackEntry[] } {
@@ -22,7 +52,7 @@ function fromRelease(release: Release): { title: string; description: string; tr
     title: release.title,
     description: release.description ?? '',
     tracks: release.tracks.length > 0
-      ? release.tracks.map(t => ({ _id: uid(), path: t.path, title: t.title, stage: t.stage ?? 'mixing' }))
+      ? release.tracks.map(t => ({ _id: uid(), path: t.path, title: t.title, stage: t.stage ?? 'mixing', docLinks: t.docLinks ?? [] }))
       : [newTrack()],
   };
 }
@@ -51,7 +81,7 @@ export default function EditReleasePage({ params }: { params: Promise<{ id: stri
 
   const addTrack = () => setTracks(prev => [...prev, newTrack()]);
   const removeTrack = (id: string) => setTracks(prev => prev.filter(t => t._id !== id));
-  const updateTrack = useCallback((id: string, field: keyof Omit<TrackEntry, '_id'>, value: string) =>
+  const updateTrack = useCallback((id: string, field: keyof Omit<TrackEntry, '_id' | 'docLinks'>, value: string) =>
     setTracks(prev => prev.map(t => t._id === id ? { ...t, [field]: value } : t)), []);
   const selectTrack = useCallback((id: string, entry: CatalogEntry) =>
     setTracks(prev => prev.map(t => t._id === id
@@ -59,6 +89,19 @@ export default function EditReleasePage({ params }: { params: Promise<{ id: stri
       : t)), []);
   const clearTrack = useCallback((id: string) =>
     setTracks(prev => prev.map(t => t._id === id ? { ...t, path: '', title: '' } : t)), []);
+
+  const addDocLink = useCallback((id: string) =>
+    setTracks(prev => prev.map(t => t._id === id
+      ? { ...t, docLinks: [...t.docLinks, { type: 'other' as const, title: '', url: '' }] }
+      : t)), []);
+  const removeDocLink = useCallback((id: string, idx: number) =>
+    setTracks(prev => prev.map(t => t._id === id
+      ? { ...t, docLinks: t.docLinks.filter((_, i) => i !== idx) }
+      : t)), []);
+  const updateDocLink = useCallback((id: string, idx: number, field: keyof DocLink, value: string) =>
+    setTracks(prev => prev.map(t => t._id === id
+      ? { ...t, docLinks: t.docLinks.map((l, i) => i === idx ? { ...l, [field]: value } : l) }
+      : t)), []);
 
   const validTracks = tracks.filter(t => t.path.trim());
 
@@ -71,7 +114,12 @@ export default function EditReleasePage({ params }: { params: Promise<{ id: stri
     const payload = {
       title: title.trim(),
       description: description.trim(),
-      tracks: validTracks.map(({ _id: _, ...t }) => ({ ...t, path: t.path.trim(), title: t.title.trim() || t.path.split('/').pop() || t.path })),
+      tracks: validTracks.map(({ _id: _, ...t }) => ({
+        ...t,
+        path: t.path.trim(),
+        title: t.title.trim() || t.path.split('/').pop() || t.path,
+        docLinks: t.docLinks.filter(l => l.url.trim()),
+      })),
     };
 
     try {
@@ -89,39 +137,40 @@ export default function EditReleasePage({ params }: { params: Promise<{ id: stri
   };
 
   if (status === 'loading') {
-    return <p className="text-neutral-500 text-sm">Loading...</p>;
+    return <p className={`${colors.page.releaseId} text-sm`}>Loading...</p>;
   }
 
   return (
     <div className="max-w-2xl">
       <div className="mb-8 flex items-start justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-neutral-100">Edit Release</h1>
-          <p className="text-neutral-500 text-sm mt-1 font-mono text-xs">{releaseId}</p>
+          <h1 className={`text-2xl font-bold ${colors.page.title}`}>Edit Release</h1>
+          <p className={`${colors.page.releaseId} font-mono text-xs mt-1`}>{releaseId}</p>
         </div>
-        <a href={`/release/${releaseId}`} className="text-neutral-500 text-xs hover:text-neutral-300 transition-colors mt-1">← Back to release</a>
+        <Link href={`/release/${releaseId}`} className={`${colors.page.navLink} text-xs transition-colors mt-1`}>← Back to release</Link>
       </div>
 
       {status === 'done' && (
-        <div className="mb-6 p-3 border border-green-800 bg-green-950/30 rounded text-green-400 text-sm">
-          Saved. <a href={`/release/${releaseId}`} className="underline hover:text-green-300">View release →</a>
+        <div className="mb-6 p-3 border border-green-800 bg-green-950/30 rounded text-sm">
+          <span className={colors.status.success}>Saved. </span>
+          <Link href={`/release/${releaseId}`} className={colors.status.successLink}>View release →</Link>
         </div>
       )}
       {status === 'error' && (
-        <div className="mb-6 p-3 border border-red-800 bg-red-950/30 rounded text-red-400 text-sm">
-          {errorMsg}
+        <div className="mb-6 p-3 border border-red-800 bg-red-950/30 rounded text-sm">
+          <span className={colors.status.error}>{errorMsg}</span>
         </div>
       )}
 
       <form onSubmit={submit} className="space-y-6">
         <div className="space-y-4">
           <div>
-            <label className="block text-xs text-neutral-500 uppercase tracking-wider mb-1.5">Title</label>
+            <label className={`block text-xs ${colors.page.fieldLabel} uppercase tracking-wider mb-1.5`}>Title</label>
             <input value={title} onChange={e => setTitle(e.target.value)} required
               className="w-full bg-neutral-900 border border-neutral-700 rounded px-3 py-2 text-sm text-neutral-100 focus:outline-none focus:border-green-600" />
           </div>
           <div>
-            <label className="block text-xs text-neutral-500 uppercase tracking-wider mb-1.5">Description</label>
+            <label className={`block text-xs ${colors.page.fieldLabel} uppercase tracking-wider mb-1.5`}>Description</label>
             <textarea value={description} onChange={e => setDescription(e.target.value)}
               className="w-full bg-neutral-900 border border-neutral-700 rounded px-3 py-2 text-sm text-neutral-100 focus:outline-none focus:border-green-600 resize-none h-20" />
           </div>
@@ -129,14 +178,14 @@ export default function EditReleasePage({ params }: { params: Promise<{ id: stri
 
         <div>
           <div className="flex items-center justify-between mb-3">
-            <label className="text-xs text-neutral-500 uppercase tracking-wider">
+            <label className={`text-xs ${colors.page.fieldLabel} uppercase tracking-wider`}>
               Tracks
               {tracks.some(t => !t.path.trim()) && (
-                <span className="ml-2 text-neutral-600 normal-case">(empty rows will be skipped)</span>
+                <span className={`ml-2 ${colors.page.hint} normal-case`}>(empty rows will be skipped)</span>
               )}
             </label>
             <button type="button" onClick={addTrack}
-              className="text-xs text-green-500 hover:text-green-400 transition-colors">+ Add track</button>
+              className={`text-xs ${colors.trackCard.addBtn} transition-colors`}>+ Add track</button>
           </div>
           <div className="space-y-3">
             {tracks.map((track) => (
@@ -153,17 +202,43 @@ export default function EditReleasePage({ params }: { params: Promise<{ id: stri
                     <option value="mastering">mastering</option>
                   </select>
                   <button type="button" onClick={() => removeTrack(track._id)}
-                    className="text-neutral-600 hover:text-red-400 text-xs px-1 transition-colors">✕</button>
+                    className={`text-xs px-1 ${colors.trackCard.removeBtn} transition-colors`}>✕</button>
                 </div>
                 <TrackSearch
                   value={track.path}
                   onSelect={entry => selectTrack(track._id, entry)}
                   onClear={() => clearTrack(track._id)} />
+                <div className="border-t border-neutral-800/50 pt-2">
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className={`text-xs ${colors.docLinks.label}`}>Drive Docs</span>
+                    <button type="button" onClick={() => addDocLink(track._id)}
+                      className={`text-xs ${colors.docLinks.addBtn} transition-colors`}>+ link</button>
+                  </div>
+                  {track.docLinks.map((link, i) => (
+                    <div key={i} className="flex gap-1.5 items-center mt-1">
+                      <select value={link.type} onChange={e => updateDocLink(track._id, i, 'type', e.target.value)}
+                        className={`bg-neutral-900 border border-neutral-700 rounded px-1.5 py-1 text-xs ${colors.docLinks.typeSelect} focus:outline-none focus:border-green-600`}>
+                        <option value="lyrics">lyrics</option>
+                        <option value="chart">chart</option>
+                        <option value="sheet-music">sheet music</option>
+                        <option value="other">other</option>
+                      </select>
+                      <input value={link.title} onChange={e => updateDocLink(track._id, i, 'title', e.target.value)}
+                        placeholder="Label"
+                        className={`w-24 bg-neutral-900 border border-neutral-700 rounded px-2 py-1 text-xs ${colors.docLinks.input} focus:outline-none focus:border-green-600`} />
+                      <input value={link.url} onChange={e => updateDocLink(track._id, i, 'url', e.target.value)}
+                        placeholder="https://docs.google.com/…"
+                        className={`flex-1 bg-neutral-900 border border-neutral-700 rounded px-2 py-1 text-xs ${colors.docLinks.input} focus:outline-none focus:border-green-600 font-mono`} />
+                      <button type="button" onClick={() => removeDocLink(track._id, i)}
+                        className={`text-xs ${colors.docLinks.removeBtn} transition-colors`}>✕</button>
+                    </div>
+                  ))}
+                </div>
               </div>
             ))}
           </div>
           {validTracks.length > 0 && (
-            <p className="text-neutral-600 text-xs mt-2">{validTracks.length} track{validTracks.length !== 1 ? 's' : ''} will be saved</p>
+            <p className={`${colors.page.count} text-xs mt-2`}>{validTracks.length} track{validTracks.length !== 1 ? 's' : ''} will be saved</p>
           )}
         </div>
 

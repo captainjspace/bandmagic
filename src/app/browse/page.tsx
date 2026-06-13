@@ -3,6 +3,26 @@
 import { useEffect, useState } from 'react';
 import type { GCSObject } from '@/types';
 
+/** element colors */
+const colors = {
+  page: {
+    title:    'text-neutral-100',
+    subtitle: 'text-neutral-500',
+    loading:  'text-neutral-600',
+    empty:    'text-neutral-600',
+  },
+  breadcrumb: {
+    text:  'text-neutral-500',
+    hover: 'hover:text-neutral-300',
+  },
+  fileRow: {
+    icon:     'text-neutral-600',
+    name:     'text-neutral-300',
+    size:     'text-neutral-600',
+    playLink: 'text-green-500 hover:underline',
+  },
+};
+
 function isAudio(name: string) {
   return /\.(mp3|wav|flac|aac|ogg|m4a)$/i.test(name);
 }
@@ -32,29 +52,28 @@ export default function BrowsePage() {
   const breadcrumbs = prefix.split('/').filter(Boolean);
 
   return (
-    <div>
+    <div className="max-w-xl">
       <div className="mb-8 flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-neutral-100">Browse</h1>
-          <p className="text-neutral-500 text-sm mt-1">GCS bucket contents</p>
+          <h1 className={`text-2xl font-bold ${colors.page.title}`}>Browse</h1>
+          <p className={`${colors.page.subtitle} text-sm mt-1`}>GCS bucket contents</p>
         </div>
       </div>
 
-      {/* Breadcrumb */}
-      <div className="flex items-center gap-1 text-xs text-neutral-500 mb-4">
-        <button onClick={() => load('')} className="hover:text-neutral-300">bucket</button>
+      <div className={`flex items-center gap-1 text-xs ${colors.breadcrumb.text} mb-4`}>
+        <button onClick={() => load('')} className={colors.breadcrumb.hover}>bucket</button>
         {breadcrumbs.map((crumb, i) => {
           const path = breadcrumbs.slice(0, i + 1).join('/') + '/';
           return (
             <span key={path} className="flex items-center gap-1">
               <span>/</span>
-              <button onClick={() => load(path)} className="hover:text-neutral-300">{crumb}</button>
+              <button onClick={() => load(path)} className={colors.breadcrumb.hover}>{crumb}</button>
             </span>
           );
         })}
       </div>
 
-      {loading && <p className="text-neutral-600 text-sm">Loading...</p>}
+      {loading && <p className={`${colors.page.loading} text-sm`}>Loading...</p>}
 
       <div className="space-y-1">
         {objects.map(obj => {
@@ -62,14 +81,14 @@ export default function BrowsePage() {
           const relName = obj.name.slice(prefix.length);
           return (
             <div key={obj.name} className="flex items-center gap-3 px-3 py-2 rounded hover:bg-neutral-900 group">
-              <span className="text-neutral-600 text-sm w-4 shrink-0">
+              <span className={`${colors.fileRow.icon} text-sm w-4 shrink-0`}>
                 {audio ? '♪' : '○'}
               </span>
-              <span className="flex-1 text-sm text-neutral-300 truncate font-mono">{relName}</span>
-              <span className="text-neutral-600 text-xs tabular-nums">{sizeLabel(obj.size)}</span>
+              <span className={`flex-1 text-sm ${colors.fileRow.name} truncate font-mono`}>{relName}</span>
+              <span className={`${colors.fileRow.size} text-xs tabular-nums`}>{sizeLabel(obj.size)}</span>
               {audio && (
                 <a href={`/api/audio?path=${encodeURIComponent(obj.name)}`}
-                  className="text-xs text-green-500 opacity-0 group-hover:opacity-100 transition-opacity hover:underline"
+                  className={`text-xs ${colors.fileRow.playLink} opacity-0 group-hover:opacity-100 transition-opacity`}
                   target="_blank" rel="noreferrer">
                   play
                 </a>
@@ -80,7 +99,7 @@ export default function BrowsePage() {
       </div>
 
       {!loading && objects.length === 0 && (
-        <p className="text-neutral-600 text-sm">No objects at this prefix.</p>
+        <p className={`${colors.page.empty} text-sm`}>No objects at this prefix.</p>
       )}
     </div>
   );
