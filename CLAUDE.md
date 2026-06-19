@@ -20,6 +20,20 @@ The app is deployed as a Docker container on port 8080 (`next.config.ts` sets `o
 
 **Path aliases:** `@/*` → `src/*`, `#img/*` → `public/*`.
 
+### Data design principles
+
+OLTP-first across all entities. Firestore is the source of truth for transactional reads/writes; analytics queries happen against a downstream BigQuery sync (not yet built). Concretely:
+
+- Denormalize display fields on references so list views don't N+1 fetch.
+- Keep arrays bounded — use a subcollection when growth is unbounded.
+- Don't build reverse-indexes in Firestore for analytics; that's BigQuery's job. Denormalize an OLTP-useful counter (e.g. `usageCount`) on the referenced entity instead.
+
+**Domain seams.** Each entity owns one kind of thing, and a clickable URL to actionable data lives in exactly one record. Other entities reference it by ID, not by copying the URL.
+
+- Assets own document and web links (Drive docs, posts, reviews, public URLs).
+- Tracks own audio (GCS paths). A track's mp3 is **not** an asset.
+- Notes attach at version level (per-mix commentary). Assets attach at track level.
+
 ### Data layer
 
 Two GCP services, both accessed server-side only:
@@ -56,10 +70,55 @@ Admin triggers `POST /api/admin/sync` → lists all audio files in GCS under `co
 | `NOTIFY_EMAILS` | Comma-separated recipient list |
 | `GOOGLE_CHAT_WEBHOOK_URL` | Chat space webhook |
 | `APP_URL` | Public URL for notification links |
-| `LOCAL_USER_EMAIL` | Dev fallback for release author |
+| `LOCAL_USER_EMAIL` | Dev fallback for release author / Drive impersonation subject |
+| `DRIVE_FOLDER_ID` | Default Drive folder ID for the band's shared assets (used as the encouraged scope for search and sweep) |
+| `DEBUG_USERS` | Comma-separated emails granted detailed error responses (see Debug mode) |
 | `USE_MOCK` | `true` to skip all GCP calls |
 
 GCP credentials: ADC via `application_default_credentials.json.gpg` (encrypted at rest in repo root).
+
+### Drive integration
+
+`src/lib/drive.ts` wraps Drive API v3 via the `googleapis` SDK. Two functions today: `searchFiles` and `getFile`. Foundation for future write operations (doc creation, image retrieval).
+
+**Auth — domain-wide delegation, user impersonation.** The service account does **not** get added to the shared Drive folder. Instead, it impersonates the calling user. Visibility = what *that user* can see in Drive.
+
+```ts
+new google.auth.GoogleAuth({
+  scopes: ['https://www.googleapis.com/auth/drive.readonly'],
+  clientOptions: userEmail ? { subject: userEmail } : undefined,
+});
+```
+
+- **Local dev**: ADC = the developer's user creds (`gcloud auth application-default login`). `subject` is ignored by user creds. Drive queries run as the developer.
+- **Prod (Cloud Run)**: ADC = the Cloud Run service account. **One-time Workspace admin step**: enable domain-wide delegation on the SA and authorize the `drive.readonly` scope in the Workspace admin console. Without this, prod Drive calls 403.
+
+`userEmail` is resolved from `x-goog-authenticated-user-email` (set by Cloud Run / IAP) or `LOCAL_USER_EMAIL` env var. The same resolution chain is used by `POST /api/releases` and `POST /api/releases/[id]/notes` — candidate for `src/lib/identity.ts` extraction.
+
+**Search scope.** `searchFiles` runs two parallel queries when `DRIVE_FOLDER_ID` is set: one scoped to that folder, one unscoped (user-visible everywhere). Results merge with folder hits ranked first; deduped by file id. Without `DRIVE_FOLDER_ID`, only the unscoped query runs.
+
+**Drive sweep.** `POST /api/admin/sweep-drive` (body: `{ releaseId }`) walks every track on the release, searches Drive by track title, filters by `scoreMatch ≥ SWEEP_THRESHOLD` (see `src/lib/filename-match.ts`), and creates+attaches matching assets. Idempotent: existing assets are reused by URL match. Asset subtype is inferred from filename keywords (lyrics / chord-chart / press-release / review / post / other). The same code path will be invoked by a future daily Cloud Scheduler job (not yet wired).
+
+**UI integration.** `src/components/DriveSearch.tsx` is the reusable search-and-pick component. Wired into `AssetPicker`'s create mode under the "Search Drive" tab. The "Paste URL" tab remains for non-Drive assets (web reviews, blog posts).
+
+### Debug mode (claims-based)
+
+`src/lib/debug-mode.ts` provides `isDebugUser(email)` and `errorResponse(err, opts)`. The gate is the verified user identity from `x-goog-authenticated-user-email` (Cloud Run / IAP) or `LOCAL_USER_EMAIL` in dev, checked against the `DEBUG_USERS` env-var allowlist.
+
+- **Debug user**: response body includes `{ error, status, code, details }` with the upstream error and any structured detail (e.g. GaxiosError `errors[]`).
+- **Non-debug user**: response body is the sanitized `{ error: fallback, status }`.
+- Upstream HTTP status is **always** propagated (so an actual 401/403/429 surfaces correctly to the client, not a blanket 500).
+- Server logs (`console.error`) always include the full error regardless of caller — log retention is independent of caller identity.
+
+No client-toggleable flag (no `?debug=1`, no header). Lets only an allowlisted server-side identity unlock detail.
+
+Apply by replacing a generic catch-all with:
+```ts
+const { body, status } = errorResponse(e, { userEmail, fallback: '…', logTag: 'route-name' });
+return NextResponse.json(body, { status });
+```
+
+Currently wired into `/api/drive/search` and `/api/admin/sweep-drive`. Other routes can adopt as they're touched — not retrofitted in bulk.
 
 ### Stage colors
 
@@ -68,3 +127,40 @@ Stage badge colors are defined as CSS classes in `globals.css` (`@layer componen
 ### Drive doc links
 
 `DocLink` (`src/types/index.ts`) is `{ url, title, type }` where type is `lyrics | chart | sheet-music | other`. Stored as `docLinks[]` on each embedded `Track` within a release. Edited in the admin track card UI, displayed in the release detail view below the notes section.
+
+> Superseded by the planned `assets` entity (see below). On cutover the existing `docLinks[]` data is hand-rewritten — small enough that no migration script is warranted.
+
+## Planned additions
+
+These are agreed-on but not yet implemented. When implementation lands, the relevant section moves out of "Planned" and into Architecture above.
+
+### Assets entity
+
+Top-level Firestore collection `assets`. Document/link records referenceable from any other entity. Replaces `Track.docLinks[]`.
+
+```ts
+type Asset = {
+  id: string                    // Firestore doc id (surrogate key)
+  url: string                   // single source of truth for the clickable target
+  title: string                 // display label
+  type: 'drive' | 'web'         // origin: internal Google workspace vs external URL
+  subtype:                      // semantic kind set by the user
+    | 'lyrics' | 'lyrics-stripped' | 'chord-chart'
+    | 'press-release' | 'review' | 'post' | 'other'
+  usageCount: number            // denormalized OLTP counter
+  createdAt: Timestamp; createdBy: string  // email
+  updatedAt: Timestamp; updatedBy: string
+}
+```
+
+- For `type: 'drive'`, the Google doc-kind (doc/sheet/slide) is inferred from URL path (`/document/`, `/spreadsheets/`, `/presentation/`) — not stored separately.
+- Associations live on the referencing entity as `assetIds: string[]`, track-level (not per-version). The asset is the source of truth; `usageCount` is denormalized for OLTP read paths.
+- `createdBy` / `updatedBy` use the same `x-goog-authenticated-user-email` / `LOCAL_USER_EMAIL` resolution as `POST /api/releases`.
+
+### Track-groups entity
+
+Top-level Firestore collection `track-groups` — the **collection axis** (albums, EPs, singles, playlists). Distinct from the existing `releases` collection, which is the **event axis** (working snapshots pushed to the band). Both stay.
+
+- Has a `type` field: `album | ep | single | playlist | ...` (extensible).
+- References tracks by ID; per-track references a specific GCS path (the version appropriate for that grouping), same shape as `releases`.
+- Firestore collection name stays `track-groups` to avoid overloading "collection" with Firestore's own term. UI label TBD with band input.

@@ -1,0 +1,14 @@
+  {
+    "hooks": {
+      "Stop": [
+        {
+          "hooks": [
+            {
+              "type": "command",
+              "command": "[ -f tsconfig.json ] && pnpm tsc --noEmit 2>&1 | tail -20 || true"
+            }
+          ]
+        }
+      ]
+    }
+  }

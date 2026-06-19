@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Encrypted assets and in-progress scratch — not part of the app.
+    ".gpg/**",
   ]),
 ]);
 

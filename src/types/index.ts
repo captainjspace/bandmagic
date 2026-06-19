@@ -12,20 +12,35 @@ export type Milestone =
   | 'Song Complete' | 'Band Live Ready'
   | 'Reference Recordings' | 'Reference Documentation';
 
-export type DocLinkType = 'sheet-music' | 'chart' | 'lyrics' | 'other';
+export type AssetType = 'drive' | 'web';
 
-export interface DocLink {
+export type AssetSubtype =
+  | 'lyrics'
+  | 'lyrics-stripped'
+  | 'chord-chart'
+  | 'press-release'
+  | 'review'
+  | 'post'
+  | 'other';
+
+export interface Asset {
+  id: string;
   url: string;
   title: string;
-  type: DocLinkType;
+  type: AssetType;
+  subtype: AssetSubtype;
+  usageCount: number;
+  createdAt: string;
+  createdBy: string;
+  updatedAt: string;
+  updatedBy: string;
 }
 
 export interface Track {
   path: string;
   title: string;
   stage?: string;
-  docPath?: string;
-  docLinks?: DocLink[];
+  assetIds?: string[];
 }
 
 export interface Release {

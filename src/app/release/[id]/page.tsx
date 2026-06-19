@@ -1,9 +1,11 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import type { Release, Note } from '@/types';
+import type { Release, Note, Asset } from '@/types';
 import { stageClass, stageBgClass } from '@/lib/stage';
+import { assetClass, driveDocKind } from '@/lib/asset';
+import type { AssetsLoadKind } from '@/components/AssetPicker';
 
 /** element colors */
 const colors = {
@@ -33,10 +35,14 @@ const colors = {
     focusBorder: 'focus:border-green-600',
     postBtn:     'text-neutral-300',
   },
-  docLinks: {
-    label:    'text-neutral-600',
-    linkType: 'text-neutral-600',
-    linkText: 'text-green-400 group-hover:text-green-300',
+  assets: {
+    label:       'text-neutral-600',
+    linkText:    'text-green-400 group-hover:text-green-300',
+    kindBadge:   'text-neutral-600',
+    loadingRow:  'text-neutral-500',
+    errorRow:    'text-amber-400',
+    retryBtn:    'text-amber-400 hover:text-amber-300 underline',
+    missingRow:  'text-red-400',
   },
 };
 
@@ -139,23 +145,41 @@ function NoteThread({ releaseId, trackPath }: { releaseId: string; trackPath: st
 
 export default function ReleasePage({ params }: { params: Promise<{ id: string }> }) {
   const [release, setRelease] = useState<Release | null>(null);
+  const [assets, setAssets] = useState<Asset[]>([]);
+  const [assetsLoad, setAssetsLoad] = useState<AssetsLoadKind>('loading');
   const [activeTrack, setActiveTrack] = useState<string | null>(null);
   const [releaseId, setReleaseId] = useState<string>('');
 
+  const fetchAssets = useCallback(async () => {
+    try {
+      const res = await fetch('/api/assets');
+      if (!res.ok) throw new Error(`Failed to load: ${res.status}`);
+      setAssets(await res.json());
+      setAssetsLoad('loaded');
+    } catch {
+      setAssetsLoad('error');
+    }
+  }, []);
+
+  const retryAssets = useCallback(() => {
+    setAssetsLoad('loading');
+    fetchAssets();
+  }, [fetchAssets]);
+
   useEffect(() => {
-    params.then(({ id }) => {
+    params.then(async ({ id }) => {
       setReleaseId(id);
-      fetch(`/api/releases`)
-        .then(r => r.json())
-        .then((releases: Release[]) => {
-          const found = releases.find(r => r.id === id);
-          if (found) {
-            setRelease(found);
-            if (found.tracks.length > 0) setActiveTrack(found.tracks[0].path);
-          }
-        });
+      const rRel = await fetch('/api/releases');
+      const releases: Release[] = await rRel.json();
+      const found = releases.find(r => r.id === id);
+      if (found) {
+        setRelease(found);
+        if (found.tracks.length > 0) setActiveTrack(found.tracks[0].path);
+      }
     });
-  }, [params]);
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- one-shot fetch on mount; setState fires after await
+    fetchAssets();
+  }, [params, fetchAssets]);
 
   if (!release) {
     return <p className={`${colors.page.description} text-sm`}>Loading...</p>;
@@ -163,6 +187,7 @@ export default function ReleasePage({ params }: { params: Promise<{ id: string }
 
   const validTracks = release.tracks.filter(t => t.path?.trim());
   const active = validTracks.find(t => t.path === activeTrack);
+  const assetsById = new Map(assets.map(a => [a.id, a]));
 
   return (
     <div className="max-w-2xl">
@@ -218,19 +243,51 @@ export default function ReleasePage({ params }: { params: Promise<{ id: string }
                 <NoteThread releaseId={releaseId} trackPath={active.path} />
               </div>
 
-              {active.docLinks && active.docLinks.length > 0 && (
+              {active.assetIds && active.assetIds.length > 0 && (
                 <div className="border-t border-neutral-800 pt-4">
-                  <p className={`${colors.docLinks.label} text-xs uppercase tracking-wider mb-2`}>Drive Docs</p>
+                  <div className="flex items-center justify-between mb-2">
+                    <p className={`${colors.assets.label} text-xs uppercase tracking-wider`}>Documents & links</p>
+                    {assetsLoad === 'error' && (
+                      <button type="button" onClick={retryAssets}
+                        className={`text-xs ${colors.assets.retryBtn} transition-colors`}>Retry</button>
+                    )}
+                  </div>
                   <div className="space-y-1.5">
-                    {active.docLinks.map((link, i) => (
-                      <a key={i} href={link.url} target="_blank" rel="noopener noreferrer"
-                        className="flex items-center gap-2 group">
-                        <span className={`${colors.docLinks.linkType} text-xs w-20 shrink-0`}>{link.type}</span>
-                        <span className={`text-sm ${colors.docLinks.linkText} transition-colors truncate`}>
-                          {link.title || link.url}
-                        </span>
-                      </a>
-                    ))}
+                    {active.assetIds.map(id => {
+                      if (assetsLoad === 'loading') {
+                        return (
+                          <p key={id} className={`text-xs ${colors.assets.loadingRow}`}>loading…</p>
+                        );
+                      }
+                      if (assetsLoad === 'error') {
+                        return (
+                          <p key={id} className={`text-xs ${colors.assets.errorRow}`}>load failed</p>
+                        );
+                      }
+                      const asset = assetsById.get(id);
+                      if (!asset) {
+                        return (
+                          <p key={id} className={`text-xs ${colors.assets.missingRow} font-mono`}>
+                            missing: {id}
+                          </p>
+                        );
+                      }
+                      const kind = driveDocKind(asset.url);
+                      return (
+                        <a key={id} href={asset.url} target="_blank" rel="noopener noreferrer"
+                          className="flex items-center gap-2 group">
+                          <span className={`text-xs border px-1.5 py-0.5 rounded shrink-0 uppercase tracking-wider ${assetClass(asset.subtype)}`}>
+                            {asset.subtype}
+                          </span>
+                          <span className={`text-sm ${colors.assets.linkText} transition-colors truncate flex-1`}>
+                            {asset.title}
+                          </span>
+                          <span className={`text-xs ${colors.assets.kindBadge} shrink-0`}>
+                            {asset.type}{kind ? `·${kind}` : ''}
+                          </span>
+                        </a>
+                      );
+                    })}
                   </div>
                 </div>
               )}

@@ -1,9 +1,10 @@
-import { Firestore, Timestamp } from '@google-cloud/firestore';
-import type { Release, Note, CatalogEntry } from '@/types';
+import { Firestore, Timestamp, FieldValue } from '@google-cloud/firestore';
+import type { Release, Note, CatalogEntry, Asset, Track } from '@/types';
 
 const firestoreConfig = {
   databaseId: "bandmagic",
-  coredb:"releases"
+  coredb: "releases",
+  assetsdb: "assets",
 }
 
 
@@ -32,6 +33,7 @@ export async function createRelease(release: Omit<Release, 'id'>): Promise<Relea
     ...release,
     createdAt: Timestamp.now().toDate().toISOString(),
   });
+  await applyAssetUsageDelta(countAssetIds(release.tracks));
   const doc = await ref.get();
   return { id: doc.id, ...doc.data() } as Release;
 }
@@ -53,13 +55,107 @@ export async function addNote(releaseId: string, note: Omit<Note, 'id'>): Promis
 }
 
 export async function updateRelease(id: string, patch: Partial<Omit<Release, 'id'>>): Promise<Release> {
+  if (patch.tracks !== undefined) {
+    const old = await getRelease(id);
+    const oldCounts = old ? countAssetIds(old.tracks) : {};
+    const newCounts = countAssetIds(patch.tracks);
+    await applyAssetUsageDelta(diffCounts(oldCounts, newCounts));
+  }
   await db().collection(firestoreConfig.coredb).doc(id).update(patch);
   const doc = await db().collection(firestoreConfig.coredb).doc(id).get();
   return { id: doc.id, ...doc.data() } as Release;
 }
 
 export async function deleteRelease(id: string): Promise<void> {
+  const old = await getRelease(id);
+  if (old) {
+    const negative: Record<string, number> = {};
+    for (const [aid, n] of Object.entries(countAssetIds(old.tracks))) negative[aid] = -n;
+    await applyAssetUsageDelta(negative);
+  }
   await db().collection(firestoreConfig.coredb).doc(id).delete();
+}
+
+// --- assets ---
+
+export async function getAssets(): Promise<Asset[]> {
+  const snap = await db().collection(firestoreConfig.assetsdb).orderBy('updatedAt', 'desc').get();
+  return snap.docs.map(d => ({ id: d.id, ...d.data() } as Asset));
+}
+
+export async function getAsset(id: string): Promise<Asset | null> {
+  const doc = await db().collection(firestoreConfig.assetsdb).doc(id).get();
+  if (!doc.exists) return null;
+  return { id: doc.id, ...doc.data() } as Asset;
+}
+
+export async function createAsset(
+  input: Omit<Asset, 'id' | 'createdAt' | 'updatedAt' | 'usageCount'>
+): Promise<Asset> {
+  const now = Timestamp.now().toDate().toISOString();
+  const ref = await db().collection(firestoreConfig.assetsdb).add({
+    ...input,
+    usageCount: 0,
+    createdAt: now,
+    updatedAt: now,
+  });
+  const doc = await ref.get();
+  return { id: doc.id, ...doc.data() } as Asset;
+}
+
+export async function updateAsset(
+  id: string,
+  patch: Partial<Omit<Asset, 'id' | 'createdAt' | 'usageCount'>>
+): Promise<Asset> {
+  await db().collection(firestoreConfig.assetsdb).doc(id).update({
+    ...patch,
+    updatedAt: Timestamp.now().toDate().toISOString(),
+  });
+  const doc = await db().collection(firestoreConfig.assetsdb).doc(id).get();
+  return { id: doc.id, ...doc.data() } as Asset;
+}
+
+export async function deleteAsset(id: string): Promise<void> {
+  await db().collection(firestoreConfig.assetsdb).doc(id).delete();
+}
+
+export async function applyAssetUsageDelta(deltas: Record<string, number>): Promise<void> {
+  const entries = Object.entries(deltas).filter(([, d]) => d !== 0);
+  if (entries.length === 0) return;
+  const batch = db().batch();
+  for (const [id, delta] of entries) {
+    const ref = db().collection(firestoreConfig.assetsdb).doc(id);
+    batch.update(ref, { usageCount: FieldValue.increment(delta) });
+  }
+  try {
+    await batch.commit();
+  } catch (err) {
+    // Best-effort denormalized counter; BigQuery sync will reconcile.
+    console.error('applyAssetUsageDelta failed', err);
+  }
+}
+
+function countAssetIds(tracks: Track[]): Record<string, number> {
+  const counts: Record<string, number> = {};
+  for (const t of tracks) {
+    for (const id of t.assetIds ?? []) {
+      counts[id] = (counts[id] ?? 0) + 1;
+    }
+  }
+  return counts;
+}
+
+function diffCounts(
+  oldC: Record<string, number>,
+  newC: Record<string, number>
+): Record<string, number> {
+  const ids = new Set([...Object.keys(oldC), ...Object.keys(newC)]);
+  const out: Record<string, number> = {};
+  for (const id of ids) {
+    const d = (newC[id] ?? 0) - (oldC[id] ?? 0);
+    if (d !== 0) out[id] = d;
+  }
+  return out;
 }
 
 export async function getCatalog(): Promise<CatalogEntry[]> {

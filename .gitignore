@@ -43,9 +43,18 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# credentials
 application_default_credentials*
 application_default_credentials.json.gpg
 
-
+# weird minikube 
 logs.txt
+
+# no ready or not sure
+*.gpg
+
+CLAUDE.md
+session-2026-06-13.md
+git-diagnostics-2026-06-19-0831.zip
+*.claud
 

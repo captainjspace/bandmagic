@@ -1,4 +1,59 @@
-import type { Release, Note, CatalogEntry } from '@/types';
+import type { Release, Note, CatalogEntry, Asset } from '@/types';
+import type { DriveFile } from '@/lib/drive';
+import driveExport from '../../mocks/drive-files.json';
+
+/** Minimal shape from the Drive API Explorer export — only the fields the export includes. */
+type RawDriveFile = {
+  kind: string;
+  mimeType: string;
+  id: string;
+  name: string;
+  resourceKey?: string;
+};
+
+function webViewLinkFor(mime: string, id: string): string {
+  if (mime === 'application/vnd.google-apps.document')     return `https://docs.google.com/document/d/${id}`;
+  if (mime === 'application/vnd.google-apps.spreadsheet')  return `https://docs.google.com/spreadsheets/d/${id}`;
+  if (mime === 'application/vnd.google-apps.presentation') return `https://docs.google.com/presentation/d/${id}`;
+  if (mime === 'application/vnd.google-apps.folder')       return `https://drive.google.com/drive/folders/${id}`;
+  return `https://drive.google.com/file/d/${id}/view`;
+}
+
+export const mockDriveFiles: DriveFile[] = (driveExport as { files: RawDriveFile[] }).files.map(f => ({
+  id: f.id,
+  name: f.name,
+  mimeType: f.mimeType,
+  webViewLink: webViewLinkFor(f.mimeType, f.id),
+  modifiedTime: '2026-06-19T00:00:00Z',
+  owners: [{ emailAddress: 'joshgcp@rollingblackoutband.com', displayName: 'Joshua Landman' }],
+}));
+
+export const mockAssets: Asset[] = [
+  {
+    id: 'mock-asset-lyrics-magical',
+    url: 'https://docs.google.com/document/d/example-magical-lyrics',
+    title: 'Magical — lyrics (working)',
+    type: 'drive',
+    subtype: 'lyrics',
+    usageCount: 1,
+    createdAt: '2026-06-10T00:00:00Z',
+    createdBy: 'joshgcp@rollingblackoutband.com',
+    updatedAt: '2026-06-15T00:00:00Z',
+    updatedBy: 'joshgcp@rollingblackoutband.com',
+  },
+  {
+    id: 'mock-asset-review-magicali',
+    url: 'https://somemusicblog.example.com/posts/magicali-review',
+    title: 'MagiCali review — Some Music Blog',
+    type: 'web',
+    subtype: 'review',
+    usageCount: 1,
+    createdAt: '2026-06-12T00:00:00Z',
+    createdBy: 'joshgcp@rollingblackoutband.com',
+    updatedAt: '2026-06-12T00:00:00Z',
+    updatedBy: 'joshgcp@rollingblackoutband.com',
+  },
+];
 
 export const mockReleases: Release[] = [
   {
@@ -9,8 +64,8 @@ export const mockReleases: Release[] = [
     createdBy: 'joshgcp@rollingblackoutband.com',
     tracks: [
       { path: '2026/2025-01-15-DarkBox-NightAngel.mp3', title: 'Dark Box Night Angel' },
-      { path: '2026/MAGICAL.mp3', title: 'Magical' },
-      { path: '2026/MagiCali.mp3', title: 'MagiCali' },
+      { path: '2026/MAGICAL.mp3', title: 'Magical', assetIds: ['mock-asset-lyrics-magical'] },
+      { path: '2026/MagiCali.mp3', title: 'MagiCali', assetIds: ['mock-asset-review-magicali'] },
       { path: '2026/MagiCali2.mp3', title: 'MagiCali 2' },
       { path: '2026/Rainbow Galaxy.mp3', title: 'Rainbow Galaxy' },
       { path: '2026/StraightJazzCock-FakePurpleTele.mp3', title: 'Straight Jazz Cock — Fake Purple Tele' },

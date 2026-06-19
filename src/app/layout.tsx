@@ -34,7 +34,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             fill
             sizes="100vw"
             className="object-cover object-center brightness-[0.15]"
-            quality={80}
+            quality={75}
           />
         </div>
         <main className="max-w-5xl mx-auto z-[10] px-6 py-10">

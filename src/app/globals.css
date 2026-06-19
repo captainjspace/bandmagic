@@ -71,6 +71,21 @@
   .stage-mastering-bg { @apply bg-green-950/30;                    }
   .stage-unknown      { @apply text-neutral-400 border-neutral-700; }
 
+  .asset-lyrics              { @apply text-violet-400   border-violet-800;   }
+  .asset-lyrics-bg           { @apply bg-violet-950/30;                      }
+  .asset-lyrics-stripped     { @apply text-fuchsia-400  border-fuchsia-800;  }
+  .asset-lyrics-stripped-bg  { @apply bg-fuchsia-950/30;                     }
+  .asset-chord-chart         { @apply text-amber-400    border-amber-800;    }
+  .asset-chord-chart-bg      { @apply bg-amber-950/30;                       }
+  .asset-press-release       { @apply text-rose-400     border-rose-800;     }
+  .asset-press-release-bg    { @apply bg-rose-950/30;                        }
+  .asset-review              { @apply text-cyan-400     border-cyan-800;     }
+  .asset-review-bg           { @apply bg-cyan-950/30;                        }
+  .asset-post                { @apply text-indigo-400   border-indigo-800;   }
+  .asset-post-bg             { @apply bg-indigo-950/30;                      }
+  .asset-other               { @apply text-neutral-400  border-neutral-700;  }
+  .asset-other-bg            { @apply bg-neutral-900/40;                     }
+
 }
 
 @theme inline {

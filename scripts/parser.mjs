@@ -40,8 +40,59 @@ function nodeToDictionary(node) {
       .map(child => nodeToDictionary(child))
       .filter(child => typeof child === 'object' || child !== ''); // Filter empty text
   }
-  const p=tagStack.pop();[
-  const classes=Object.entries(result.children).map(([k,v])).filter(([k,v]) =>  { return ( (k!=='className')? [k,v] : []) });
+  const p=tagStack.pop();
+  const classes=Object.entries(result.children).map({k,v} i=> {t_key:k, ValidityState
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  }).filter(([k,v]) =>  { return ( (k!=='className')? [k,v] : []) });
   if (classes.length >0) insertRecord(p, classes);
   console.log(tagStack);
   return result;

@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { TrackSearch } from '@/components/TrackSearch';
-import type { CatalogEntry, DocLink } from '@/types';
+import { AssetPicker, type AssetsLoadKind } from '@/components/AssetPicker';
+import type { Asset, CatalogEntry } from '@/types';
 
 /** element colors */
 const colors = {
@@ -24,12 +25,10 @@ const colors = {
     addBtn:    'text-green-500 hover:text-green-400',
     removeBtn: 'text-neutral-600 hover:text-red-400',
   },
-  docLinks: {
-    label:     'text-neutral-600',
-    typeSelect:'text-neutral-400',
-    input:     'text-neutral-300',
-    addBtn:    'text-neutral-600 hover:text-green-500',
-    removeBtn: 'text-neutral-600 hover:text-red-400',
+  assets: {
+    label:       'text-neutral-600',
+    errorBanner: 'text-amber-400',
+    retryBtn:    'text-amber-400 hover:text-amber-300 underline',
   },
 };
 
@@ -38,13 +37,13 @@ interface TrackEntry {
   path: string;
   title: string;
   stage: string;
-  docLinks: DocLink[];
+  assetIds: string[];
 }
 
 const uid = () => Math.random().toString(36).slice(2) + Date.now().toString(36);
 
 function newTrack(): TrackEntry {
-  return { _id: uid(), path: '', title: '', stage: 'mixing', docLinks: [] };
+  return { _id: uid(), path: '', title: '', stage: 'mixing', assetIds: [] };
 }
 
 export default function AdminPage() {
@@ -54,9 +53,38 @@ export default function AdminPage() {
   const [status, setStatus] = useState<'idle' | 'sending' | 'done' | 'error'>('idle');
   const [errorMsg, setErrorMsg] = useState('');
 
+  const [assets, setAssets] = useState<Asset[]>([]);
+  const [assetsLoad, setAssetsLoad] = useState<AssetsLoadKind>('loading');
+  const [assetsError, setAssetsError] = useState('');
+
+  const fetchAssets = useCallback(async () => {
+    try {
+      const res = await fetch('/api/assets');
+      if (!res.ok) throw new Error(`Failed to load assets: ${res.status}`);
+      setAssets(await res.json());
+      setAssetsLoad('loaded');
+    } catch (e) {
+      setAssetsError(e instanceof Error ? e.message : 'Failed to load assets');
+      setAssetsLoad('error');
+    }
+  }, []);
+
+  const retryAssets = useCallback(() => {
+    setAssetsLoad('loading');
+    setAssetsError('');
+    fetchAssets();
+  }, [fetchAssets]);
+
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- one-shot fetch on mount; setState fires after await, not synchronously
+  useEffect(() => { fetchAssets(); }, [fetchAssets]);
+
+  const handleAssetCreated = useCallback((asset: Asset) => {
+    setAssets(prev => [asset, ...prev]);
+  }, []);
+
   const addTrack = () => setTracks(prev => [...prev, newTrack()]);
   const removeTrack = (id: string) => setTracks(prev => prev.filter(t => t._id !== id));
-  const updateTrack = useCallback((id: string, field: keyof Omit<TrackEntry, '_id' | 'docLinks'>, value: string) =>
+  const updateTrack = useCallback((id: string, field: keyof Omit<TrackEntry, '_id' | 'assetIds'>, value: string) =>
     setTracks(prev => prev.map(t => t._id === id ? { ...t, [field]: value } : t)), []);
   const selectTrack = useCallback((id: string, entry: CatalogEntry) =>
     setTracks(prev => prev.map(t => t._id === id
@@ -65,18 +93,8 @@ export default function AdminPage() {
   const clearTrack = useCallback((id: string) =>
     setTracks(prev => prev.map(t => t._id === id ? { ...t, path: '', title: '' } : t)), []);
 
-  const addDocLink = useCallback((id: string) =>
-    setTracks(prev => prev.map(t => t._id === id
-      ? { ...t, docLinks: [...t.docLinks, { type: 'other' as const, title: '', url: '' }] }
-      : t)), []);
-  const removeDocLink = useCallback((id: string, idx: number) =>
-    setTracks(prev => prev.map(t => t._id === id
-      ? { ...t, docLinks: t.docLinks.filter((_, i) => i !== idx) }
-      : t)), []);
-  const updateDocLink = useCallback((id: string, idx: number, field: keyof DocLink, value: string) =>
-    setTracks(prev => prev.map(t => t._id === id
-      ? { ...t, docLinks: t.docLinks.map((l, i) => i === idx ? { ...l, [field]: value } : l) }
-      : t)), []);
+  const setAssetIds = useCallback((id: string, assetIds: string[]) =>
+    setTracks(prev => prev.map(t => t._id === id ? { ...t, assetIds } : t)), []);
 
   const sync = async () => {
     await fetch('/api/admin/sync', { method: 'POST' });
@@ -103,7 +121,6 @@ export default function AdminPage() {
         ...t,
         path: t.path.trim(),
         title: t.title.trim() || t.path.split('/').pop() || t.path,
-        docLinks: t.docLinks.filter(l => l.url.trim()),
       })),
     };
 
@@ -137,6 +154,7 @@ export default function AdminPage() {
         <div className="flex items-center gap-3 mt-1">
           <button type="button" onClick={sync}
             className={`text-xs ${colors.page.syncBtn} transition-colors`}>↻ Sync catalog</button>
+          <Link href="/admin/assets" className={`${colors.page.navLink} text-xs transition-colors`}>Assets</Link>
           <Link href="/" className={`${colors.page.navLink} text-xs transition-colors`}>← Releases</Link>
         </div>
       </div>
@@ -149,6 +167,13 @@ export default function AdminPage() {
       {status === 'error' && (
         <div className="mb-6 p-3 border border-red-800 bg-red-950/30 rounded text-sm">
           <span className={colors.status.error}>{errorMsg || 'Something went wrong. Check the console.'}</span>
+        </div>
+      )}
+      {assetsLoad === 'error' && (
+        <div className="mb-6 p-3 border border-amber-800 bg-amber-950/30 rounded text-sm flex items-center justify-between">
+          <span className={colors.assets.errorBanner}>Asset list unavailable — {assetsError}</span>
+          <button type="button" onClick={retryAssets}
+            className={`${colors.assets.retryBtn} text-xs transition-colors`}>Retry</button>
         </div>
       )}
 
@@ -212,30 +237,14 @@ export default function AdminPage() {
                   onSelect={entry => selectTrack(track._id, entry)}
                   onClear={() => clearTrack(track._id)} />
                 <div className="border-t border-neutral-800/50 pt-2">
-                  <div className="flex items-center justify-between mb-1.5">
-                    <span className={`text-xs ${colors.docLinks.label}`}>Drive Docs</span>
-                    <button type="button" onClick={() => addDocLink(track._id)}
-                      className={`text-xs ${colors.docLinks.addBtn} transition-colors`}>+ link</button>
-                  </div>
-                  {track.docLinks.map((link, i) => (
-                    <div key={i} className="flex gap-1.5 items-center mt-1">
-                      <select value={link.type} onChange={e => updateDocLink(track._id, i, 'type', e.target.value)}
-                        className={`bg-neutral-900 border border-neutral-700 rounded px-1.5 py-1 text-xs ${colors.docLinks.typeSelect} focus:outline-none focus:border-green-600`}>
-                        <option value="lyrics">lyrics</option>
-                        <option value="chart">chart</option>
-                        <option value="sheet-music">sheet music</option>
-                        <option value="other">other</option>
-                      </select>
-                      <input value={link.title} onChange={e => updateDocLink(track._id, i, 'title', e.target.value)}
-                        placeholder="Label"
-                        className={`w-24 bg-neutral-900 border border-neutral-700 rounded px-2 py-1 text-xs ${colors.docLinks.input} focus:outline-none focus:border-green-600`} />
-                      <input value={link.url} onChange={e => updateDocLink(track._id, i, 'url', e.target.value)}
-                        placeholder="https://docs.google.com/…"
-                        className={`flex-1 bg-neutral-900 border border-neutral-700 rounded px-2 py-1 text-xs ${colors.docLinks.input} focus:outline-none focus:border-green-600 font-mono`} />
-                      <button type="button" onClick={() => removeDocLink(track._id, i)}
-                        className={`text-xs ${colors.docLinks.removeBtn} transition-colors`}>✕</button>
-                    </div>
-                  ))}
+                  <p className={`text-xs ${colors.assets.label} mb-1.5`}>Assets</p>
+                  <AssetPicker
+                    value={track.assetIds}
+                    onChange={ids => setAssetIds(track._id, ids)}
+                    assets={assets}
+                    loadState={assetsLoad}
+                    onAssetCreated={handleAssetCreated}
+                  />
                 </div>
               </div>
             ))}
