@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { config } from '@/lib/config';
 import { searchFiles, type DriveFile } from '@/lib/drive';
-import { getRelease, updateRelease, getAssets, createAsset } from '@/lib/firestore';
+import { getTrackGroup, updateTrackGroup, getAssets, createAsset } from '@/lib/firestore';
 import { mockDriveFiles } from '@/lib/mock';
 import { scoreMatch, SWEEP_THRESHOLD, inferSubtype } from '@/lib/filename-match';
 import { errorResponse, isDebugUser } from '@/lib/debug-mode';
@@ -16,9 +16,9 @@ type SweepResponse = {
 };
 
 export async function POST(req: NextRequest) {
-  const body = await req.json() as { releaseId?: string };
-  const releaseId = body.releaseId?.trim();
-  if (!releaseId) return NextResponse.json({ error: 'releaseId required' }, { status: 400 });
+  const body = await req.json() as { trackGroupId?: string };
+  const trackGroupId = body.trackGroupId?.trim();
+  if (!trackGroupId) return NextResponse.json({ error: 'trackGroupId required' }, { status: 400 });
 
   const userEmail = req.headers.get('x-goog-authenticated-user-email')?.replace('accounts.google.com:', '')
     ?? process.env.LOCAL_USER_EMAIL
@@ -30,11 +30,11 @@ export async function POST(req: NextRequest) {
 
   const debug = isDebugUser(userEmail);
 
-  let release: Awaited<ReturnType<typeof getRelease>>;
+  let trackGroup: Awaited<ReturnType<typeof getTrackGroup>>;
   let existingAssets: Awaited<ReturnType<typeof getAssets>>;
   try {
-    release = await getRelease(releaseId);
-    if (!release) return NextResponse.json({ error: 'Release not found' }, { status: 404 });
+    trackGroup = await getTrackGroup(trackGroupId);
+    if (!trackGroup) return NextResponse.json({ error: 'TrackGroup not found' }, { status: 404 });
     existingAssets = await getAssets();
   } catch (e) {
     const { body, status } = errorResponse(e, {
@@ -51,10 +51,10 @@ export async function POST(req: NextRequest) {
   let proposed = 0;
   let created = 0;
   let attached = 0;
-  let releaseChanged = false;
+  let trackGroupChanged = false;
 
   const newTracks: Track[] = [];
-  for (const track of release.tracks) {
+  for (const track of trackGroup.tracks) {
     if (!track.title.trim()) { newTracks.push(track); continue; }
 
     let driveResults: DriveFile[] = [];
@@ -113,21 +113,21 @@ export async function POST(req: NextRequest) {
     if (assetIds.size > startCount) {
       attached += assetIds.size - startCount;
       newTracks.push({ ...track, assetIds: [...assetIds] });
-      releaseChanged = true;
+      trackGroupChanged = true;
     } else {
       newTracks.push(track);
     }
   }
 
-  if (releaseChanged) {
+  if (trackGroupChanged) {
     try {
-      await updateRelease(releaseId, { tracks: newTracks });
+      await updateTrackGroup(trackGroupId, { tracks: newTracks });
     } catch (e) {
-      console.error('[sweep-drive/updateRelease]', e);
+      console.error('[sweep-drive/updateTrackGroup]', e);
       errors.push({
         trackPath: '',
-        trackTitle: '(release save)',
-        reason: debug && e instanceof Error ? e.message : 'Release update failed',
+        trackTitle: '(trackGroup save)',
+        reason: debug && e instanceof Error ? e.message : 'TrackGroup update failed',
       });
     }
   }

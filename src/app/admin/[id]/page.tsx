@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
-import type { Release, CatalogEntry, Asset } from '@/types';
+import type { TrackGroup, CatalogEntry, Asset } from '@/types';
 import { TrackSearch } from '@/components/TrackSearch';
 import { AssetPicker, type AssetsLoadKind } from '@/components/AssetPicker';
 
@@ -10,7 +10,7 @@ import { AssetPicker, type AssetsLoadKind } from '@/components/AssetPicker';
 const colors = {
   page: {
     title:      'text-neutral-100',
-    releaseId:  'text-neutral-500',
+    trackGroupId:  'text-neutral-500',
     navLink:    'text-neutral-500 hover:text-neutral-300',
     fieldLabel: 'text-neutral-500',
     hint:       'text-neutral-600',
@@ -60,18 +60,18 @@ function newTrack(): TrackEntry {
   return { _id: uid(), path: '', title: '', stage: 'mixing', assetIds: [] };
 }
 
-function fromRelease(release: Release): { title: string; description: string; tracks: TrackEntry[] } {
+function fromTrackGroup(trackGroup: TrackGroup): { title: string; description: string; tracks: TrackEntry[] } {
   return {
-    title: release.title,
-    description: release.description ?? '',
-    tracks: release.tracks.length > 0
-      ? release.tracks.map(t => ({ _id: uid(), path: t.path, title: t.title, stage: t.stage ?? 'mixing', assetIds: t.assetIds ?? [] }))
+    title: trackGroup.title,
+    description: trackGroup.description ?? '',
+    tracks: trackGroup.tracks.length > 0
+      ? trackGroup.tracks.map(t => ({ _id: uid(), path: t.path, title: t.title, stage: t.stage ?? 'mixing', assetIds: t.assetIds ?? [] }))
       : [newTrack()],
   };
 }
 
-export default function EditReleasePage({ params }: { params: Promise<{ id: string }> }) {
-  const [releaseId, setReleaseId] = useState('');
+export default function EditTrackGroupPage({ params }: { params: Promise<{ id: string }> }) {
+  const [trackGroupId, setTrackGroupId] = useState('');
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [tracks, setTracks] = useState<TrackEntry[]>([newTrack()]);
@@ -112,11 +112,11 @@ export default function EditReleasePage({ params }: { params: Promise<{ id: stri
 
   useEffect(() => {
     params.then(async ({ id }) => {
-      setReleaseId(id);
-      const res = await fetch(`/api/releases/${id}`);
-      if (!res.ok) { setStatus('error'); setErrorMsg('Release not found.'); return; }
-      const release: Release = await res.json();
-      const { title, description, tracks } = fromRelease(release);
+      setTrackGroupId(id);
+      const res = await fetch(`/api/track-groups/${id}`);
+      if (!res.ok) { setStatus('error'); setErrorMsg('TrackGroup not found.'); return; }
+      const trackGroup: TrackGroup = await res.json();
+      const { title, description, tracks } = fromTrackGroup(trackGroup);
       setTitle(title);
       setDescription(description);
       setTracks(tracks);
@@ -139,23 +139,23 @@ export default function EditReleasePage({ params }: { params: Promise<{ id: stri
     setTracks(prev => prev.map(t => t._id === id ? { ...t, assetIds } : t)), []);
 
   const runSweep = async () => {
-    if (!releaseId || sweeping) return;
+    if (!trackGroupId || sweeping) return;
     setSweeping(true);
     setSweepResult(null);
     try {
       const res = await fetch('/api/admin/sweep-drive', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ releaseId }),
+        body: JSON.stringify({ trackGroupId }),
       });
       if (!res.ok) throw new Error(await res.text() || 'Sweep failed');
       const result: SweepResponse = await res.json();
       setSweepResult(result);
       await fetchAssets();
-      const rel = await fetch(`/api/releases/${releaseId}`);
+      const rel = await fetch(`/api/track-groups/${trackGroupId}`);
       if (rel.ok) {
-        const release: Release = await rel.json();
-        const refreshed = fromRelease(release);
+        const trackGroup: TrackGroup = await rel.json();
+        const refreshed = fromTrackGroup(trackGroup);
         setTracks(refreshed.tracks);
       }
     } catch (e) {
@@ -185,7 +185,7 @@ export default function EditReleasePage({ params }: { params: Promise<{ id: stri
     };
 
     try {
-      const res = await fetch(`/api/releases/${releaseId}`, {
+      const res = await fetch(`/api/track-groups/${trackGroupId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -199,15 +199,15 @@ export default function EditReleasePage({ params }: { params: Promise<{ id: stri
   };
 
   if (status === 'loading') {
-    return <p className={`${colors.page.releaseId} text-sm`}>Loading...</p>;
+    return <p className={`${colors.page.trackGroupId} text-sm`}>Loading...</p>;
   }
 
   return (
     <div className="max-w-2xl">
       <div className="mb-8 flex items-start justify-between">
         <div>
-          <h1 className={`text-2xl font-bold ${colors.page.title}`}>Edit Release</h1>
-          <p className={`${colors.page.releaseId} font-mono text-xs mt-1`}>{releaseId}</p>
+          <h1 className={`text-2xl font-bold ${colors.page.title}`}>Edit TrackGroup</h1>
+          <p className={`${colors.page.trackGroupId} font-mono text-xs mt-1`}>{trackGroupId}</p>
         </div>
         <div className="flex items-center gap-3 mt-1">
           <button type="button" onClick={runSweep} disabled={sweeping}
@@ -215,14 +215,14 @@ export default function EditReleasePage({ params }: { params: Promise<{ id: stri
             {sweeping ? 'Sweeping…' : '↻ Sweep Drive'}
           </button>
           <Link href="/admin/assets" className={`${colors.page.navLink} text-xs transition-colors`}>Assets</Link>
-          <Link href={`/release/${releaseId}`} className={`${colors.page.navLink} text-xs transition-colors`}>← Back to release</Link>
+          <Link href={`/track-group/${trackGroupId}`} className={`${colors.page.navLink} text-xs transition-colors`}>← Back to track group</Link>
         </div>
       </div>
 
       {status === 'done' && (
         <div className="mb-6 p-3 border border-green-800 bg-green-950/30 rounded text-sm">
           <span className={colors.status.success}>Saved. </span>
-          <Link href={`/release/${releaseId}`} className={colors.status.successLink}>View release →</Link>
+          <Link href={`/track-group/${trackGroupId}`} className={colors.status.successLink}>View track group →</Link>
         </div>
       )}
       {status === 'error' && (
@@ -245,7 +245,7 @@ export default function EditReleasePage({ params }: { params: Promise<{ id: stri
           {sweepResult.errors.length > 0 && (
             <ul className={`text-xs ${colors.sweep.errors} list-disc list-inside`}>
               {sweepResult.errors.map((e, i) => (
-                <li key={i}>{e.trackTitle || '(release)'}: {e.reason}</li>
+                <li key={i}>{e.trackTitle || '(trackGroup)'}: {e.reason}</li>
               ))}
             </ul>
           )}

@@ -125,7 +125,7 @@ export default function AdminPage() {
     };
 
     try {
-      const res = await fetch('/api/releases', {
+      const res = await fetch('/api/track-groups', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -148,20 +148,20 @@ export default function AdminPage() {
     <div className="max-w-2xl">
       <div className="mb-8 flex items-start justify-between">
         <div>
-          <h1 className={`text-2xl font-bold ${colors.page.title}`}>New Release</h1>
+          <h1 className={`text-2xl font-bold ${colors.page.title}`}>New TrackGroup</h1>
           <p className={`${colors.page.subtitle} text-sm mt-1`}>Curate tracks and notify the band.</p>
         </div>
         <div className="flex items-center gap-3 mt-1">
           <button type="button" onClick={sync}
             className={`text-xs ${colors.page.syncBtn} transition-colors`}>↻ Sync catalog</button>
           <Link href="/admin/assets" className={`${colors.page.navLink} text-xs transition-colors`}>Assets</Link>
-          <Link href="/" className={`${colors.page.navLink} text-xs transition-colors`}>← Releases</Link>
+          <Link href="/" className={`${colors.page.navLink} text-xs transition-colors`}>← TrackGroups</Link>
         </div>
       </div>
 
       {status === 'done' && (
         <div className="mb-6 p-3 border border-green-800 bg-green-950/30 rounded text-sm">
-          <span className={colors.status.success}>Release created and band notified.</span>
+          <span className={colors.status.success}>TrackGroup created and band notified.</span>
         </div>
       )}
       {status === 'error' && (
@@ -197,7 +197,7 @@ export default function AdminPage() {
               <span>Description</span>
               <textarea value={description} onChange={e => setDescription(e.target.value)}
                 className="w-full bg-neutral-900 border border-neutral-700 rounded px-3 py-2 text-sm text-neutral-100 focus:outline-none focus:border-green-600 resize-none h-20"
-                placeholder="What's in this release?" />
+                placeholder="What's in this trackGroup?" />
             </label>
           </div>
         </div>

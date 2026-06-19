@@ -1,6 +1,6 @@
 import { google } from "googleapis";
 import { config } from "./config";
-import type { Release } from "@/types";
+import type { TrackGroup } from "@/types";
 
 const siteConfig = {
   site:{
@@ -12,40 +12,40 @@ const siteConfig = {
   }
 };
 
-export async function sendReleaseNotification(release: Release) {
+export async function sendReleaseNotification(trackGroup: TrackGroup) {
   const promises: Promise<unknown>[] = [];
 
   if (config.notifyEmails.length > 0) {
-    promises.push(sendEmail(release));
+    promises.push(sendEmail(trackGroup));
   }
   if (config.chatWebhook) {
-    promises.push(sendChatMessage(release));
+    promises.push(sendChatMessage(trackGroup));
   }
 
   await Promise.allSettled(promises);
 }
 
-async function sendEmail(release: Release) {
+async function sendEmail(trackGroup: TrackGroup) {
   const auth = new google.auth.GoogleAuth({ scopes: ["https://www.googleapis.com/auth/gmail.send"] });
   const gmail = google.gmail({ version: "v1", auth });
 
-  const tracklist = release.tracks.map((t, i) => `  ${i + 1}. ${t.title}`).join("\n");
+  const tracklist = trackGroup.tracks.map((t, i) => `  ${i + 1}. ${t.title}`).join("\n");
   const body = [
-    `New release: ${release.title}`,
+    `New trackGroup: ${trackGroup.title}`,
     "",
-    release.description ?? "",
+    trackGroup.description ?? "",
     "",
     "Tracks:",
     tracklist,
     "",
-    `Listen: ${process.env.APP_URL ?? siteConfig.url}/release/${release.id}`,
+    `Listen: ${process.env.APP_URL ?? siteConfig.url}/track-group/${trackGroup.id}`,
   ].join("\n");
 
   const message = [
     `To: ${config.notifyEmails.join(", ")}`,
     "Content-Type: text/plain; charset=utf-8",
     "MIME-Version: 1.0",
-    `Subject: New Release: ${release.title}`,
+    `Subject: New TrackGroup: ${trackGroup.title}`,
     "",
     body,
   ].join("\n");
@@ -54,8 +54,8 @@ async function sendEmail(release: Release) {
   await gmail.users.messages.send({ userId: "me", requestBody: { raw: encoded } });
 }
 
-async function sendChatMessage(release: Release) {
-  const text = `🎵 *New release: ${release.title}*\n${release.description ?? ""}\n${release.tracks.length} tracks — ${process.env.APP_URL ?? siteConfig.url}}/release/${release.id}`;
+async function sendChatMessage(trackGroup: TrackGroup) {
+  const text = `🎵 *New track group: ${trackGroup.title}*\n${trackGroup.description ?? ""}\n${trackGroup.tracks.length} tracks — ${process.env.APP_URL ?? siteConfig.url}/track-group/${trackGroup.id}`;
   await fetch(config.chatWebhook, {
     method: "POST",
     headers: { "Content-Type": "application/json" },

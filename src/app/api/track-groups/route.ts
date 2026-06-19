@@ -1,15 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { config } from '@/lib/config';
-import { getReleases, createRelease } from '@/lib/firestore';
-import { mockReleases } from '@/lib/mock';
+import { getTrackGroups, createTrackGroup } from '@/lib/firestore';
+import { mockTrackGroups } from '@/lib/mock';
 import { sendReleaseNotification } from '@/lib/notify';
 
 export async function GET() {
   if (config.useMock) {
-    return NextResponse.json(mockReleases);
+    return NextResponse.json(mockTrackGroups);
   }
-  const releases = await getReleases();
-  return NextResponse.json(releases);
+  const trackGroups = await getTrackGroups();
+  return NextResponse.json(trackGroups);
 }
 
 export async function POST(req: NextRequest) {
@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ id: 'mock-new', ...body, createdBy: author }, { status: 201 });
   }
 
-  const release = await createRelease({ ...body, createdBy: author });
-  await sendReleaseNotification(release);
-  return NextResponse.json(release, { status: 201 });
+  const trackGroup = await createTrackGroup({ ...body, createdBy: author });
+  await sendReleaseNotification(trackGroup);
+  return NextResponse.json(trackGroup, { status: 201 });
 }

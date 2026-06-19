@@ -43,7 +43,7 @@ export interface Track {
   assetIds?: string[];
 }
 
-export interface Release {
+export interface TrackGroup {
   id: string;
   title: string;
   description?: string;

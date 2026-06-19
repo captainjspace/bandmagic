@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import type { Release, Note, Asset } from '@/types';
+import type { TrackGroup, Note, Asset } from '@/types';
 import { stageClass, stageBgClass } from '@/lib/stage';
 import { assetClass, driveDocKind } from '@/lib/asset';
 import type { AssetsLoadKind } from '@/components/AssetPicker';
@@ -92,22 +92,22 @@ function TrackPlayer({ path, title }: { path: string; title: string }) {
   );
 }
 
-function NoteThread({ releaseId, trackPath }: { releaseId: string; trackPath: string }) {
+function NoteThread({ trackGroupId, trackPath }: { trackGroupId: string; trackPath: string }) {
   const [notes, setNotes] = useState<Note[]>([]);
   const [text, setText] = useState('');
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    fetch(`/api/releases/${releaseId}/notes?track=${encodeURIComponent(trackPath)}`)
+    fetch(`/api/track-groups/${trackGroupId}/notes?track=${encodeURIComponent(trackPath)}`)
       .then(r => r.json())
       .then(setNotes);
-  }, [releaseId, trackPath]);
+  }, [trackGroupId, trackPath]);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!text.trim()) return;
     setLoading(true);
-    const res = await fetch(`/api/releases/${releaseId}/notes`, {
+    const res = await fetch(`/api/track-groups/${trackGroupId}/notes`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ text: text.trim(), trackPath }),
@@ -143,12 +143,12 @@ function NoteThread({ releaseId, trackPath }: { releaseId: string; trackPath: st
   );
 }
 
-export default function ReleasePage({ params }: { params: Promise<{ id: string }> }) {
-  const [release, setRelease] = useState<Release | null>(null);
+export default function TrackGroupPage({ params }: { params: Promise<{ id: string }> }) {
+  const [trackGroup, setTrackGroup] = useState<TrackGroup | null>(null);
   const [assets, setAssets] = useState<Asset[]>([]);
   const [assetsLoad, setAssetsLoad] = useState<AssetsLoadKind>('loading');
   const [activeTrack, setActiveTrack] = useState<string | null>(null);
-  const [releaseId, setReleaseId] = useState<string>('');
+  const [trackGroupId, setTrackGroupId] = useState<string>('');
 
   const fetchAssets = useCallback(async () => {
     try {
@@ -168,12 +168,12 @@ export default function ReleasePage({ params }: { params: Promise<{ id: string }
 
   useEffect(() => {
     params.then(async ({ id }) => {
-      setReleaseId(id);
-      const rRel = await fetch('/api/releases');
-      const releases: Release[] = await rRel.json();
-      const found = releases.find(r => r.id === id);
+      setTrackGroupId(id);
+      const rRel = await fetch('/api/track-groups');
+      const trackGroups: TrackGroup[] = await rRel.json();
+      const found = trackGroups.find(r => r.id === id);
       if (found) {
-        setRelease(found);
+        setTrackGroup(found);
         if (found.tracks.length > 0) setActiveTrack(found.tracks[0].path);
       }
     });
@@ -181,11 +181,11 @@ export default function ReleasePage({ params }: { params: Promise<{ id: string }
     fetchAssets();
   }, [params, fetchAssets]);
 
-  if (!release) {
+  if (!trackGroup) {
     return <p className={`${colors.page.description} text-sm`}>Loading...</p>;
   }
 
-  const validTracks = release.tracks.filter(t => t.path?.trim());
+  const validTracks = trackGroup.tracks.filter(t => t.path?.trim());
   const active = validTracks.find(t => t.path === activeTrack);
   const assetsById = new Map(assets.map(a => [a.id, a]));
 
@@ -193,12 +193,12 @@ export default function ReleasePage({ params }: { params: Promise<{ id: string }
     <div className="max-w-2xl">
       <div className="mb-8">
         <div className="flex items-center justify-between">
-          <Link href="/" className={`${colors.page.navLink} text-xs transition-colors`}>← Releases</Link>
-          <Link href={`/admin/${releaseId}`} className={`${colors.page.navLink} text-xs transition-colors`}>Edit</Link>
+          <Link href="/" className={`${colors.page.navLink} text-xs transition-colors`}>← TrackGroups</Link>
+          <Link href={`/admin/${trackGroupId}`} className={`${colors.page.navLink} text-xs transition-colors`}>Edit</Link>
         </div>
-        <h1 className={`text-2xl font-bold ${colors.page.title} mt-2`}>{release.title}</h1>
-        {release.description && <p className={`${colors.page.description} text-sm mt-1`}>{release.description}</p>}
-        <p className={`${colors.page.date} text-xs mt-2`}>{new Date(release.createdAt).toLocaleDateString()}</p>
+        <h1 className={`text-2xl font-bold ${colors.page.title} mt-2`}>{trackGroup.title}</h1>
+        {trackGroup.description && <p className={`${colors.page.description} text-sm mt-1`}>{trackGroup.description}</p>}
+        <p className={`${colors.page.date} text-xs mt-2`}>{new Date(trackGroup.createdAt).toLocaleDateString()}</p>
       </div>
 
       <div className="grid grid-cols-[280px_1fr] gap-6">
@@ -240,7 +240,7 @@ export default function ReleasePage({ params }: { params: Promise<{ id: string }
               <TrackPlayer key={active.path} path={active.path} title={active.title} />
               <div className="border-t border-neutral-800 pt-4">
                 <p className={`${colors.page.sectionLabel} text-xs uppercase tracking-wider mb-3`}>Notes</p>
-                <NoteThread releaseId={releaseId} trackPath={active.path} />
+                <NoteThread trackGroupId={trackGroupId} trackPath={active.path} />
               </div>
 
               {active.assetIds && active.assetIds.length > 0 && (

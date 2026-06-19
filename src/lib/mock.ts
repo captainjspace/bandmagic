@@ -1,4 +1,4 @@
-import type { Release, Note, CatalogEntry, Asset } from '@/types';
+import type { TrackGroup, Note, CatalogEntry, Asset } from '@/types';
 import type { DriveFile } from '@/lib/drive';
 import driveExport from '../../mocks/drive-files.json';
 
@@ -55,7 +55,7 @@ export const mockAssets: Asset[] = [
   },
 ];
 
-export const mockReleases: Release[] = [
+export const mockTrackGroups: TrackGroup[] = [
   {
     id: '0793FB3A-1CC8-4A00-B17E-4673A05C27FA',
     title: 'June 2026 Rough Cuts',
@@ -81,7 +81,7 @@ export const mockReleases: Release[] = [
 
 export const mockNotes: Note[] = [];
 
-export const mockCatalog: CatalogEntry[] = mockReleases[0].tracks
+export const mockCatalog: CatalogEntry[] = mockTrackGroups[0].tracks
   .filter(t => t.path?.trim())
   .map(t => ({
     id: encodeURIComponent(t.path),
