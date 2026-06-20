@@ -1,0 +1,44 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: band-magic
+  name: band-magic
+spec:
+  ports:
+  - nodePort: 30090
+    port: 8080
+    targetPort: 8080
+  selector:
+    app: band-magic
+  type: NodePort
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: band-magic
+  name: band-magic
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: band-magic
+  template:
+    metadata:
+      labels:
+        app: band-magic
+    spec:
+      containers:
+      - image: band-magic:latest
+        imagePullPolicy: Never
+        name: band-magic
+        ports:
+        - containerPort: 80
+        resources:
+          limits:
+            cpu: 250m
+            memory: 128Mi
+          requests:
+            cpu: 100m
+            memory: 64Mi
