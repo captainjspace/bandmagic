@@ -39,7 +39,7 @@ OLTP-first across all entities. Firestore is the source of truth for transaction
 Two GCP services, both accessed server-side only:
 
 - **GCS** (`src/lib/gcs.ts`) — audio file storage. Bucket and prefix come from `config` (`GCS_BUCKET`, `GCS_PREFIX`). Helper functions derive track metadata from path structure: `stageFromPath` extracts stage from path segments (`writing/tracking/mixing/mastering`), `titleFromPath` cleans the filename.
-- **Firestore** (`src/lib/firestore.ts`) — persistence. Database: `bandmagic`. Collections: `releases` (top-level), `notes` (subcollection under each release), `catalog` (flat index of GCS audio files). The `firestoreConfig.coredb` const is `"releases"` but `databaseId` in the Firestore constructor reads from env (`FIRESTORE_DATABASE_ID`), which takes precedence.
+- **Firestore** (`src/lib/firestore.ts`) — persistence. Database: `bandmagic`. Collections: `track-groups` (top-level), `notes` (subcollection under each track group), `assets` (top-level), `catalog` (flat index of GCS audio files). The `firestoreConfig.coredb` const is `"track-groups"` but `databaseId` in the Firestore constructor reads from env (`FIRESTORE_DATABASE_ID`), which takes precedence.
 
 **Mock mode:** Set `USE_MOCK=true` to bypass GCP entirely. `src/lib/mock.ts` has static fixture data. All API routes and the home page check `config.useMock` before hitting live services.
 
@@ -47,13 +47,15 @@ Two GCP services, both accessed server-side only:
 
 Admin triggers `POST /api/admin/sync` → lists all audio files in GCS under `config.prefix` → maps each to a `CatalogEntry` (path, song, stage, mix, title, size) → bulk-upserts into Firestore `catalog` collection via batched writes. Catalog doc IDs are `encodeURIComponent(path)`.
 
-### Release lifecycle
+### Track-group lifecycle
 
 1. Admin searches the catalog via `TrackSearch` component (client-side, lazy-loads and module-level caches the full catalog from `GET /api/catalog`)
-2. Submits `POST /api/releases` → creates Firestore doc → calls `sendReleaseNotification` (Gmail + optional Google Chat webhook)
-3. Band views at `/release/[id]` — audio proxied through `GET /api/audio?path=` which streams directly from GCS (no signed URLs, private bucket)
+2. Submits `POST /api/track-groups` → creates Firestore doc → calls `sendReleaseNotification` (the function is named for the *action* of releasing to the band; Gmail + optional Google Chat webhook)
+3. Band views at `/track-group/[id]` — audio proxied through `GET /api/audio?path=` which streams directly from GCS (no signed URLs, private bucket)
 
-**Author identity:** `POST /api/releases` reads `x-goog-authenticated-user-email` header (set by Cloud Run / IAP) or falls back to `LOCAL_USER_EMAIL` env var.
+**Author identity:** `POST /api/track-groups` reads `x-goog-authenticated-user-email` header (set by Cloud Run / IAP) or falls back to `LOCAL_USER_EMAIL` env var. The same chain is inlined in five other routes — `src/lib/identity.ts` extraction is the natural next refactor.
+
+A `type` field on `TrackGroup` (`album | ep | single | playlist | …`) is the next planned addition for differentiating collection kinds. Not yet implemented.
 
 ### Notification
 
@@ -70,7 +72,7 @@ Admin triggers `POST /api/admin/sync` → lists all audio files in GCS under `co
 | `NOTIFY_EMAILS` | Comma-separated recipient list |
 | `GOOGLE_CHAT_WEBHOOK_URL` | Chat space webhook |
 | `APP_URL` | Public URL for notification links |
-| `LOCAL_USER_EMAIL` | Dev fallback for release author / Drive impersonation subject |
+| `LOCAL_USER_EMAIL` | Dev fallback for the authenticated user (track-group author, asset author, Drive impersonation subject) |
 | `DRIVE_FOLDER_ID` | Default Drive folder ID for the band's shared assets (used as the encouraged scope for search and sweep) |
 | `DEBUG_USERS` | Comma-separated emails granted detailed error responses (see Debug mode) |
 | `USE_MOCK` | `true` to skip all GCP calls |
@@ -93,11 +95,11 @@ new google.auth.GoogleAuth({
 - **Local dev**: ADC = the developer's user creds (`gcloud auth application-default login`). `subject` is ignored by user creds. Drive queries run as the developer.
 - **Prod (Cloud Run)**: ADC = the Cloud Run service account. **One-time Workspace admin step**: enable domain-wide delegation on the SA and authorize the `drive.readonly` scope in the Workspace admin console. Without this, prod Drive calls 403.
 
-`userEmail` is resolved from `x-goog-authenticated-user-email` (set by Cloud Run / IAP) or `LOCAL_USER_EMAIL` env var. The same resolution chain is used by `POST /api/releases` and `POST /api/releases/[id]/notes` — candidate for `src/lib/identity.ts` extraction.
+`userEmail` is resolved from `x-goog-authenticated-user-email` (set by Cloud Run / IAP) or `LOCAL_USER_EMAIL` env var. The same resolution chain is inlined in `POST /api/track-groups`, `POST /api/track-groups/[id]/notes`, `/api/assets`, `/api/assets/[id]`, and `/api/admin/sweep-drive` — candidate for `src/lib/identity.ts` extraction.
 
 **Search scope.** `searchFiles` runs two parallel queries when `DRIVE_FOLDER_ID` is set: one scoped to that folder, one unscoped (user-visible everywhere). Results merge with folder hits ranked first; deduped by file id. Without `DRIVE_FOLDER_ID`, only the unscoped query runs.
 
-**Drive sweep.** `POST /api/admin/sweep-drive` (body: `{ releaseId }`) walks every track on the release, searches Drive by track title, filters by `scoreMatch ≥ SWEEP_THRESHOLD` (see `src/lib/filename-match.ts`), and creates+attaches matching assets. Idempotent: existing assets are reused by URL match. Asset subtype is inferred from filename keywords (lyrics / chord-chart / press-release / review / post / other). The same code path will be invoked by a future daily Cloud Scheduler job (not yet wired).
+**Drive sweep.** `POST /api/admin/sweep-drive` (body: `{ trackGroupId }`) walks every track on the track group, searches Drive by track title, filters by `scoreMatch ≥ SWEEP_THRESHOLD` (see `src/lib/filename-match.ts`), and creates+attaches matching assets. Idempotent: existing assets are reused by URL match. Asset subtype is inferred from filename keywords (lyrics / chord-chart / press-release / review / post / other). The same code path will be invoked by a future daily Cloud Scheduler job (not yet wired).
 
 **UI integration.** `src/components/DriveSearch.tsx` is the reusable search-and-pick component. Wired into `AssetPicker`'s create mode under the "Search Drive" tab. The "Paste URL" tab remains for non-Drive assets (web reviews, blog posts).
 
@@ -124,19 +126,9 @@ Currently wired into `/api/drive/search` and `/api/admin/sweep-drive`. Other rou
 
 Stage badge colors are defined as CSS classes in `globals.css` (`@layer components`): `.stage-writing`, `.stage-tracking`, `.stage-mixing`, `.stage-mastering`, `.stage-unknown`. Background variants use the `-bg` suffix (e.g. `.stage-mixing-bg`). Use `stageClass(stage)` / `stageBgClass(stage)` from `src/lib/stage.ts` instead of hardcoded Tailwind color strings. Never re-define `STAGE_COLORS` maps in components.
 
-### Drive doc links
-
-`DocLink` (`src/types/index.ts`) is `{ url, title, type }` where type is `lyrics | chart | sheet-music | other`. Stored as `docLinks[]` on each embedded `Track` within a release. Edited in the admin track card UI, displayed in the release detail view below the notes section.
-
-> Superseded by the planned `assets` entity (see below). On cutover the existing `docLinks[]` data is hand-rewritten — small enough that no migration script is warranted.
-
-## Planned additions
-
-These are agreed-on but not yet implemented. When implementation lands, the relevant section moves out of "Planned" and into Architecture above.
-
 ### Assets entity
 
-Top-level Firestore collection `assets`. Document/link records referenceable from any other entity. Replaces `Track.docLinks[]`.
+Top-level Firestore collection `assets`. Document/link records referenceable from any other entity. Replaced the old embedded `Track.docLinks[]` (2026-06-18 cutover; two `docLinks` records were hand-rewritten).
 
 ```ts
 type Asset = {
@@ -155,12 +147,4 @@ type Asset = {
 
 - For `type: 'drive'`, the Google doc-kind (doc/sheet/slide) is inferred from URL path (`/document/`, `/spreadsheets/`, `/presentation/`) — not stored separately.
 - Associations live on the referencing entity as `assetIds: string[]`, track-level (not per-version). The asset is the source of truth; `usageCount` is denormalized for OLTP read paths.
-- `createdBy` / `updatedBy` use the same `x-goog-authenticated-user-email` / `LOCAL_USER_EMAIL` resolution as `POST /api/releases`.
-
-### Track-groups entity
-
-Top-level Firestore collection `track-groups` — the **collection axis** (albums, EPs, singles, playlists). Distinct from the existing `releases` collection, which is the **event axis** (working snapshots pushed to the band). Both stay.
-
-- Has a `type` field: `album | ep | single | playlist | ...` (extensible).
-- References tracks by ID; per-track references a specific GCS path (the version appropriate for that grouping), same shape as `releases`.
-- Firestore collection name stays `track-groups` to avoid overloading "collection" with Firestore's own term. UI label TBD with band input.
+- `createdBy` / `updatedBy` use the same `x-goog-authenticated-user-email` / `LOCAL_USER_EMAIL` resolution as `POST /api/track-groups`.
