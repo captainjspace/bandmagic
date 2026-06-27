@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { TrackSearch } from '@/components/TrackSearch';
 import { AssetPicker, type AssetsLoadKind } from '@/components/AssetPicker';
 import type { Asset, CatalogEntry } from '@/types';
@@ -11,11 +12,19 @@ const colors = {
   page: {
     title:      'text-neutral-100',
     subtitle:   'text-neutral-500',
-    navLink:    'text-neutral-500 hover:text-neutral-300',
-    syncBtn:    'text-neutral-600 hover:text-neutral-400',
     fieldLabel: 'text-neutral-500',
     hint:       'text-neutral-600',
     count:      'text-neutral-600',
+  },
+  tools: {
+    panel: 'border border-neutral-800 rounded bg-neutral-900/30 px-3 py-2',
+    label: 'text-neutral-600',
+    item:  'border border-neutral-700 hover:border-neutral-500 text-neutral-200 rounded px-2.5 py-1 transition-colors disabled:opacity-50',
+  },
+  actions: {
+    cancel:  'border border-neutral-800 hover:border-red-700 text-neutral-400 hover:text-red-400 rounded px-3 py-1.5 transition-colors',
+    draft:   'border border-neutral-700 hover:border-neutral-500 text-neutral-200 rounded px-3 py-1.5 disabled:opacity-40 transition-colors',
+    release: 'bg-green-600 hover:bg-green-500 text-black font-semibold rounded px-3 py-1.5 disabled:opacity-40 transition-colors',
   },
   status: {
     success: 'text-green-400',
@@ -47,11 +56,13 @@ function newTrack(): TrackEntry {
 }
 
 export default function AdminPage() {
+  const router = useRouter();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [tracks, setTracks] = useState<TrackEntry[]>([newTrack()]);
-  const [status, setStatus] = useState<'idle' | 'sending' | 'done' | 'error'>('idle');
+  const [status, setStatus] = useState<'idle' | 'sending-draft' | 'sending-release' | 'done' | 'error'>('idle');
   const [errorMsg, setErrorMsg] = useState('');
+  const [syncing, setSyncing] = useState(false);
 
   const [assets, setAssets] = useState<Asset[]>([]);
   const [assetsLoad, setAssetsLoad] = useState<AssetsLoadKind>('loading');
@@ -97,13 +108,24 @@ export default function AdminPage() {
     setTracks(prev => prev.map(t => t._id === id ? { ...t, assetIds } : t)), []);
 
   const sync = async () => {
-    await fetch('/api/admin/sync', { method: 'POST' });
+    if (syncing) return;
+    setSyncing(true);
+    try { await fetch('/api/admin/sync', { method: 'POST' }); }
+    finally { setSyncing(false); }
+  };
+
+  const cancel = () => {
+    if (!confirm('Clear this form?')) return;
+    setTitle('');
+    setDescription('');
+    setTracks([newTrack()]);
+    setStatus('idle');
+    setErrorMsg('');
   };
 
   const validTracks = tracks.filter(t => t.path.trim());
 
-  const submit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const submit = async (notify: boolean) => {
     if (!title.trim()) return;
     if (validTracks.length === 0) {
       setErrorMsg('Add at least one track with a GCS path.');
@@ -111,12 +133,13 @@ export default function AdminPage() {
       return;
     }
 
-    setStatus('sending');
+    setStatus(notify ? 'sending-release' : 'sending-draft');
     setErrorMsg('');
 
     const payload = {
       title: title.trim(),
       description: description.trim(),
+      notify,
       tracks: validTracks.map(({ _id: _, ...t }) => ({
         ...t,
         path: t.path.trim(),
@@ -134,29 +157,39 @@ export default function AdminPage() {
         const err = await res.text();
         throw new Error(err || 'Failed');
       }
-      setStatus('done');
-      setTitle('');
-      setDescription('');
-      setTracks([newTrack()]);
+      const created = await res.json();
+      if (notify) {
+        setStatus('done');
+        setTitle('');
+        setDescription('');
+        setTracks([newTrack()]);
+      } else if (created?.id) {
+        router.push(`/admin/${created.id}`);
+      } else {
+        setStatus('done');
+      }
     } catch (err) {
       setErrorMsg(err instanceof Error ? err.message : 'Something went wrong.');
       setStatus('error');
     }
   };
 
+  const sending = status === 'sending-draft' || status === 'sending-release';
+  const disabled = sending || !title.trim() || validTracks.length === 0;
+
   return (
     <div className="max-w-2xl">
-      <div className="mb-8 flex items-start justify-between">
-        <div>
-          <h1 className={`text-2xl font-bold ${colors.page.title}`}>New TrackGroup</h1>
-          <p className={`${colors.page.subtitle} text-sm mt-1`}>Curate tracks and notify the band.</p>
-        </div>
-        <div className="flex items-center gap-3 mt-1">
-          <button type="button" onClick={sync}
-            className={`text-xs ${colors.page.syncBtn} transition-colors`}>↻ Sync catalog</button>
-          <Link href="/admin/assets" className={`${colors.page.navLink} text-xs transition-colors`}>Assets</Link>
-          <Link href="/" className={`${colors.page.navLink} text-xs transition-colors`}>← TrackGroups</Link>
-        </div>
+      <div className="mb-6">
+        <h1 className={`text-2xl font-bold ${colors.page.title}`}>New TrackGroup</h1>
+        <p className={`${colors.page.subtitle} text-sm mt-1`}>Curate tracks and notify the band.</p>
+      </div>
+
+      <div className={`mb-6 ${colors.tools.panel} flex items-center gap-3`}>
+        <span className={`text-xs uppercase tracking-wider ${colors.tools.label}`}>Admin tools</span>
+        <button type="button" onClick={sync} disabled={syncing}
+          className={`text-xs ${colors.tools.item}`}>{syncing ? '↻ Syncing…' : '↻ Sync catalog'}</button>
+        <Link href="/admin/assets" className={`text-xs ${colors.tools.item}`}>Browse assets</Link>
+        <Link href="/" className={`text-xs ${colors.tools.item}`}>Track groups →</Link>
       </div>
 
       {status === 'done' && (
@@ -177,11 +210,19 @@ export default function AdminPage() {
         </div>
       )}
 
-      <form onSubmit={submit} className="space-y-6">
-        <button type="submit" disabled={status === 'sending' || !title.trim() || validTracks.length === 0}
-          className="w-full py-2.5 bg-green-600 hover:bg-green-500 disabled:opacity-40 text-black font-semibold text-sm rounded transition-colors">
-          {status === 'sending' ? 'Releasing...' : 'Release + Notify Band'}
-        </button>
+      <form onSubmit={e => { e.preventDefault(); submit(true); }} className="space-y-6">
+        <div className="flex items-center justify-end gap-2">
+          <button type="button" onClick={cancel} disabled={sending}
+            className={`text-xs ${colors.actions.cancel}`}>Cancel</button>
+          <button type="button" onClick={() => submit(false)} disabled={disabled}
+            className={`text-xs ${colors.actions.draft}`}>
+            {status === 'sending-draft' ? 'Saving…' : 'Save (Draft)'}
+          </button>
+          <button type="submit" disabled={disabled}
+            className={`text-xs ${colors.actions.release}`}>
+            {status === 'sending-release' ? 'Releasing…' : 'Release + Notify Band'}
+          </button>
+        </div>
 
         <div className="space-y-4">
           <div>

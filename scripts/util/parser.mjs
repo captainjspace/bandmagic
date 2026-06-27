@@ -45,53 +45,6 @@ function nodeToDictionary(node) {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
   }).filter(([k,v]) =>  { return ( (k!=='className')? [k,v] : []) });
   if (classes.length >0) insertRecord(p, classes);
   console.log(tagStack);

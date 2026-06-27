@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <!-- Load the xterm.js UI library and style layout -->
+  <link rel="stylesheet" href="https://jsdelivr.net" />
+  <script src="https://jsdelivr.net"></script>
+</head>
+<body style="background: #000; margin: 0; padding: 20px;">
+
+  <div id="terminal-container"></div>
+
+  <script>
+    // Initialize xterm grid
+    const term = new Terminal({
+      cursorBlink: true,
+      theme: { background: '#000000' },
+      cols: 80,
+      rows: 24
+    });
+    term.open(document.getElementById('terminal-container'));
+
+    // Open connection to your pipeline orchestration gateway
+    const ws = new WebSocket('ws://localhost:8081');
+
+    // Draw the TUI directly on the browser screen canvas
+    ws.onmessage = (event) => {
+      term.write(event.data);
+    };
+
+    // Send keystrokes back to Node so you can interact with the browser TUI
+    term.onData((data) => {
+      ws.send(data);
+    });
+  </script>
+</body>
+</html>
+

@@ -1,11 +1,12 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import type { TrackGroup, Note, Asset } from '@/types';
 import { stageClass, stageBgClass } from '@/lib/stage';
 import { assetClass, driveDocKind } from '@/lib/asset';
 import type { AssetsLoadKind } from '@/components/AssetPicker';
+import { usePlayer, type PlayerTrack } from '@/components/PlayerProvider';
 
 /** element colors */
 const colors = {
@@ -46,41 +47,40 @@ const colors = {
   },
 };
 
-function TrackPlayer({ path, title }: { path: string; title: string }) {
-  const audioRef = useRef<HTMLAudioElement>(null);
-  const [playing, setPlaying] = useState(false);
-  const [progress, setProgress] = useState(0);
-  const [duration, setDuration] = useState(0);
+function TrackPlayer({ queue, queueIndex }: { queue: PlayerTrack[]; queueIndex: number }) {
+  const player = usePlayer();
+  const current = queue[queueIndex];
+  const isCurrent = current && player.track?.path === current.path;
+  const playing = isCurrent && player.isPlaying;
+  const progress = isCurrent ? player.currentTime : 0;
+  const duration = isCurrent ? player.duration : 0;
 
-  const toggle = () => {
-    if (!audioRef.current) return;
-    playing ? audioRef.current.pause() : audioRef.current.play();
-    setPlaying(!playing);
+  const onPlayClick = () => {
+    if (isCurrent) {
+      player.toggle();
+    } else {
+      // Loads the whole track-group as a queue starting at this index; autoPlay attr kicks playback.
+      // When this track ends, the player auto-advances to the next one in the group.
+      player.setQueue(queue, queueIndex);
+    }
   };
 
-  const seek = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!audioRef.current || !duration) return;
+  const onSeek = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!isCurrent || !duration) return;
     const rect = e.currentTarget.getBoundingClientRect();
-    audioRef.current.currentTime = ((e.clientX - rect.left) / rect.width) * duration;
+    player.seek(((e.clientX - rect.left) / rect.width) * duration);
   };
 
   const fmt = (s: number) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
 
   return (
     <div className="space-y-2">
-      <audio
-        ref={audioRef}
-        src={`/api/audio?path=${encodeURIComponent(path)}`}
-        onTimeUpdate={() => setProgress(audioRef.current?.currentTime ?? 0)}
-        onLoadedMetadata={() => setDuration(audioRef.current?.duration ?? 0)}
-        onEnded={() => setPlaying(false)}
-      />
       <div className="flex items-center gap-3">
-        <button onClick={toggle}
+        <button onClick={onPlayClick}
           className={`w-8 h-8 flex items-center justify-center rounded-full ${colors.trackPlayer.playButton} text-xs font-bold shrink-0 transition-colors`}>
           {playing ? '❚❚' : '▶'}
         </button>
-        <div className="flex-1 h-1.5 bg-neutral-800 rounded-full cursor-pointer" onClick={seek}>
+        <div className="flex-1 h-1.5 bg-neutral-800 rounded-full cursor-pointer" onClick={onSeek}>
           <div className={`h-full ${colors.trackPlayer.progressFill} rounded-full transition-all`}
             style={{ width: duration ? `${(progress / duration) * 100}%` : '0%' }} />
         </div>
@@ -237,7 +237,11 @@ export default function TrackGroupPage({ params }: { params: Promise<{ id: strin
                   </span>
                 )}
               </div>
-              <TrackPlayer key={active.path} path={active.path} title={active.title} />
+              <TrackPlayer
+                key={active.path}
+                queue={validTracks.map(t => ({ path: t.path, title: t.title, subtitle: trackGroup.title }))}
+                queueIndex={validTracks.findIndex(t => t.path === active.path)}
+              />
               <div className="border-t border-neutral-800 pt-4">
                 <p className={`${colors.page.sectionLabel} text-xs uppercase tracking-wider mb-3`}>Notes</p>
                 <NoteThread trackGroupId={trackGroupId} trackPath={active.path} />

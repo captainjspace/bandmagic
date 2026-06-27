@@ -1,7 +1,11 @@
 allowBuilds:
+  esbuild: true
   protobufjs: true
+  pty.js: set this to true or false
   sharp: true
   unrs-resolver: true
 ignoredBuiltDependencies:
   - sharp
   - unrs-resolver
+overrides:
+  "gaxios": ^7.1.5

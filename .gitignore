@@ -54,7 +54,15 @@ logs.txt
 *.gpg
 
 CLAUDE.md
+last-session
 session-2026-06-13.md
 git-diagnostics-2026-06-19-0831.zip
 *.claud
 
+# this is a dev script that does not belong in script
+runner/*
+runner-decoder
+runner.zsh
+runner.sh
+infra*gz
+listtest

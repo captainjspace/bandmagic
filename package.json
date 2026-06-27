@@ -11,22 +11,28 @@
   },
   "dependencies": {
     "@google-cloud/firestore": "^8.6.0",
-    "@google-cloud/storage": "^7.19.0",
-    "google-auth-library": "^10.7.0",
+    "@google-cloud/storage": "^7.21.0",
+    "google-auth-library": "^10.9.0",
     "googleapis": "^173.0.0",
-    "next": "16.2.7",
-    "react": "19.2.4",
-    "react-dom": "19.2.4"
+    "next": "16.2.9",
+    "react": "19.2.7",
+    "react-dom": "19.2.7"
   },
   "devDependencies": {
-    "@tailwindcss/postcss": "^4",
-    "@types/node": "^20.19.42",
+    "@tailwindcss/postcss": "^4.3.1",
+    "@types/blessed": "^0.1.27",
+    "@types/node": "^26.0.1",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "eslint": "^9",
-    "eslint-config-next": "16.2.7",
-    "node-html-parser": "^7.1.0",
-    "tailwindcss": "^4",
-    "typescript": "^5"
+    "@xterm/xterm": "6.0.0",
+    "blessed": "^0.1.81",
+    "eslint": "^10.5.0",
+    "eslint-config-next": "16.2.9",
+    "ls": "^1.0.0",
+    "node-html-parser": "^8.0.3",
+    "tailwindcss": "^4.3.1",
+    "typescript": "^6.0.3",
+    "vercel": "^54.17.3",
+    "ws": "^8.21.0"
   }
 }
