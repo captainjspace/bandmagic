@@ -14,25 +14,25 @@
     "@google-cloud/storage": "^7.21.0",
     "google-auth-library": "^10.9.0",
     "googleapis": "^173.0.0",
-    "next": "16.2.9",
+    "next": "16.2.10",
     "react": "19.2.7",
     "react-dom": "19.2.7"
   },
   "devDependencies": {
-    "@tailwindcss/postcss": "^4.3.1",
+    "@tailwindcss/postcss": "^4.3.2",
     "@types/blessed": "^0.1.27",
-    "@types/node": "^26.0.1",
+    "@types/node": "^26.1.0",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@xterm/xterm": "6.0.0",
     "blessed": "^0.1.81",
-    "eslint": "^10.5.0",
-    "eslint-config-next": "16.2.9",
+    "eslint": "^10.6.0",
+    "eslint-config-next": "16.2.10",
     "ls": "^1.0.0",
-    "node-html-parser": "^8.0.3",
-    "tailwindcss": "^4.3.1",
+    "node-html-parser": "^8.0.4",
+    "tailwindcss": "^4.3.2",
     "typescript": "^6.0.3",
-    "vercel": "^54.17.3",
+    "vercel": "^54.20.1",
     "ws": "^8.21.0"
   }
 }

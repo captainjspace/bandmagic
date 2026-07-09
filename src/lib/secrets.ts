@@ -1,0 +1,92 @@
+import {SecretManagerServiceClient} "@google-cloud/secret-manager";
+import { readFile } from "node:fs/promises";
+
+class SecureVault {
+  #client:SecretManagerServiceClient;
+  constructor() {
+    this.#client = new SecretManagerServiceClient();
+  }
+
+  /**
+   * Scoped execution for a secret.
+   * @param {string} secretPath - The full resource path of the secret version.
+   * @param {function} callback - An async function that receives the secret Buffer.
+   */
+  async withSecret(secretPath:string, callback:Function) {
+    let secretBuffer = null;
+    try {
+      // 1. Centralized Retrieval
+      const [version] = await this.#client.accessSecretVersion({ name: secretPath });
+      secretBuffer = version.payload.data;
+
+      // 2. Execute business logic passed by the user
+      return await callback(secretBuffer);
+    } finally {
+      // 3. Guaranteed Cleanup
+      if (secretBuffer) {
+        secretBuffer.fill(0); 
+      }
+    }
+  }
+}
+
+// --- Usage in your Cloud Run App ---
+
+async function rollingSecure() {
+
+  const secretPath = `projects/${process.env.PROJECT_ID}/secrets/my-key/versions/latest`;
+
+  // The secret only exists inside this block
+  const result = await vault.withSecret(secretPath, async (buffer) => {
+    console.log("Business logic is using the buffer securely...");
+    // Example: send the buffer to a crypto library or external API
+    // return await someExternalCall(buffer);
+    return "Task Complete";
+  });
+
+  // Beyond this point, the memory has already been zeroed out.
+  console.log(result);
+}
+//const fs = require("fs").promises;
+
+class MountedSecretVault extends SecureVault {
+  /**
+   * Scoped execution for reading files securely.
+   * @param {string} filePath - The path to the mounted secret file.
+   * @param {function} callback - Async function that receives the secret Buffer.
+   */
+  async withSecret(filePath, callback) {
+    let secretBuffer = null;
+    try {
+      // 1. Read the mounted secret directly from file system into a Buffer
+      secretBuffer = await readFile(filePath);
+
+      // 2. Perform business logic
+      return await callback(secretBuffer);
+    } finally {
+      // 3. Guarantee immediate memory wipe
+      if (secretBuffer) {
+        secretBuffer.fill(0);
+        console.log("Memory cleared successfully.");
+      }
+    }
+  }
+}
+
+// --- Usage ---
+const vault = new MountedSecretVault();
+
+async function run() {
+  const mountedPath = "/secrets/my-key";
+
+  const status = await vault.withSecret(mountedPath, async (buffer) => {
+    console.log("Using secret safely...");
+    // performSecureAction(buffer);
+    return "Complete";
+  });
+  
+  console.log(status);
+}
+
+run();
+

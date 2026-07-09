@@ -6,8 +6,7 @@
 
 ############################################################
 
-# probably done
-gcloud auth configure-docker "${region}-docker.pkg.dev"
+
 
 gcloud organizations list --format="value(ID)"| read organization_id
 
@@ -17,16 +16,11 @@ gcloud resource-manager tags keys list \
   --format="get(name)" | read -r -d' ' tag_keys
 for tk in ${(f)tag_keys}; echo $((i++)), $tk;
 
+
 for tk in ${(f)tag_keys}; gcloud resource-manager tags keys describe $tk       
 gcloud resource-manager tags keys get-iam-policy $tk
 
 for tk in ${(f)tag_keys}; gcloud resource-manager tags values list --parent=$tk
-NAME                       SHORT_NAME  DESCRIPTION
-tagValues/281482823460903  true        allow access
-NAME                       SHORT_NAME   DESCRIPTION
-tagValues/281476772906812  public+auth  cross the interwebs and valid
-tagValues/281483298909031  true         allow authorized users
-
 
 typeset -gxA tag=();
 for tk in ${(f)tag_keys}; do
@@ -46,19 +40,6 @@ for k v in ${(kv)tag};
   for _v in ${(s|:|)v}; 
     gcloud resource-manager tags values describe $_v \
       && gcloud resource-manager tags values get-iam-policy $_
-# block the public
-gcloud run services update $app_name 
-    --region=$region \
-    --ingress=internal-and-cloud-load-balancing       
-# tekk cloud we have it handled
-gcloud run services update $app_name
-    --region=$region
-    --no-invoker-iam-check
-
-gcloud iap web enable --resource-type=backend-services \
-            --oauth2-client-id=CLIENT_ID --oauth2-client-secret=SECRET \
-            --service=SERVICE_ID --region=REGION
-#"Assign them the role of IAP-secured Web App User (roles/iap.httpsResourceAccessor).
 
 # special release
 gcloud resource-manager tags keys create release-type \

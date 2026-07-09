@@ -79,9 +79,9 @@ members() {
 # use declare of declares to display
 display_vars() { 
   for var in ${varset[@]}; do
-    local val="${(P)var}" asc_op=asc_cl='\e[0m'
+    local val="${(P)var}"; asc_op='\e[0m'; asc_cl='\e[0m';
      (( ${+val} )) && asc_op='\e[31m'; 
-    printf "$asc_op%30s ========  %-50s$asc_cl\n" "$var" "${(P)var}" 
+    printf "${asc_op} %30s ========  %-50s ${asc_cl} \n" "$var" "${(P)var}" 
   done;
 }
 

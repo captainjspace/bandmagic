@@ -3,7 +3,20 @@
 import { parse } from "node-html-parser";;
 import * as fs from "node:fs";
 
-const file = fs.readFileSync(process.argv[2]) ;
+
+
+const file = () => {
+  let data="",err=[];
+  const fn=process.argv[2];
+  console.log(typeof fn, process.argv.length)
+  if (!fs.isFile(fn)) {
+    try { data = fs.readFileSync(fn).toString(); }
+    catch (e) { err.push(e) }
+    } else { err.push('filename?') }
+  err=(err.isEmpty())?undefined:err;
+  return { data,err } 
+}
+debugger;
 const html=file.toString();
 
 // 1. Parse the HTML string into a DOM root
@@ -41,11 +54,7 @@ function nodeToDictionary(node) {
       .filter(child => typeof child === 'object' || child !== ''); // Filter empty text
   }
   const p=tagStack.pop();
-  const classes=Object.entries(result.children).map({k,v} i=> {t_key:k, ValidityState
-
-
-
-  }).filter(([k,v]) =>  { return ( (k!=='className')? [k,v] : []) });
+  const classes=Object.entries(result.children).filter( ([k,v]) => k==="className")
   if (classes.length >0) insertRecord(p, classes);
   console.log(tagStack);
   return result;

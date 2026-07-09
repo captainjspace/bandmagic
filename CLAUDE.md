@@ -10,7 +10,7 @@ pnpm build        # production build (output: standalone)
 pnpm lint         # eslint
 ```
 
-No test suite is configured.
+No test suite is configured. That is an open item.
 
 The app is deployed as a Docker container on port 8080 (`next.config.ts` sets `output: 'standalone'`). Dev origins include `192.168.99.239` and `192.168.3.13` (local network hosts).
 
@@ -33,16 +33,6 @@ OLTP-first across all entities. Firestore is the source of truth for transaction
 - Assets own document and web links (Drive docs, posts, reviews, public URLs).
 - Tracks own audio (GCS paths). A track's mp3 is **not** an asset.
 - Notes attach at version level (per-mix commentary). Assets attach at track level.
-
-### Data layer
-
-Two GCP services, both accessed server-side only:
-
-- **GCS** (`src/lib/gcs.ts`) — audio file storage. Bucket and prefix come from `config` (`GCS_BUCKET`, `GCS_PREFIX`). Helper functions derive track metadata from path structure: `stageFromPath` extracts stage from path segments (`writing/tracking/mixing/mastering`), `titleFromPath` cleans the filename.
-- **Firestore** (`src/lib/firestore.ts`) — persistence. Database: `bandmagic`. Collections: `track-groups` (top-level), `notes` (subcollection under each track group), `assets` (top-level), `catalog` (flat index of GCS audio files). The `firestoreConfig.coredb` const is `"track-groups"` but `databaseId` in the Firestore constructor reads from env (`FIRESTORE_DATABASE_ID`), which takes precedence.
-
-**Mock mode:** Set `USE_MOCK=true` to bypass GCP entirely. `src/lib/mock.ts` has static fixture data. All API routes and the home page check `config.useMock` before hitting live services.
-
 ### Catalog sync flow
 
 Admin triggers `POST /api/admin/sync` → lists all audio files in GCS under `config.prefix` → maps each to a `CatalogEntry` (path, song, stage, mix, title, size) → bulk-upserts into Firestore `catalog` collection via batched writes. Catalog doc IDs are `encodeURIComponent(path)`.
