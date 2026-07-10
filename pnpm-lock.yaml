@@ -14,6 +14,9 @@ importers:
       '@google-cloud/firestore':
         specifier: ^8.6.0
         version: 8.6.0
+      '@google-cloud/secret-manager':
+        specifier: ^6.2.0
+        version: 6.2.0
       '@google-cloud/storage':
         specifier: ^7.21.0
         version: 7.21.0
@@ -392,6 +395,10 @@ packages:
   '@google-cloud/promisify@4.0.0':
     resolution: {integrity: sha512-Orxzlfb9c67A15cq2JQEyVc7wEsmFBmHjZWZYQMUyJ1qivXyMwdyNOs9odi79hze+2zqdTtu1E19IM/FtqZ10g==}
     engines: {node: '>=14'}
+
+  '@google-cloud/secret-manager@6.2.0':
+    resolution: {integrity: sha512-KjusvEON/HLeS7VelJ1aoY4zUOcNnEYCQ69Vnncf3Fnk5OLl6Dl0QKimgw4ajW3CgR7pCUkNPneiK5HgWSGQOw==}
+    engines: {node: '>=18'}
 
   '@google-cloud/storage@7.21.0':
     resolution: {integrity: sha512-l+IFTkd+6Y5LoAuXyYCKNAKtw/Ci+rAMqgdTB1jv4iZiLhw0rtq+0qjIRbBizXkNzEFmXiXUW0H7sZQQvk1ffA==}
@@ -4115,6 +4122,12 @@ snapshots:
   '@google-cloud/projectify@4.0.0': {}
 
   '@google-cloud/promisify@4.0.0': {}
+
+  '@google-cloud/secret-manager@6.2.0':
+    dependencies:
+      google-gax: 5.0.7
+    transitivePeerDependencies:
+      - supports-color
 
   '@google-cloud/storage@7.21.0':
     dependencies:
