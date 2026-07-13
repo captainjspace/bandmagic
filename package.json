@@ -22,18 +22,18 @@
   "devDependencies": {
     "@tailwindcss/postcss": "^4.3.2",
     "@types/blessed": "^0.1.27",
-    "@types/node": "^26.1.0",
+    "@types/node": "^26.1.1",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@xterm/xterm": "6.0.0",
     "blessed": "^0.1.81",
-    "eslint": "^10.6.0",
+    "eslint": "^10.7.0",
     "eslint-config-next": "16.2.10",
     "ls": "^1.0.0",
-    "node-html-parser": "^8.0.4",
+    "node-html-parser": "^9.0.0",
     "tailwindcss": "^4.3.2",
     "typescript": "^6.0.3",
-    "vercel": "^54.20.1",
+    "vercel": "^55.0.0",
     "ws": "^8.21.0"
   }
 }
