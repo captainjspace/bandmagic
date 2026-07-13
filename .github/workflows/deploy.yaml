@@ -3,33 +3,38 @@ name: 'Build and Deploy to Cloud Run'
 on:
   push:
     branches:
-      - 'main' # Fixed: Removed the nested double quotes
+      - 'main'
+    tags:
+      - 'v*'
 
 env:
-  PROJECT_ID: 'rollingblackoutapp'
-  REGION: 'us-central1'
-  # Ensure this matches your EXACT WIF provider string
-  WORKLOAD_IDENTITY_PROVIDER: 'projects/901961412597/locations/global/workloadIdentityPools/githubpool/providers/github'
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  PROJECT_ID: "${{ secrets.PROJECT_ID }}"
+  WIP: "${{ secrets.WIP }}"
+  REGION: "${{ vars.REGION }}"
+  ARTIFACT_REPO: "${{ vars.ARTIFACT_REPO }}"
+  SERVICE: "${{ vars.SERVICE_NAME }}"
+  IMAGE: "${{ vars.IMAGE_NAME }}"
+  DOCKER_BASE: "${{ vars.DOCKER_BASE }}"
 
+permissions:
+  contents: read
+  id-token: write # Required for requesting the JWT from GitHub OIDC provider
 
 jobs:
   deploy:
-    runs-on: 'ubuntu-latest'
-    permissions:
-      contents: 'read'
-      id-token: 'write'
-
+    runs-on: ubuntu-latest
     steps:
-      - name: 'Checkout'
-        uses: 'actions/checkout@v2'
+      - name: Checkout Code
+        uses: actions/checkout@v4
 
-      - id: 'auth'
-        name: 'Authenticate to Google Cloud'
-        uses: 'google-github-actions/auth@v3'
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v3
         with:
-          project_id: '${{ env.PROJECT_ID }}'
-          workload_identity_provider: '${{ env.WORKLOAD_IDENTITY_PROVIDER }}'
+          project_id: ${{ env.PROJECT_ID }}
+          workload_identity_provider: ${{ env.WIP }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v1
 
       - name: 'Docker Auth'
         run: |-
@@ -37,8 +42,8 @@ jobs:
 
       - name: 'Build and Push Container'
         run: |-
-          # Added '/app' between the service (repo) and the tag
-          DOCKER_TAG="${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.SERVICE }}/app:${{ github.sha }}"
+          DOCKER_TAG="${{ env.DOCKER_BASE }}/${{ env.ARTIFACT_REPO }}/${{ env.IMAGE }}:${{ github.sha }}"
+          echo "DOCKER_TAG=${DOCKER_TAG}" >> "$GITHUB_ENV"
           docker build --tag "${DOCKER_TAG}" .
           docker push "${DOCKER_TAG}"
 
@@ -48,7 +53,10 @@ jobs:
         with:
           service: '${{ env.SERVICE }}'
           region: '${{ env.REGION }}'
-          image: '${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.SERVICE }}/app:${{ github.sha }}'
+          image: '${{ env.DOCKER_TAG }}'
+          env_vars: |
+            service_group=${{ env.ARTIFACT_REPO }}
+            description=Band Magic!
 
       - name: 'Show output'
         run: echo "Deployed to ${{ steps.deploy.outputs.url }}"
