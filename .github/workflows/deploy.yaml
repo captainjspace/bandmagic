@@ -8,8 +8,6 @@ on:
 env:
   PROJECT_ID: 'rollingblackoutapp'
   REGION: 'us-central1'
-  SERVICE: band-portal
-  IMAGE: gcr.io/rollingblackoutapp/band-portal
   # Ensure this matches your EXACT WIF provider string
   WORKLOAD_IDENTITY_PROVIDER: 'projects/901961412597/locations/global/workloadIdentityPools/githubpool/providers/github'
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
