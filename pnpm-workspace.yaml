@@ -9,3 +9,4 @@ ignoredBuiltDependencies:
   - unrs-resolver
 overrides:
   "gaxios": ^7.1.5
+  "gcp-metadata": ^8.1.3
