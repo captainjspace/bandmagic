@@ -36,11 +36,19 @@ export interface Asset {
   updatedBy: string;
 }
 
+export interface AssetLink {
+  linkId: string;
+  assetId: string;
+  linkType?: string;
+  addedAt: string;
+  addedBy: string;
+}
+
 export interface Track {
   path: string;
   title: string;
   stage?: string;
-  assetIds?: string[];
+  assets?: AssetLink[];
 }
 
 export interface TrackGroup {
@@ -50,6 +58,7 @@ export interface TrackGroup {
   createdAt: string;
   createdBy: string;
   tracks: Track[];
+  assets?: AssetLink[];
 }
 
 export interface Note {

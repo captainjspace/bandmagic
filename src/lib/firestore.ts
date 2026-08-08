@@ -1,5 +1,5 @@
 import { Firestore, Timestamp, FieldValue} from '@google-cloud/firestore';
-import type { TrackGroup, Note, CatalogEntry, Asset, Track } from '@/types';
+import type { TrackGroup, Note, CatalogEntry, Asset } from '@/types';
 
 const firestoreConfig = {
   databaseId: "bandmagic",
@@ -33,7 +33,7 @@ export async function createTrackGroup(trackGroup: Omit<TrackGroup, 'id'>): Prom
     ...trackGroup,
     createdAt: Timestamp.now().toDate().toISOString(),
   });
-  await applyAssetUsageDelta(countAssetIds(trackGroup.tracks));
+  await applyAssetUsageDelta(collectAssetLinks(trackGroup));
   const doc = await ref.get();
   return { id: doc.id, ...doc.data() } as TrackGroup;
 }
@@ -55,14 +55,33 @@ export async function addNote(trackGroupId: string, note: Omit<Note, 'id'>): Pro
 }
 
 export async function updateTrackGroup(id: string, patch: Partial<Omit<TrackGroup, 'id'>>): Promise<TrackGroup> {
-  if (patch.tracks !== undefined) {
-    const old = await getTrackGroup(id);
-    const oldCounts = old ? countAssetIds(old.tracks) : {};
-    const newCounts = countAssetIds(patch.tracks);
-    await applyAssetUsageDelta(diffCounts(oldCounts, newCounts));
+  const ref = db().collection(firestoreConfig.coredb).doc(id);
+  if (patch.tracks !== undefined || patch.assets !== undefined) {
+    await db().runTransaction(async (tx) => {
+      const snap = await tx.get(ref);
+      const old = snap.exists ? ({ id: snap.id, ...snap.data() } as TrackGroup) : null;
+      const oldCounts = old ? collectAssetLinks(old) : {};
+      const newCounts = collectAssetLinks({
+        tracks: patch.tracks ?? old?.tracks ?? [],
+        assets: patch.assets !== undefined ? patch.assets : old?.assets,
+      });
+      const deltas = diffCounts(oldCounts, newCounts);
+      const assetIds = Object.keys(deltas);
+      if (assetIds.length > 0) {
+        const assetRefs = assetIds.map(aid => db().collection(firestoreConfig.assetsdb).doc(aid));
+        const assetSnaps = await tx.getAll(...assetRefs);
+        assetSnaps.forEach((assetSnap, i) => {
+          // Asset may already be gone (deleteAsset cleanup races); skip rather than fail the whole save.
+          if (!assetSnap.exists) return;
+          tx.update(assetRefs[i], { usageCount: FieldValue.increment(deltas[assetIds[i]]) });
+        });
+      }
+      tx.update(ref, patch);
+    });
+  } else {
+    await ref.update(patch);
   }
-  await db().collection(firestoreConfig.coredb).doc(id).update(patch);
-  const doc = await db().collection(firestoreConfig.coredb).doc(id).get();
+  const doc = await ref.get();
   return { id: doc.id, ...doc.data() } as TrackGroup;
 }
 
@@ -70,7 +89,7 @@ export async function deleteTrackGroup(id: string): Promise<void> {
   const old = await getTrackGroup(id);
   if (old) {
     const negative: Record<string, number> = {};
-    for (const [aid, n] of Object.entries(countAssetIds(old.tracks))) negative[aid] = -n;
+    for (const [aid, n] of Object.entries(collectAssetLinks(old))) negative[aid] = -n;
     await applyAssetUsageDelta(negative);
   }
   await db().collection(firestoreConfig.coredb).doc(id).delete();
@@ -116,6 +135,27 @@ export async function updateAsset(
 }
 
 export async function deleteAsset(id: string): Promise<void> {
+  try {
+    const groups = await getTrackGroups();
+    const affected = groups.filter(g =>
+      (g.assets ?? []).some(l => l.assetId === id) ||
+      g.tracks.some(t => (t.assets ?? []).some(l => l.assetId === id)),
+    );
+    if (affected.length > 0) {
+      const batch = db().batch();
+      for (const g of affected) {
+        const ref = db().collection(firestoreConfig.coredb).doc(g.id);
+        batch.update(ref, {
+          assets: (g.assets ?? []).filter(l => l.assetId !== id),
+          tracks: g.tracks.map(t => ({ ...t, assets: (t.assets ?? []).filter(l => l.assetId !== id) })),
+        });
+      }
+      await batch.commit();
+    }
+  } catch (err) {
+    // Best-effort reference cleanup; still proceed with the delete either way.
+    console.error('deleteAsset reference cleanup failed', err);
+  }
   await db().collection(firestoreConfig.assetsdb).doc(id).delete();
 }
 
@@ -135,13 +175,13 @@ export async function applyAssetUsageDelta(deltas: Record<string, number>): Prom
   }
 }
 
-function countAssetIds(tracks: Track[]): Record<string, number> {
+function collectAssetLinks(trackGroup: Pick<TrackGroup, 'tracks' | 'assets'>): Record<string, number> {
   const counts: Record<string, number> = {};
-  for (const t of tracks) {
-    for (const id of t.assetIds ?? []) {
-      counts[id] = (counts[id] ?? 0) + 1;
-    }
+  const bump = (assetId: string) => { counts[assetId] = (counts[assetId] ?? 0) + 1; };
+  for (const t of trackGroup.tracks) {
+    for (const link of t.assets ?? []) bump(link.assetId);
   }
+  for (const link of trackGroup.assets ?? []) bump(link.assetId);
   return counts;
 }
 
@@ -221,5 +261,61 @@ export async function renameCollection(oldName: string, newName: string) {
   }
 
   console.log(`Successfully migrated ${snapshot.size} documents server-side.`);
+}
+
+/**
+ * migrateAssetIdsToAssetLinks - one-off utility, run manually before deploying
+ * the AssetLink[] shape change. Converts every track's old `assetIds: string[]`
+ * into `assets: AssetLink[]`, and backfills an empty `assets: []` at the group
+ * level where missing. Idempotent: re-running is a no-op for docs already migrated.
+ */
+export async function migrateAssetIdsToAssetLinks() {
+  const snapshot = await db().collection(firestoreConfig.coredb).get();
+  if (snapshot.empty) {
+    console.log('No track groups found to migrate.');
+    return;
+  }
+
+  let batch = db().batch();
+  let operationCount = 0;
+  let migratedDocs = 0;
+
+  for (const docSnapshot of snapshot.docs) {
+    const data = docSnapshot.data() as { tracks?: { path: string; title: string; stage?: string; assetIds?: string[]; assets?: unknown }[]; assets?: unknown };
+    const needsTrackMigration = (data.tracks ?? []).some(t => Array.isArray(t.assetIds) && t.assets === undefined);
+    const needsGroupBackfill = data.assets === undefined;
+    if (!needsTrackMigration && !needsGroupBackfill) continue;
+
+    const now = new Date().toISOString();
+    const tracks = (data.tracks ?? []).map(t => {
+      if (t.assets !== undefined) return t;
+      const { assetIds, ...rest } = t;
+      return {
+        ...rest,
+        assets: (assetIds ?? []).map(assetId => ({
+          linkId: Math.random().toString(36).slice(2) + Date.now().toString(36),
+          assetId,
+          addedAt: now,
+          addedBy: 'migration',
+        })),
+      };
+    });
+
+    batch.update(docSnapshot.ref, { tracks, assets: data.assets ?? [] });
+    operationCount++;
+    migratedDocs++;
+
+    if (operationCount >= 400) {
+      await batch.commit();
+      batch = db().batch();
+      operationCount = 0;
+    }
+  }
+
+  if (operationCount > 0) {
+    await batch.commit();
+  }
+
+  console.log(`Migrated ${migratedDocs} of ${snapshot.size} track group documents.`);
 }
 

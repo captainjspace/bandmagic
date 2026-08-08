@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
-import type { TrackGroup, Note, Asset } from '@/types';
+import type { TrackGroup, Note, Asset, AssetLink } from '@/types';
 import { stageClass, stageBgClass } from '@/lib/stage';
 import { assetClass, driveDocKind } from '@/lib/asset';
 import type { AssetsLoadKind } from '@/components/AssetPicker';
@@ -46,6 +46,62 @@ const colors = {
     missingRow:  'text-red-400',
   },
 };
+
+function AssetLinksSection({
+  label, links, assetsById, assetsLoad, onRetry,
+}: {
+  label: string;
+  links: AssetLink[];
+  assetsById: Map<string, Asset>;
+  assetsLoad: AssetsLoadKind;
+  onRetry: () => void;
+}) {
+  if (links.length === 0) return null;
+  return (
+    <div className="border-t border-neutral-800 pt-4">
+      <div className="flex items-center justify-between mb-2">
+        <p className={`${colors.assets.label} text-xs uppercase tracking-wider`}>{label}</p>
+        {assetsLoad === 'error' && (
+          <button type="button" onClick={onRetry}
+            className={`text-xs ${colors.assets.retryBtn} transition-colors`}>Retry</button>
+        )}
+      </div>
+      <div className="space-y-1.5">
+        {links.map(link => {
+          if (assetsLoad === 'loading') {
+            return <p key={link.linkId} className={`text-xs ${colors.assets.loadingRow}`}>loading…</p>;
+          }
+          if (assetsLoad === 'error') {
+            return <p key={link.linkId} className={`text-xs ${colors.assets.errorRow}`}>load failed</p>;
+          }
+          const asset = assetsById.get(link.assetId);
+          if (!asset) {
+            return (
+              <p key={link.linkId} className={`text-xs ${colors.assets.missingRow} font-mono`}>
+                missing: {link.assetId}
+              </p>
+            );
+          }
+          const kind = driveDocKind(asset.url);
+          return (
+            <a key={link.linkId} href={asset.url} target="_blank" rel="noopener noreferrer"
+              className="flex items-center gap-2 group">
+              <span className={`text-xs border px-1.5 py-0.5 rounded shrink-0 uppercase tracking-wider ${assetClass(asset.subtype)}`}>
+                {asset.subtype}
+              </span>
+              <span className={`text-sm ${colors.assets.linkText} transition-colors truncate flex-1`}>
+                {asset.title}
+              </span>
+              <span className={`text-xs ${colors.assets.kindBadge} shrink-0`}>
+                {asset.type}{kind ? `·${kind}` : ''}
+              </span>
+            </a>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
 
 function TrackPlayer({ queue, queueIndex }: { queue: PlayerTrack[]; queueIndex: number }) {
   const player = usePlayer();
@@ -247,54 +303,20 @@ export default function TrackGroupPage({ params }: { params: Promise<{ id: strin
                 <NoteThread trackGroupId={trackGroupId} trackPath={active.path} />
               </div>
 
-              {active.assetIds && active.assetIds.length > 0 && (
-                <div className="border-t border-neutral-800 pt-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <p className={`${colors.assets.label} text-xs uppercase tracking-wider`}>Documents & links</p>
-                    {assetsLoad === 'error' && (
-                      <button type="button" onClick={retryAssets}
-                        className={`text-xs ${colors.assets.retryBtn} transition-colors`}>Retry</button>
-                    )}
-                  </div>
-                  <div className="space-y-1.5">
-                    {active.assetIds.map(id => {
-                      if (assetsLoad === 'loading') {
-                        return (
-                          <p key={id} className={`text-xs ${colors.assets.loadingRow}`}>loading…</p>
-                        );
-                      }
-                      if (assetsLoad === 'error') {
-                        return (
-                          <p key={id} className={`text-xs ${colors.assets.errorRow}`}>load failed</p>
-                        );
-                      }
-                      const asset = assetsById.get(id);
-                      if (!asset) {
-                        return (
-                          <p key={id} className={`text-xs ${colors.assets.missingRow} font-mono`}>
-                            missing: {id}
-                          </p>
-                        );
-                      }
-                      const kind = driveDocKind(asset.url);
-                      return (
-                        <a key={id} href={asset.url} target="_blank" rel="noopener noreferrer"
-                          className="flex items-center gap-2 group">
-                          <span className={`text-xs border px-1.5 py-0.5 rounded shrink-0 uppercase tracking-wider ${assetClass(asset.subtype)}`}>
-                            {asset.subtype}
-                          </span>
-                          <span className={`text-sm ${colors.assets.linkText} transition-colors truncate flex-1`}>
-                            {asset.title}
-                          </span>
-                          <span className={`text-xs ${colors.assets.kindBadge} shrink-0`}>
-                            {asset.type}{kind ? `·${kind}` : ''}
-                          </span>
-                        </a>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
+              <AssetLinksSection
+                label="Documents & links"
+                links={active.assets ?? []}
+                assetsById={assetsById}
+                assetsLoad={assetsLoad}
+                onRetry={retryAssets}
+              />
+              <AssetLinksSection
+                label="Track group documents & links"
+                links={trackGroup.assets ?? []}
+                assetsById={assetsById}
+                assetsLoad={assetsLoad}
+                onRetry={retryAssets}
+              />
             </div>
           )}
         </div>

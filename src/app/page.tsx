@@ -22,6 +22,7 @@ const colors = {
     emptyText:   'text-rbpurple-600',
     emptyLink:   'text-cyan-400 hover:underline',
   },
+  newLink: 'border border-neutral-700 hover:border-green-600 text-neutral-200 hover:text-green-400 rounded px-3 py-1.5 text-xs transition-colors',
 };
 
 async function getTrackGroupsList(): Promise<TrackGroup[]> {
@@ -34,14 +35,17 @@ export default async function HomePage() {
 
   return (
     <div>
-      <div className="mb-10">
-        <h1 className={`text-2xl font-bold ${colors.page.title} tracking-tight`}>TrackGroups</h1>
-        <p className={`${colors.page.count} text-sm mt-1`}>{trackGroups.length} trackGroup{trackGroups.length !== 1 ? 's' : ''}</p>
+      <div className="mb-10 flex items-start justify-between">
+        <div>
+          <h1 className={`text-2xl font-bold ${colors.page.title} tracking-tight`}>TrackGroups</h1>
+          <p className={`${colors.page.count} text-sm mt-1`}>{trackGroups.length} trackGroup{trackGroups.length !== 1 ? 's' : ''}</p>
+        </div>
+        <Link href="/track-group/new" className={colors.newLink}>+ New Track Group</Link>
       </div>
 
       {trackGroups.length === 0 && (
         <p className={`${colors.trackGroupCard.emptyText} text-sm`}>
-          No trackGroups yet. <Link href="/admin" className={colors.trackGroupCard.emptyLink}>Create one.</Link>
+          No trackGroups yet. <Link href="/track-group/new" className={colors.trackGroupCard.emptyLink}>Create one.</Link>
         </p>
       )}
 

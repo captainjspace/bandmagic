@@ -62,10 +62,17 @@ export const mockTrackGroups: TrackGroup[] = [
     description: '13 tracks — rough cuts, demos, and jams from the current writing session.',
     createdAt: '2026-06-08T00:00:00Z',
     createdBy: 'joshgcp@rollingblackoutband.com',
+    assets: [
+      { linkId: 'mock-link-group-magicali-review', assetId: 'mock-asset-review-magicali', addedAt: '2026-06-12T00:00:00Z', addedBy: 'joshgcp@rollingblackoutband.com' },
+    ],
     tracks: [
       { path: '2026/2025-01-15-DarkBox-NightAngel.mp3', title: 'Dark Box Night Angel' },
-      { path: '2026/MAGICAL.mp3', title: 'Magical', assetIds: ['mock-asset-lyrics-magical'] },
-      { path: '2026/MagiCali.mp3', title: 'MagiCali', assetIds: ['mock-asset-review-magicali'] },
+      { path: '2026/MAGICAL.mp3', title: 'Magical', assets: [
+        { linkId: 'mock-link-track-magical-lyrics', assetId: 'mock-asset-lyrics-magical', addedAt: '2026-06-10T00:00:00Z', addedBy: 'joshgcp@rollingblackoutband.com' },
+      ] },
+      { path: '2026/MagiCali.mp3', title: 'MagiCali', assets: [
+        { linkId: 'mock-link-track-magicali-review', assetId: 'mock-asset-review-magicali', addedAt: '2026-06-12T00:00:00Z', addedBy: 'joshgcp@rollingblackoutband.com' },
+      ] },
       { path: '2026/MagiCali2.mp3', title: 'MagiCali 2' },
       { path: '2026/Rainbow Galaxy.mp3', title: 'Rainbow Galaxy' },
       { path: '2026/StraightJazzCock-FakePurpleTele.mp3', title: 'Straight Jazz Cock — Fake Purple Tele' },

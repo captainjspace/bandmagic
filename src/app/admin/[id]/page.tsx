@@ -2,9 +2,10 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
-import type { TrackGroup, CatalogEntry, Asset } from '@/types';
+import type { TrackGroup, CatalogEntry, Asset, AssetLink } from '@/types';
 import { TrackSearch } from '@/components/TrackSearch';
 import { AssetPicker, type AssetsLoadKind } from '@/components/AssetPicker';
+import { assetLinkIds, assetLocationMap, reconcileAssetLinks, uid } from '@/lib/asset';
 
 /** element colors */
 const colors = {
@@ -58,22 +59,21 @@ interface TrackEntry {
   path: string;
   title: string;
   stage: string;
-  assetIds: string[];
+  assets: AssetLink[];
 }
-
-const uid = () => Math.random().toString(36).slice(2) + Date.now().toString(36);
 
 function newTrack(): TrackEntry {
-  return { _id: uid(), path: '', title: '', stage: 'mixing', assetIds: [] };
+  return { _id: uid(), path: '', title: '', stage: 'mixing', assets: [] };
 }
 
-function fromTrackGroup(trackGroup: TrackGroup): { title: string; description: string; tracks: TrackEntry[] } {
+function fromTrackGroup(trackGroup: TrackGroup): { title: string; description: string; tracks: TrackEntry[]; assets: AssetLink[] } {
   return {
     title: trackGroup.title,
     description: trackGroup.description ?? '',
     tracks: trackGroup.tracks.length > 0
-      ? trackGroup.tracks.map(t => ({ _id: uid(), path: t.path, title: t.title, stage: t.stage ?? 'mixing', assetIds: t.assetIds ?? [] }))
+      ? trackGroup.tracks.map(t => ({ _id: uid(), path: t.path, title: t.title, stage: t.stage ?? 'mixing', assets: t.assets ?? [] }))
       : [newTrack()],
+    assets: trackGroup.assets ?? [],
   };
 }
 
@@ -83,11 +83,13 @@ export default function EditTrackGroupPage({ params }: { params: Promise<{ id: s
   const [description, setDescription] = useState('');
   const [tracks, setTracks] = useState<TrackEntry[]>([newTrack()]);
   const [savedTracks, setSavedTracks] = useState<TrackEntry[]>([]);
+  const [groupAssets, setGroupAssets] = useState<AssetLink[]>([]);
   const [savingRowId, setSavingRowId] = useState<string | null>(null);
   const [justSavedId, setJustSavedId] = useState<string | null>(null);
   const [status, setStatus] = useState<'loading' | 'idle' | 'sending' | 'done' | 'error'>('loading');
   const [errorMsg, setErrorMsg] = useState('');
 
+  const [userEmail, setUserEmail] = useState('');
   const [assets, setAssets] = useState<Asset[]>([]);
   const [assetsLoad, setAssetsLoad] = useState<AssetsLoadKind>('loading');
   const [assetsError, setAssetsError] = useState('');
@@ -111,7 +113,10 @@ export default function EditTrackGroupPage({ params }: { params: Promise<{ id: s
   }, [fetchAssets]);
 
   // eslint-disable-next-line react-hooks/set-state-in-effect -- one-shot fetch on mount; setState fires after await, not synchronously
-  useEffect(() => { fetchAssets(); }, [fetchAssets]);
+  useEffect(() => {
+    fetchAssets();
+    fetch('/api/auth/me').then(r => r.json()).then(d => setUserEmail(d.email ?? '')).catch(() => {});
+  }, [fetchAssets]);
 
   const handleAssetCreated = useCallback((asset: Asset) => {
     setAssets(prev => [asset, ...prev]);
@@ -128,11 +133,12 @@ export default function EditTrackGroupPage({ params }: { params: Promise<{ id: s
       const res = await fetch(`/api/track-groups/${id}`);
       if (!res.ok) { setStatus('error'); setErrorMsg('TrackGroup not found.'); return; }
       const trackGroup: TrackGroup = await res.json();
-      const { title, description, tracks } = fromTrackGroup(trackGroup);
+      const { title, description, tracks, assets } = fromTrackGroup(trackGroup);
       setTitle(title);
       setDescription(description);
       setTracks(tracks);
       setSavedTracks(tracks);
+      setGroupAssets(assets);
       setStatus('idle');
     });
   }, [params]);
@@ -143,7 +149,7 @@ export default function EditTrackGroupPage({ params }: { params: Promise<{ id: s
     path: t.path.trim(),
     title: t.title.trim() || t.path.split('/').pop() || t.path,
     stage: t.stage,
-    assetIds: t.assetIds,
+    assets: t.assets,
   });
 
   const flashSaved = (id: string) => {
@@ -209,7 +215,7 @@ export default function EditTrackGroupPage({ params }: { params: Promise<{ id: s
       setSavingRowId(null);
     }
   };
-  const updateTrack = useCallback((id: string, field: keyof Omit<TrackEntry, '_id' | 'assetIds'>, value: string) =>
+  const updateTrack = useCallback((id: string, field: keyof Omit<TrackEntry, '_id' | 'assets'>, value: string) =>
     setTracks(prev => prev.map(t => t._id === id ? { ...t, [field]: value } : t)), []);
   const selectTrack = useCallback((id: string, entry: CatalogEntry) =>
     setTracks(prev => prev.map(t => t._id === id
@@ -218,8 +224,10 @@ export default function EditTrackGroupPage({ params }: { params: Promise<{ id: s
   const clearTrack = useCallback((id: string) =>
     setTracks(prev => prev.map(t => t._id === id ? { ...t, path: '', title: '' } : t)), []);
 
-  const setAssetIds = useCallback((id: string, assetIds: string[]) =>
-    setTracks(prev => prev.map(t => t._id === id ? { ...t, assetIds } : t)), []);
+  const setTrackAssetIds = useCallback((id: string, ids: string[]) =>
+    setTracks(prev => prev.map(t => t._id === id ? { ...t, assets: reconcileAssetLinks(t.assets, ids, userEmail) } : t)), [userEmail]);
+  const setGroupAssetIds = useCallback((ids: string[]) =>
+    setGroupAssets(prev => reconcileAssetLinks(prev, ids, userEmail)), [userEmail]);
 
   const runSweep = async () => {
     if (!trackGroupId || isBusy) return;
@@ -241,6 +249,7 @@ export default function EditTrackGroupPage({ params }: { params: Promise<{ id: s
         const refreshed = fromTrackGroup(trackGroup);
         setTracks(refreshed.tracks);
         setSavedTracks(refreshed.tracks);
+        setGroupAssets(refreshed.assets);
       }
     } catch (e) {
       setErrorMsg(e instanceof Error ? e.message : 'Sweep failed');
@@ -251,6 +260,7 @@ export default function EditTrackGroupPage({ params }: { params: Promise<{ id: s
   };
 
   const validTracks = tracks.filter(t => t.path.trim());
+  const locationMap = assetLocationMap(groupAssets, tracks);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -261,6 +271,7 @@ export default function EditTrackGroupPage({ params }: { params: Promise<{ id: s
     const payload = {
       title: title.trim(),
       description: description.trim(),
+      assets: groupAssets,
       tracks: validTracks.map(stripIdAndTrim),
     };
 
@@ -346,6 +357,17 @@ export default function EditTrackGroupPage({ params }: { params: Promise<{ id: s
             <textarea value={description} onChange={e => setDescription(e.target.value)}
               className="w-full bg-neutral-900 border border-neutral-700 rounded px-3 py-2 text-sm text-neutral-100 focus:outline-none focus:border-green-600 resize-none h-20" />
           </div>
+          <div>
+            <p className={`text-xs ${colors.assets.label} mb-1.5`}>Track group assets (shared across the whole group)</p>
+            <AssetPicker
+              value={assetLinkIds(groupAssets)}
+              onChange={setGroupAssetIds}
+              assets={assets}
+              loadState={assetsLoad}
+              onAssetCreated={handleAssetCreated}
+              alreadyLinkedElsewhere={locationMap}
+            />
+          </div>
         </div>
 
         <div>
@@ -402,11 +424,12 @@ export default function EditTrackGroupPage({ params }: { params: Promise<{ id: s
                   <div className="border-t border-neutral-800/50 pt-2">
                     <p className={`text-xs ${colors.assets.label} mb-1.5`}>Assets</p>
                     <AssetPicker
-                      value={track.assetIds}
-                      onChange={ids => setAssetIds(track._id, ids)}
+                      value={assetLinkIds(track.assets)}
+                      onChange={ids => setTrackAssetIds(track._id, ids)}
                       assets={assets}
                       loadState={assetsLoad}
                       onAssetCreated={handleAssetCreated}
+                      alreadyLinkedElsewhere={locationMap}
                     />
                   </div>
                 </div>

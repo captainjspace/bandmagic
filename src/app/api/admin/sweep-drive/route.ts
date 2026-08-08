@@ -5,7 +5,8 @@ import { getTrackGroup, updateTrackGroup, getAssets, createAsset } from '@/lib/f
 import { mockDriveFiles } from '@/lib/mock';
 import { scoreMatch, SWEEP_THRESHOLD, inferSubtype } from '@/lib/filename-match';
 import { errorResponse, isDebugUser } from '@/lib/debug-mode';
-import type { Track } from '@/types';
+import { uid } from '@/lib/asset';
+import type { AssetLink, Track } from '@/types';
 
 type SweepError = { trackPath: string; trackTitle: string; reason: string };
 type SweepResponse = {
@@ -79,8 +80,8 @@ export async function POST(req: NextRequest) {
     if (matches.length === 0) { newTracks.push(track); continue; }
     proposed += matches.length;
 
-    const assetIds = new Set(track.assetIds ?? []);
-    const startCount = assetIds.size;
+    const links = new Map((track.assets ?? []).map(l => [l.assetId, l]));
+    const startCount = links.size;
 
     for (const { file } of matches) {
       const key = normUrl(file.webViewLink);
@@ -107,12 +108,15 @@ export async function POST(req: NextRequest) {
           continue;
         }
       }
-      assetIds.add(asset.id);
+      if (!links.has(asset.id)) {
+        const link: AssetLink = { linkId: uid(), assetId: asset.id, addedAt: new Date().toISOString(), addedBy: userEmail || 'sweep' };
+        links.set(asset.id, link);
+      }
     }
 
-    if (assetIds.size > startCount) {
-      attached += assetIds.size - startCount;
-      newTracks.push({ ...track, assetIds: [...assetIds] });
+    if (links.size > startCount) {
+      attached += links.size - startCount;
+      newTracks.push({ ...track, assets: [...links.values()] });
       trackGroupChanged = true;
     } else {
       newTracks.push(track);

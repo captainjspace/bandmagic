@@ -1,5 +1,156 @@
 # CLAUDE.md
 
+## Git workflow — ⚠️ main is hot
+
+A push to `main` is auto-built and deployed to production Cloud Run (`.github/workflows/deploy.yaml`). There is no staging gate — `main` going green on GitHub Actions means it's live for the band.
+
+- Never commit or push directly to `main`. Do all work on a feature branch (`git checkout -b <name>`) and open a PR for review before merging.
+- Local commits on a branch are safe to make freely; pushing that branch to `origin` is safe (doesn't trigger deploy — only `main` and `v*` tags do, per the workflow's `on.push` trigger). Merging the PR to `main` is the actual "go live" step — treat it accordingly.
+- Before merging: run `pnpm build` and, if touching Docker/deploy-relevant files, `docker build .` locally to confirm the container still builds clean.
+
+# Next Actions:
+
+Manage: Track Groups | Firebase Admin | Assets | Tracks 
+
+Tables
+-- Tracks
+  -- add folder, add tracks, add asset , add asset association
+-- Assets
+  -- manage share folder table
+  -- add assets 
+  -- link associate asset to track, associate to track group
+  -- manage asset types 
+-- TrackxAsset - links track and assets
+  -- appropriate metadata data linkid, link type -
+  -- it should be open so that if we add other entities ( ie. media: video, images ) they can ne separately related
+-- TrackGroup 
+-- TrackGroupxAsset = links TrackGroup and Assets
+
+
+Current "Browse" - morphs in the Tracks Page to administer the bucket
+-- actions: Add new sub folder -- / add new tracks 
+-- actions: move tracks + reconcile process if the links change track link transaction history block 
+-- actions: link assets - so that tracks can directly related to lyrics, chords
+-- Visibility - let's get the GCS metadata up so we can see the bucket / folder / link path 
+
+Notifications -- 
+-- Separate the auto notify functions - the boy who cried wolf is in effect -- too much announceing - it has to be deliberate an we are tied to a nonevent at hte moment
+-- (queue potential noticifications for the admin page)
+
+Track Groups Page 
+-- Combine current admin page and the track groups page -- 
+-- Adding a new Track should be in teh track group domain 
+-- link to add new track group should be there
+-- add/manage track groups
+-- but the functionality on teh "Admin" Table should become more like a hub for linking to
+a) - add assets to Track Group
+b) - when adding a track - carry the assets it is associated with 
+c) - avoid redudnant association in the Track Groups x Asset if Track x Asset is already present -- Note that in display
+     aka (Asset X is already associate with Track x 
+
+Admin Page
+-- Keep but for now this will become a link hub to all the functions 
+-- which we are expanding...
+-- Thinking Tracks / Assets (analog for GCS / Drive ) 
+-- Admin functions - reviewing / searching /tables of metadata 
+-- focus on -- our tables will be will be extension tables of the sync'd tables that can tolerate breaks without breaking the oprhan clean up/ reconcile process may not be 100% ready yet
+
+
+
+BUILD  ^^^
+DISCUSS vvv
+
+Administration: functions
+-- Add table for "add new shared folder" 
+-- (TO BE DISCUSSED)
+--go code is deployed to look at the table and subscripe.
+-- sync assest - any doc add/edit/change in shared folder 
+-- should be get updated ot the asset table -- probably unclassified until we see an an obvious pattern
+
+- The New track group her should be a function of the Track Group -- 
+
+# Fresh Highlights.
+
+The application is live and is testing - congratulations!
+We have a few challanging tackles to make her but otherwise in execllent shape.
+
+We have f solid bass of terraform the envrionment is almsot entirely controlled by tf now - clsoud storage is still a bit an outlier but we're talking  about maybe 6-10 buckets - there are no application deployed outside of terraforms view
+Further the application is proven fully git ready and a push to main will be built and deployed. 
+
+I have removed most the zsh scripts we don't need i have resolved toa  more strategic way of managing shell scripts.  And example of this is the runner.
+It's very simple and I stumbled upon - i am compacting into hex and have ligthweight c program that can compiled with the herds dated, tagged etc.  it get the open text vars out the way and stop inadverents mess ups in scripts.
+
+
+
+
+
+.
+├── apps/rollingblackoutapp
+│   ├── k8s
+│   │   ├── base
+│   │   └── overlays/local
+│   ├── logs
+│   ├── mocks
+│   ├── notes
+│   ├── public/fonts
+│   ├── scripts
+│   │   ├── deprecated
+│   │   └── util
+│   ├── src
+│   │   ├── app
+│   │   │   ├── admin
+│   │   │   │   ├── [id]
+│   │   │   │   └── assets
+│   │   │   ├── api
+│   │   │   │   ├── admin
+│   │   │   │   │   ├── sweep-drive
+│   │   │   │   │   └── sync
+│   │   │   │   ├── assets/[id]
+│   │   │   │   ├── audio
+│   │   │   │   ├── auth/me
+│   │   │   │   ├── browse
+│   │   │   │   ├── catalog
+│   │   │   │   ├── drive/search
+│   │   │   │   └── track-groups/[id]/notes
+│   │   │   ├── browse
+│   │   │   └── track-group/[id]
+│   │   ├── components
+│   │   ├── lib/auth
+│   │   └── types
+│   └── test/drive/api/files
+├── config
+├── infra
+│   ├── terraform
+│   │   ├── modules
+│   │   ├── plan_output
+│   │   │   ├── production
+│   │   │   └── rollingblackout_test_env
+│   │   └── terraform.tfstate.d
+│   │       ├── production
+│   │       └── test
+│   └── tf-import
+└── packages
+    ├── bigquery/audio_file_analysis
+    │   ├── data
+    │   └── src
+    │       ├── shell
+    │       └── sql
+    ├── blessed
+    ├── encrypto
+    ├── eventarc/drive_events
+    │   ├── scripts
+    │   └── services
+    │       ├── controller
+    │       ├── receiver
+    │       └── util
+    └── workspace
+        ├── bin
+        └── src
+
+77 directories
+
+
+
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## Commands

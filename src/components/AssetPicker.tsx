@@ -22,6 +22,7 @@ const colors = {
     error:    'text-amber-400 border-amber-800',
     missing:  'text-red-400 border-red-800',
   },
+  rowHint: 'text-amber-500',
   create: {
     label:    'text-neutral-500',
     input:    'text-neutral-100 placeholder-neutral-600',
@@ -47,12 +48,14 @@ interface Props {
   assets: Asset[];
   loadState: AssetsLoadKind;
   onAssetCreated: (asset: Asset) => void;
+  /** assetId -> human label of where else it's already linked, e.g. "Track: Magical" */
+  alreadyLinkedElsewhere?: Map<string, string>;
 }
 
 type Mode = 'search' | 'create';
 type CreateSource = 'drive' | 'url';
 
-export function AssetPicker({ value, onChange, assets, loadState, onAssetCreated }: Props) {
+export function AssetPicker({ value, onChange, assets, loadState, onAssetCreated, alreadyLinkedElsewhere }: Props) {
   const [open, setOpen] = useState(false);
   const [mode, setMode] = useState<Mode>('search');
   const [query, setQuery] = useState("");
@@ -237,20 +240,26 @@ export function AssetPicker({ value, onChange, assets, loadState, onAssetCreated
                 )}
                 {loadState === 'loaded' && filtered.length > 0 && (
                   <ul className="max-h-64 overflow-y-auto">
-                    {filtered.map(asset => (
-                      <li key={asset.id}>
-                        <button type="button" onMouseDown={() => attach(asset.id)}
-                          className="w-full text-left px-3 py-2 hover:bg-neutral-800 transition-colors flex items-center gap-3">
-                          <span className={`text-xs border px-1.5 py-0.5 rounded shrink-0 uppercase tracking-wider ${assetClass(asset.subtype)}`}>
-                            {asset.subtype}
-                          </span>
-                          <div className="flex-1 min-w-0">
-                            <div className={`text-sm truncate ${colors.rowTitle}`}>{asset.title}</div>
-                            <div className={`text-xs font-mono truncate ${colors.rowUrl}`}>{asset.url}</div>
-                          </div>
-                        </button>
-                      </li>
-                    ))}
+                    {filtered.map(asset => {
+                      const elsewhere = alreadyLinkedElsewhere?.get(asset.id);
+                      return (
+                        <li key={asset.id}>
+                          <button type="button" onMouseDown={() => attach(asset.id)}
+                            className="w-full text-left px-3 py-2 hover:bg-neutral-800 transition-colors flex items-center gap-3">
+                            <span className={`text-xs border px-1.5 py-0.5 rounded shrink-0 uppercase tracking-wider ${assetClass(asset.subtype)}`}>
+                              {asset.subtype}
+                            </span>
+                            <div className="flex-1 min-w-0">
+                              <div className={`text-sm truncate ${colors.rowTitle}`}>{asset.title}</div>
+                              <div className={`text-xs font-mono truncate ${colors.rowUrl}`}>{asset.url}</div>
+                              {elsewhere && (
+                                <div className={`text-xs ${colors.rowHint}`}>already on {elsewhere}</div>
+                              )}
+                            </div>
+                          </button>
+                        </li>
+                      );
+                    })}
                   </ul>
                 )}
               </>
