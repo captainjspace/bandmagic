@@ -10,30 +10,30 @@
     "lint": "eslint"
   },
   "dependencies": {
-    "@google-cloud/firestore": "^8.6.0",
-    "@google-cloud/secret-manager": "^6.2.0",
-    "@google-cloud/storage": "^7.21.0",
-    "google-auth-library": "^10.9.0",
-    "googleapis": "^173.0.0",
-    "next": "16.2.10",
-    "react": "19.2.7",
-    "react-dom": "19.2.7"
+    "@google-cloud/firestore": "^9.2.0",
+    "@google-cloud/secret-manager": "^7.1.0",
+    "@google-cloud/storage": "^8.2.0",
+    "google-auth-library": "^11.1.0",
+    "googleapis": "^181.0.0",
+    "next": "16.3.5",
+    "react": "19.3.0",
+    "react-dom": "19.3.0"
   },
   "devDependencies": {
-    "@tailwindcss/postcss": "^4.3.2",
+    "@tailwindcss/postcss": "^4.3.3",
     "@types/blessed": "^0.1.27",
-    "@types/node": "^26.1.1",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
+    "@types/node": "^26.6.2",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
     "@xterm/xterm": "6.0.0",
     "blessed": "^0.1.81",
-    "eslint": "^10.7.0",
-    "eslint-config-next": "16.2.10",
+    "eslint": "^10.11.0",
+    "eslint-config-next": "16.3.5",
     "ls": "^1.0.0",
-    "node-html-parser": "^9.0.0",
-    "tailwindcss": "^4.3.2",
-    "typescript": "^6.0.3",
-    "vercel": "^55.0.0",
-    "ws": "^8.21.0"
+    "node-html-parser": "^9.0.4",
+    "tailwindcss": "^4.3.3",
+    "typescript": "^7.0.2",
+    "vercel": "^59.23.2",
+    "ws": "^8.21.3"
   }
 }

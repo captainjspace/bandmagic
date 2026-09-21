@@ -1,4 +1,4 @@
-import type { TrackGroup, Note, CatalogEntry, Asset } from '@/types';
+import type { TrackGroup, Note, CatalogEntry, Asset, Song } from '@/types';
 import type { DriveFile } from '@/lib/drive';
 import driveExport from '../../mocks/drive-files.json';
 
@@ -87,6 +87,18 @@ export const mockTrackGroups: TrackGroup[] = [
 ];
 
 export const mockNotes: Note[] = [];
+
+export const mockSongs: Song[] = [
+  {
+    id: 'mock-song-magicali',
+    name: 'Magi-cali',
+    aliases: ['Magical'],
+    createdAt: '2026-06-08T00:00:00Z',
+    createdBy: 'joshgcp@rollingblackoutband.com',
+    updatedAt: '2026-06-08T00:00:00Z',
+    updatedBy: 'joshgcp@rollingblackoutband.com',
+  },
+];
 
 export const mockCatalog: CatalogEntry[] = mockTrackGroups[0].tracks
   .filter(t => t.path?.trim())

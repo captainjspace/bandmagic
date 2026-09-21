@@ -1,10 +1,12 @@
 import { Firestore, Timestamp, FieldValue} from '@google-cloud/firestore';
-import type { TrackGroup, Note, CatalogEntry, Asset } from '@/types';
+import type { TrackGroup, Note, CatalogEntry, Asset, Song } from '@/types';
+import { normalize, scoreMatch, SWEEP_THRESHOLD } from '@/lib/filename-match';
 
 const firestoreConfig = {
   databaseId: "bandmagic",
   coredb: "track-groups",
   assetsdb: "assets",
+  songsdb: "songs",
 }
 
 
@@ -216,8 +218,102 @@ export async function syncCatalog(entries: Omit<CatalogEntry, 'id'>[]): Promise<
   return entries.length;
 }
 
+// --- songs ---
+
+export async function getSongs(): Promise<Song[]> {
+  const snap = await db().collection(firestoreConfig.songsdb).orderBy('name').get();
+  return snap.docs.map(d => ({ id: d.id, ...d.data() } as Song));
+}
+
+export async function getSong(id: string): Promise<Song | null> {
+  const doc = await db().collection(firestoreConfig.songsdb).doc(id).get();
+  if (!doc.exists) return null;
+  return { id: doc.id, ...doc.data() } as Song;
+}
+
+export async function updateSong(id: string, patch: Partial<Pick<Song, 'folderPrefix' | 'latestPath' | 'aliases'>>, actor: string): Promise<void> {
+  await db().collection(firestoreConfig.songsdb).doc(id).set(
+    { ...patch, updatedAt: Timestamp.now().toDate().toISOString(), updatedBy: actor },
+    { merge: true }
+  );
+}
+
 /**
- * renameCollection - utility function 
+ * seedSongs - idempotent upsert of the canonical song-name list (from songlist.txt).
+ * Re-running with an updated list is safe: existing docs only get aliases/updatedAt
+ * touched, createdAt/createdBy are set once.
+ */
+export async function seedSongs(
+  entries: { name: string; aliases?: string[] }[],
+  actor: string
+): Promise<{ created: number; updated: number }> {
+  let created = 0;
+  let updated = 0;
+  const now = Timestamp.now().toDate().toISOString();
+
+  for (let i = 0; i < entries.length; i += 400) {
+    const chunk = entries.slice(i, i + 400);
+    const refs = chunk.map(e => db().collection(firestoreConfig.songsdb).doc(encodeURIComponent(e.name)));
+    const existing = await db().getAll(...refs);
+
+    const batch = db().batch();
+    chunk.forEach((entry, idx) => {
+      const exists = existing[idx].exists;
+      batch.set(refs[idx], {
+        name: entry.name,
+        aliases: entry.aliases ?? [],
+        updatedAt: now,
+        updatedBy: actor,
+        ...(exists ? {} : { createdAt: now, createdBy: actor }),
+      }, { merge: true });
+      if (exists) updated++; else created++;
+    });
+    await batch.commit();
+  }
+
+  return { created, updated };
+}
+
+/** normalize() collapsed to a single token, so "NightAngel" and "Night Angel" compare equal. */
+function squash(s: string): string {
+  return normalize(s).replace(/\s+/g, '');
+}
+
+/**
+ * Real folder/file names are often a concatenated or abbreviated form of the canonical
+ * title (`NightAngel`, `MagiCali2`, `TangerineDream`) rather than a spaced match, so
+ * scoreMatch() alone (which compares normalize()'d, space-preserving strings) misses
+ * most of them. Fall back to a squashed-string containment check.
+ */
+function songScore(candidate: string, target: string): number {
+  const direct = scoreMatch(candidate, target);
+  if (direct > 0) return direct;
+  const a = squash(candidate), b = squash(target);
+  if (!a || !b) return 0;
+  if (a === b) return 1;
+  if (a.includes(b) || b.includes(a)) return 0.7;
+  return 0;
+}
+
+/**
+ * matchSong - find the best-scoring Song for a catalog filename or folder segment,
+ * fuzzy-matched (via songScore) against each Song's name and aliases.
+ */
+export function matchSong(songs: Song[], filenameOrFolder: string): Song | undefined {
+  const candidates = (s: Song) => [s.name, ...(s.aliases ?? [])];
+
+  let best: { song: Song; score: number } | undefined;
+  for (const s of songs) {
+    for (const c of candidates(s)) {
+      const score = songScore(filenameOrFolder, c);
+      if (score >= SWEEP_THRESHOLD && (!best || score > best.score)) best = { song: s, score };
+    }
+  }
+  return best?.song;
+}
+
+/**
+ * renameCollection - utility function
  * this simple collection copy from old to new  in batch
  */
 export async function renameCollection(oldName: string, newName: string) {

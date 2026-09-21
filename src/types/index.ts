@@ -80,9 +80,22 @@ export interface CatalogEntry {
   id: string;
   path: string;
   song: string;
+  songId?: string;
   stage: string;
   mix: string;
   title: string;
   size?: number;
   syncedAt?: string;
+}
+
+export interface Song {
+  id: string;
+  name: string;
+  aliases?: string[];
+  folderPrefix?: string;
+  latestPath?: string;
+  createdAt: string;
+  createdBy: string;
+  updatedAt: string;
+  updatedBy: string;
 }
