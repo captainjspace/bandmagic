@@ -39,7 +39,7 @@ const LINKS = [
   },
   {
     href: "/browse",
-    title: "Browse",
+    title: "Songs",
     desc: "Inspect the GCS bucket backing the catalog.",
   },
 ];

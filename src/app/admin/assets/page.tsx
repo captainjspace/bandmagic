@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { AssetCreateForm } from "@/components/AssetCreateForm";
 import { assetClass, driveDocKind, inferAssetType } from "@/lib/asset";
 import type { Asset, AssetSubtype } from "@/types";
 
@@ -17,9 +18,6 @@ const colors = {
   status: {
     success: "text-green-400",
     error: "text-red-400",
-  },
-  form: {
-    submit: "bg-green-600 hover:bg-green-500 text-black",
   },
   row: {
     title: "text-neutral-100",
@@ -59,8 +57,6 @@ export default function AdminAssetsPage() {
   const [assets, setAssets] = useState<Asset[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [draft, setDraft] = useState<DraftAsset>(emptyDraft());
-  const [creating, setCreating] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editDraft, setEditDraft] = useState<DraftAsset>(emptyDraft());
 
@@ -82,32 +78,6 @@ export default function AdminAssetsPage() {
       setLoading(false);
     }
   }
-
-  const submitNew = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!draft.url.trim() || !draft.title.trim()) return;
-    setCreating(true);
-    setError("");
-    try {
-      const res = await fetch("/api/assets", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          url: draft.url.trim(),
-          title: draft.title.trim(),
-          subtype: draft.subtype,
-          type: inferAssetType(draft.url.trim()),
-        }),
-      });
-      if (!res.ok) throw new Error((await res.text()) || "Create failed");
-      setDraft(emptyDraft());
-      await reload();
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Create failed");
-    } finally {
-      setCreating(false);
-    }
-  };
 
   const startEdit = (a: Asset) => {
     setEditingId(a.id);
@@ -181,69 +151,14 @@ export default function AdminAssetsPage() {
         </div>
       )}
 
-      <form
-        onSubmit={submitNew}
-        className="mb-8 space-y-3 border border-neutral-800 rounded p-4"
-      >
+      <div className="mb-8 border border-neutral-800 rounded p-4">
         <p
-          className={`text-xs ${colors.page.fieldLabel} uppercase tracking-wider`}
+          className={`text-xs ${colors.page.fieldLabel} uppercase tracking-wider mb-3`}
         >
           New asset
         </p>
-        <input
-          value={draft.url}
-          onChange={(e) => setDraft((d) => ({ ...d, url: e.target.value }))}
-          required
-          placeholder="https://docs.google.com/document/... or https://blog.example.com/..."
-          className="w-full bg-neutral-900 border border-neutral-700 rounded px-3 py-2 text-sm text-neutral-100 focus:outline-none focus:border-green-600 font-mono"
-        />
-        <div className="flex gap-2">
-          <input
-            value={draft.title}
-            onChange={(e) => setDraft((d) => ({ ...d, title: e.target.value }))}
-            required
-            placeholder="Display title"
-            className="flex-1 bg-neutral-900 border border-neutral-700 rounded px-3 py-2 text-sm text-neutral-100 focus:outline-none focus:border-green-600"
-          />
-          <select
-            value={draft.subtype}
-            onChange={(e) =>
-              setDraft((d) => ({
-                ...d,
-                subtype: e.target.value as AssetSubtype,
-              }))
-            }
-            className="bg-neutral-900 border border-neutral-700 rounded px-2 py-2 text-sm text-neutral-100 focus:outline-none focus:border-green-600"
-          >
-            {SUBTYPES.map((s) => (
-              <option key={s} value={s}>
-                {s}
-              </option>
-            ))}
-          </select>
-          <button
-            type="submit"
-            disabled={creating || !draft.url.trim() || !draft.title.trim()}
-            className={`px-4 py-2 ${colors.form.submit} disabled:opacity-40 font-semibold text-sm rounded transition-colors`}
-          >
-            {creating ? "Saving..." : "Create"}
-          </button>
-        </div>
-        {draft.url.trim() && (
-          <p className={`text-xs ${colors.page.fieldLabel}`}>
-            inferred type:{" "}
-            <span className="text-neutral-400">
-              {inferAssetType(draft.url.trim())}
-            </span>
-            {driveDocKind(draft.url.trim()) && (
-              <span className="text-neutral-500">
-                {" "}
-                · {driveDocKind(draft.url.trim())}
-              </span>
-            )}
-          </p>
-        )}
-      </form>
+        <AssetCreateForm onCreated={() => reload()} />
+      </div>
 
       {loading ? (
         <p className={`${colors.page.subtitle} text-sm`}>Loading...</p>

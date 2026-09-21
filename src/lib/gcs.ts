@@ -20,6 +20,17 @@ export async function listObjects(
   }));
 }
 
+export async function uploadObject(
+  path: string,
+  data: Buffer,
+  contentType?: string,
+): Promise<void> {
+  await storage
+    .bucket(config.bucket)
+    .file(path)
+    .save(data, { contentType, resumable: false });
+}
+
 export async function getReadStream(path: string): Promise<ReadableStream> {
   const file = storage.bucket(config.bucket).file(path);
   const nodeStream = file.createReadStream();

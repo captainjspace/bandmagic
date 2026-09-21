@@ -275,7 +275,7 @@ export async function syncCatalog(
       const ref = db()
         .collection("catalog")
         .doc(encodeURIComponent(entry.path));
-      batch.set(ref, { ...entry, syncedAt });
+      batch.set(ref, { ...entry, syncedAt }, { merge: true });
     }
     await batch.commit();
   }
