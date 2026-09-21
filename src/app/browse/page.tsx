@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { SongPicker } from "@/components/SongPicker";
 import { stageBgClass, stageClass } from "@/lib/stage";
 import type { CatalogEntry, Song } from "@/types";
 
@@ -86,6 +87,22 @@ export default function BrowsePage() {
     });
   };
 
+  const handleSongCreated = (song: Song) => {
+    setSongs((prev) => [...prev, song]);
+  };
+
+  const handleAssign = async (entry: CatalogEntry, song: Song) => {
+    setExpanded((prev) => new Set(prev).add(song.id));
+    setCatalog((prev) =>
+      prev.map((e) => (e.id === entry.id ? { ...e, songId: song.id } : e)),
+    );
+    await fetch(`/api/catalog/${encodeURIComponent(entry.id)}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ songId: song.id }),
+    });
+  };
+
   return (
     <div className="max-w-xl">
       <div className="mb-8">
@@ -153,6 +170,15 @@ export default function BrowsePage() {
                       >
                         play
                       </a>
+                      <div className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                        <SongPicker
+                          songs={songs}
+                          loadState={loading ? "loading" : "loaded"}
+                          value={entry.songId}
+                          onAssign={(song) => handleAssign(entry, song)}
+                          onSongCreated={handleSongCreated}
+                        />
+                      </div>
                     </div>
                   ))}
                 </div>

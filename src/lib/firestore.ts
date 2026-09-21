@@ -255,6 +255,16 @@ export async function getCatalog(): Promise<CatalogEntry[]> {
   return snap.docs.map((d) => ({ id: d.id, ...d.data() }) as CatalogEntry);
 }
 
+export async function updateCatalogEntry(
+  id: string,
+  patch: Partial<Pick<CatalogEntry, "songId">>,
+): Promise<CatalogEntry> {
+  const ref = db().collection("catalog").doc(id);
+  await ref.update(patch);
+  const doc = await ref.get();
+  return { id: doc.id, ...doc.data() } as CatalogEntry;
+}
+
 export async function syncCatalog(
   entries: Omit<CatalogEntry, "id">[],
 ): Promise<number> {
