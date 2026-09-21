@@ -1,11 +1,6 @@
 # CLAUDE.md
 
 ## Git workflow — ⚠️ main is hot
-
-
-
-
-
 A push to `main` is auto-built and deployed to production Cloud Run (`.github/workflows/deploy.yaml`). There is no staging gate — `main` going green on GitHub Actions means it's live for the band.
 
 - Never commit or push directly to `main`. Do all work on a feature branch (`git checkout -b <name>`) and open a PR for review before merging.
@@ -26,7 +21,7 @@ Start a new feature branch.
 
 2 . Adding Media 
 -- My current workflow is backwards - i start track group - then i have to ans sync everything 
---- Add/Get Song Folder (New song vs existing song)
+--- Add/Get Song (Virtual) Folder (New song vs existing song)
 --- Add new cut/mix to Song Folder
 
 3. Track Groups- 
@@ -48,7 +43,7 @@ Start a new feature branch.
       check Track Group - get track tagged for latest
       -- check *master song folders* for latest and update link
      
-6.  MasterSongFolder
+6.  MasterSongFolder - (currently:  Virtual for song presentation  )
 ---- Firestore Table -- New Songs folder for the song
 ---- (appropriate columns / generated PK - current folder link , Song name, audit columns, author - for now)
 FUNCTION
@@ -123,7 +118,7 @@ BUILD  ^^^
 DISCUSS vvv
 
 Administration: functions
--- Add table for "add new shared folder" 
+-- Add table for "add new shared folder" for Assets 
 -- (TO BE DISCUSSED)
 --go code is deployed to look at the table and subscripe.
 -- sync assest - any doc add/edit/change in shared folder 

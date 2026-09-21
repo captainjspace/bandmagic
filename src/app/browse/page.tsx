@@ -106,9 +106,9 @@ export default function BrowsePage() {
   return (
     <div className="max-w-xl">
       <div className="mb-8">
-        <h1 className={`text-2xl font-bold ${colors.page.title}`}>Browse</h1>
+        <h1 className={`text-2xl font-bold ${colors.page.title}`}>Songs</h1>
         <p className={`${colors.page.subtitle} text-sm mt-1`}>
-          Songs, by folder
+          Organized by folder
         </p>
       </div>
 
