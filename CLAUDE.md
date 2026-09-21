@@ -2,6 +2,10 @@
 
 ## Git workflow — ⚠️ main is hot
 
+
+
+
+
 A push to `main` is auto-built and deployed to production Cloud Run (`.github/workflows/deploy.yaml`). There is no staging gate — `main` going green on GitHub Actions means it's live for the band.
 
 - Never commit or push directly to `main`. Do all work on a feature branch (`git checkout -b <name>`) and open a PR for review before merging.
@@ -10,9 +14,67 @@ A push to `main` is auto-built and deployed to production Cloud Run (`.github/wo
 
 # Next Actions:
 
+Start a new feature branch.
+- Desktop Application: the main screen should scroll under the header with "always available links"
+
+- Presenting the Track -- Organizing Principal - 
+-- [Song=Folder with many 1-many Tracks - 1 track is "latest" by date, expect tags]
+-- [Track Groups have tracks]
+-- The Browse Page
+--- Visually -- Organize with Folder Components - which will present songs ...  by the Folders 
+---- Folder should be collapsible (but default to open) -- can be simple tree
+
+2 . Adding Media 
+-- My current workflow is backwards - i start track group - then i have to ans sync everything 
+--- Add/Get Song Folder (New song vs existing song)
+--- Add new cut/mix to Song Folder
+
+3. Track Groups- 
+-- currently - I need to link to the admin page to sync to Sync the Storage Media Catalog and  Sync Asset Catalog
+-- That function should be in the header in App Header
+--- *** Auto save when an element loses focus
+-
+4. Create track group
+--- notify is not available after create
+--- Make notify always a available -- we are live now 
+---- Notifiable property - a checkbox / boolean
+----- when checked - "update" notifies go out on save - auto
+
+5. Adding Tracks 
+--- call api for storage -- create song folder if needed , add track
+--- NEW boolean - [] Get Latest *new logic
+---  if a track is tagged get latest 
+    - Admin process: 
+      check Track Group - get track tagged for latest
+      -- check *master song folders* for latest and update link
+     
+6.  MasterSongFolder
+---- Firestore Table -- New Songs folder for the song
+---- (appropriate columns / generated PK - current folder link , Song name, audit columns, author - for now)
+FUNCTION
+A.  Add New Song Record
+-- Song Folder will hold the lifecycle of the song media
+-- Need: CRUD ops create meta data record
+B.  Add / or find/ Assign Song Folder inside "MasterSongFolder"  
+( for simplicity I added this to 2026 )
+C. Add New Versions (mix,date, description)
+-- to Assets folder but assign Song id, song folder
+-- add media
+-- sync media lib
+-- add trackgroup 
+-- boolean option to mark as latest
+
+------------checkpoint --------
+
+
 Manage: Track Groups | Firebase Admin | Assets | Tracks 
 
 Tables
+-- Song 
+  -- structural the name of the song = folder , light metadata
+  -- tracks are "of a song" -- (like a type)
+  -- one track is the "latest" -- like software builds
+  -- one track might be the best mix .. 
 -- Tracks
   -- add folder, add tracks, add asset , add asset association
 -- Assets
@@ -289,3 +351,13 @@ type Asset = {
 - For `type: 'drive'`, the Google doc-kind (doc/sheet/slide) is inferred from URL path (`/document/`, `/spreadsheets/`, `/presentation/`) — not stored separately.
 - Associations live on the referencing entity as `assetIds: string[]`, track-level (not per-version). The asset is the source of truth; `usageCount` is denormalized for OLTP read paths.
 - `createdBy` / `updatedBy` use the same `x-goog-authenticated-user-email` / `LOCAL_USER_EMAIL` resolution as `POST /api/track-groups`.
+
+<!-- BEGIN:nextjs-agent-rules -->
+
+# This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+
+This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+
+<!-- END:nextjs-agent-rules -->

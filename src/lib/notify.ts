@@ -1,15 +1,15 @@
 import { google } from "googleapis";
-import { config } from "./config";
 import type { TrackGroup } from "@/types";
+import { config } from "./config";
 
 const siteConfig = {
-  site:{
-  host:   "superblackout",
-  domain: "rollingblackout.band"
+  site: {
+    host: "superblackout",
+    domain: "rollingblackout.band",
   },
-  url:()=> {
+  url: () => {
     return `https://${siteConfig.site.host}.${siteConfig.site.domain}`;
-  }
+  },
 };
 
 export async function sendReleaseNotification(trackGroup: TrackGroup) {
@@ -26,10 +26,14 @@ export async function sendReleaseNotification(trackGroup: TrackGroup) {
 }
 
 async function sendEmail(trackGroup: TrackGroup) {
-  const auth = new google.auth.GoogleAuth({ scopes: ["https://www.googleapis.com/auth/gmail.send"] });
+  const auth = new google.auth.GoogleAuth({
+    scopes: ["https://www.googleapis.com/auth/gmail.send"],
+  });
   const gmail = google.gmail({ version: "v1", auth });
 
-  const tracklist = trackGroup.tracks.map((t, i) => `  ${i + 1}. ${t.title}`).join("\n");
+  const tracklist = trackGroup.tracks
+    .map((t, i) => `  ${i + 1}. ${t.title}`)
+    .join("\n");
   const body = [
     `New trackGroup: ${trackGroup.title}`,
     "",
@@ -51,7 +55,10 @@ async function sendEmail(trackGroup: TrackGroup) {
   ].join("\n");
 
   const encoded = Buffer.from(message).toString("base64url");
-  await gmail.users.messages.send({ userId: "me", requestBody: { raw: encoded } });
+  await gmail.users.messages.send({
+    userId: "me",
+    requestBody: { raw: encoded },
+  });
 }
 
 async function sendChatMessage(trackGroup: TrackGroup) {
