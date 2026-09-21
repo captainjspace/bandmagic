@@ -1,11 +1,11 @@
-import type { AssetSubtype } from '@/types';
+import type { AssetSubtype } from "@/types";
 
 /** Normalize a filename or track title for comparison: lowercase, strip extension, collapse whitespace, drop non-alphanumeric runs to single space. */
 export function normalize(s: string): string {
   return s
     .toLowerCase()
-    .replace(/\.[a-z0-9]{1,5}$/i, '')      // strip file extension
-    .replace(/[^a-z0-9]+/g, ' ')           // collapse non-alphanumeric → space
+    .replace(/\.[a-z0-9]{1,5}$/i, "") // strip file extension
+    .replace(/[^a-z0-9]+/g, " ") // collapse non-alphanumeric → space
     .trim();
 }
 
@@ -27,12 +27,13 @@ export const SWEEP_THRESHOLD = 0.6;
 export function inferSubtype(filename: string): AssetSubtype {
   const n = normalize(filename);
   if (/\blyrics?\b/.test(n)) {
-    if (/\b(stripped|clean|distrokid|distro)\b/.test(n)) return 'lyrics-stripped';
-    return 'lyrics';
+    if (/\b(stripped|clean|distrokid|distro)\b/.test(n))
+      return "lyrics-stripped";
+    return "lyrics";
   }
-  if (/\b(chord|chart)s?\b/.test(n)) return 'chord-chart';
-  if (/\b(press|announce|announcement)\b/.test(n)) return 'press-release';
-  if (/\breviews?\b/.test(n)) return 'review';
-  if (/\bposts?\b/.test(n)) return 'post';
-  return 'other';
+  if (/\b(chord|chart)s?\b/.test(n)) return "chord-chart";
+  if (/\b(press|announce|announcement)\b/.test(n)) return "press-release";
+  if (/\breviews?\b/.test(n)) return "review";
+  if (/\bposts?\b/.test(n)) return "post";
+  return "other";
 }

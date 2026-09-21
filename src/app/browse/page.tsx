@@ -1,29 +1,29 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import type { CatalogEntry, Song } from '@/types';
-import { stageClass, stageBgClass } from '@/lib/stage';
+import { useEffect, useState } from "react";
+import { stageBgClass, stageClass } from "@/lib/stage";
+import type { CatalogEntry, Song } from "@/types";
 
-const UNCLASSIFIED = 'unclassified';
+const UNCLASSIFIED = "unclassified";
 
 /** element colors */
 const colors = {
   page: {
-    title:    'text-neutral-100',
-    subtitle: 'text-neutral-500',
-    loading:  'text-neutral-600',
-    empty:    'text-neutral-600',
+    title: "text-neutral-100",
+    subtitle: "text-neutral-500",
+    loading: "text-neutral-600",
+    empty: "text-neutral-600",
   },
   folder: {
-    header: 'hover:bg-neutral-900',
-    name:   'text-neutral-200 font-medium',
-    count:  'text-neutral-600',
-    toggle: 'text-neutral-600',
+    header: "hover:bg-neutral-900",
+    name: "text-neutral-200 font-medium",
+    count: "text-neutral-600",
+    toggle: "text-neutral-600",
   },
   trackRow: {
-    name:     'text-neutral-300',
-    size:     'text-neutral-600',
-    playLink: 'text-green-500 hover:underline',
+    name: "text-neutral-300",
+    size: "text-neutral-600",
+    playLink: "text-green-500 hover:underline",
   },
 };
 
@@ -48,28 +48,28 @@ export default function BrowsePage() {
 
   useEffect(() => {
     Promise.all([
-      fetch('/api/catalog').then(r => r.json()) as Promise<CatalogEntry[]>,
-      fetch('/api/songs').then(r => r.json()) as Promise<Song[]>,
+      fetch("/api/catalog").then((r) => r.json()) as Promise<CatalogEntry[]>,
+      fetch("/api/songs").then((r) => r.json()) as Promise<Song[]>,
     ]).then(([catalogData, songsData]) => {
       setCatalog(catalogData);
       setSongs(songsData);
-      const songIds = new Set(catalogData.map(e => e.songId ?? UNCLASSIFIED));
+      const songIds = new Set(catalogData.map((e) => e.songId ?? UNCLASSIFIED));
       setExpanded(songIds);
       setLoading(false);
     });
   }, []);
 
-  const songNames = new Map(songs.map(s => [s.id, s.name]));
+  const songNames = new Map(songs.map((s) => [s.id, s.name]));
   const byGroup = new Map<string, CatalogEntry[]>();
   for (const entry of catalog) {
     const key = entry.songId ?? UNCLASSIFIED;
     if (!byGroup.has(key)) byGroup.set(key, []);
-    byGroup.get(key)!.push(entry);
+    byGroup.get(key)?.push(entry);
   }
 
   const groups: Group[] = Array.from(byGroup, ([key, entries]) => ({
     key,
-    name: key === UNCLASSIFIED ? 'Unclassified' : (songNames.get(key) ?? key),
+    name: key === UNCLASSIFIED ? "Unclassified" : (songNames.get(key) ?? key),
     entries: [...entries].sort((a, b) => a.title.localeCompare(b.title)),
   })).sort((a, b) => {
     if (a.key === UNCLASSIFIED) return 1;
@@ -78,9 +78,10 @@ export default function BrowsePage() {
   });
 
   const toggle = (key: string) => {
-    setExpanded(prev => {
+    setExpanded((prev) => {
       const next = new Set(prev);
-      if (next.has(key)) next.delete(key); else next.add(key);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
       return next;
     });
   };
@@ -89,13 +90,17 @@ export default function BrowsePage() {
     <div className="max-w-xl">
       <div className="mb-8">
         <h1 className={`text-2xl font-bold ${colors.page.title}`}>Browse</h1>
-        <p className={`${colors.page.subtitle} text-sm mt-1`}>Songs, by folder</p>
+        <p className={`${colors.page.subtitle} text-sm mt-1`}>
+          Songs, by folder
+        </p>
       </div>
 
-      {loading && <p className={`${colors.page.loading} text-sm`}>Loading...</p>}
+      {loading && (
+        <p className={`${colors.page.loading} text-sm`}>Loading...</p>
+      )}
 
       <div className="space-y-1">
-        {groups.map(group => {
+        {groups.map((group) => {
           const isOpen = expanded.has(group.key);
           return (
             <div key={group.key}>
@@ -103,23 +108,49 @@ export default function BrowsePage() {
                 onClick={() => toggle(group.key)}
                 className={`w-full flex items-center gap-2 px-3 py-2 rounded ${colors.folder.header}`}
               >
-                <span className={`${colors.folder.toggle} text-xs w-3 shrink-0`}>{isOpen ? '▾' : '▸'}</span>
-                <span className={`flex-1 text-left text-sm ${colors.folder.name}`}>{group.name}</span>
-                <span className={`${colors.folder.count} text-xs tabular-nums`}>{group.entries.length}</span>
+                <span
+                  className={`${colors.folder.toggle} text-xs w-3 shrink-0`}
+                >
+                  {isOpen ? "▾" : "▸"}
+                </span>
+                <span
+                  className={`flex-1 text-left text-sm ${colors.folder.name}`}
+                >
+                  {group.name}
+                </span>
+                <span className={`${colors.folder.count} text-xs tabular-nums`}>
+                  {group.entries.length}
+                </span>
               </button>
 
               {isOpen && (
                 <div className="pl-7 space-y-1">
-                  {group.entries.map(entry => (
-                    <div key={entry.id} className="flex items-center gap-3 px-3 py-1.5 rounded hover:bg-neutral-900 group">
-                      <span className={`flex-1 text-sm ${colors.trackRow.name} truncate`}>{entry.title}</span>
-                      <span className={`text-xs border px-1.5 py-0.5 rounded shrink-0 ${stageClass(entry.stage)} ${stageBgClass(entry.stage)}`}>
+                  {group.entries.map((entry) => (
+                    <div
+                      key={entry.id}
+                      className="flex items-center gap-3 px-3 py-1.5 rounded hover:bg-neutral-900 group"
+                    >
+                      <span
+                        className={`flex-1 text-sm ${colors.trackRow.name} truncate`}
+                      >
+                        {entry.title}
+                      </span>
+                      <span
+                        className={`text-xs border px-1.5 py-0.5 rounded shrink-0 ${stageClass(entry.stage)} ${stageBgClass(entry.stage)}`}
+                      >
                         {entry.stage}
                       </span>
-                      <span className={`${colors.trackRow.size} text-xs tabular-nums shrink-0`}>{sizeLabel(entry.size)}</span>
-                      <a href={`/api/audio?path=${encodeURIComponent(entry.path)}`}
+                      <span
+                        className={`${colors.trackRow.size} text-xs tabular-nums shrink-0`}
+                      >
+                        {sizeLabel(entry.size)}
+                      </span>
+                      <a
+                        href={`/api/audio?path=${encodeURIComponent(entry.path)}`}
                         className={`text-xs ${colors.trackRow.playLink} opacity-0 group-hover:opacity-100 transition-opacity shrink-0`}
-                        target="_blank" rel="noreferrer">
+                        target="_blank"
+                        rel="noreferrer"
+                      >
                         play
                       </a>
                     </div>
@@ -132,7 +163,9 @@ export default function BrowsePage() {
       </div>
 
       {!loading && groups.length === 0 && (
-        <p className={`${colors.page.empty} text-sm`}>No tracks in the catalog yet.</p>
+        <p className={`${colors.page.empty} text-sm`}>
+          No tracks in the catalog yet.
+        </p>
       )}
     </div>
   );

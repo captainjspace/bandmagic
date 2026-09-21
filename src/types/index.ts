@@ -1,27 +1,45 @@
 export type TrackStage =
-  | 'ideation' | 'writing' | 'morphing' | 'tracking'
-  | 'overdubbing' | 'mixing' | 'mastering' | 'scheduled' | 'released';
+  | "ideation"
+  | "writing"
+  | "morphing"
+  | "tracking"
+  | "overdubbing"
+  | "mixing"
+  | "mastering"
+  | "scheduled"
+  | "released";
 
-export type TrackStatus = 'active' | 'inactive' | 'queued' | 'tabled' | 'dropped';
+export type TrackStatus =
+  | "active"
+  | "inactive"
+  | "queued"
+  | "tabled"
+  | "dropped";
 
 export type NextTrackAction =
-  | 'Finish Music' | 'Finish Lyrics' | 'Arrangement'
-  | 'Track Docs' | 'Promotional Materials' | 'ID3 Tagging';
+  | "Finish Music"
+  | "Finish Lyrics"
+  | "Arrangement"
+  | "Track Docs"
+  | "Promotional Materials"
+  | "ID3 Tagging";
 
 export type Milestone =
-  | 'Song Complete' | 'Band Live Ready'
-  | 'Reference Recordings' | 'Reference Documentation';
+  | "Song Complete"
+  | "Band Live Ready"
+  | "Reference Recordings"
+  | "Reference Documentation";
 
-export type AssetType = 'drive' | 'web';
+export type AssetType = "drive" | "web";
 
 export type AssetSubtype =
-  | 'lyrics'
-  | 'lyrics-stripped'
-  | 'chord-chart'
-  | 'press-release'
-  | 'review'
-  | 'post'
-  | 'other';
+  | "lyrics"
+  | "lyrics-stripped"
+  | "chord-chart"
+  | "press-release"
+  | "review"
+  | "post"
+  | "other";
 
 export interface Asset {
   id: string;
