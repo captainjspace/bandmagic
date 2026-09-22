@@ -5,6 +5,7 @@ A push to `main` is auto-built and deployed to production Cloud Run (`.github/wo
 
 - Never commit or push directly to `main`. Do all work on a feature branch (`git checkout -b <name>`) and open a PR for review before merging.
 - Local commits on a branch are safe to make freely; pushing that branch to `origin` is safe (doesn't trigger deploy — only `main` and `v*` tags do, per the workflow's `on.push` trigger). Merging the PR to `main` is the actual "go live" step — treat it accordingly.
+- Claude creates feature branches, commits, pushes, and opens PRs freely. Claude does **not** merge PRs to `main` — the user always does that merge themselves, since it's the production deploy trigger and they own that call.
 - Before merging: run `pnpm build` and, if touching Docker/deploy-relevant files, `docker build .` locally to confirm the container still builds clean.
 
 # Next Actions:
