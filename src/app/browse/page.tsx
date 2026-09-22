@@ -7,23 +7,23 @@ import type { CatalogEntry, Song } from "@/types";
 
 const UNCLASSIFIED = "unclassified";
 
-/** element colors */
+
 const colors = {
   page: {
-    title: "text-neutral-100",
-    subtitle: "text-neutral-500",
+    title: "text-rbblue-600",
+    subtitle: "text-rbred-400",
     loading: "text-neutral-600",
     empty: "text-neutral-600",
   },
   folder: {
     header: "hover:bg-neutral-900",
-    name: "text-neutral-200 font-medium",
-    count: "text-neutral-600",
-    toggle: "text-neutral-600",
+    name: "text-rbyellow-700 group-hover:text-cyan-400 font-large",
+    count: "text-rbred-100",
+    toggle: "text-rbpurple-400 hover:text-neutral-300",
   },
   trackRow: {
-    name: "text-neutral-300",
-    size: "text-neutral-600",
+    name: "text-rbblue-300",
+    size: "text-rbyellow-500",
     playLink: "text-green-500 hover:underline",
   },
 };
