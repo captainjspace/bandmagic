@@ -1,0 +1,75 @@
+erDiagram
+    SONG {
+        string id PK
+        string name
+        string_array aliases
+        string folderPrefix
+        string latestPath
+        string createdAt
+        string createdBy
+        string updatedAt
+        string updatedBy
+    }
+
+    CATALOG_ENTRY {
+        string id PK "encodeURIComponent(path)"
+        string path
+        string song "legacy display name, NOT a FK"
+        string songId FK
+        string stage
+        string mix
+        string title
+        number size
+        string syncedAt
+    }
+
+    TRACK_GROUP {
+        string id PK
+        string title
+        string description
+        string createdAt
+        string createdBy
+    }
+
+    TRACK {
+        string path "matches CATALOG_ENTRY.path BY VALUE, not a FK"
+        string title
+        string stage
+    }
+
+    ASSET {
+        string id PK
+        string url
+        string title
+        string type
+        string subtype
+        number usageCount
+        string createdAt
+        string createdBy
+        string updatedAt
+        string updatedBy
+    }
+
+    ASSET_LINK {
+        string linkId PK
+        string assetId FK
+        string linkType
+        string addedAt
+        string addedBy
+    }
+
+    NOTE {
+        string id PK
+        string author
+        string text
+        string trackPath "matches TRACK.path BY VALUE, not a FK"
+        string createdAt
+    }
+
+    SONG ||--o{ CATALOG_ENTRY : "songId (real FK)"
+    CATALOG_ENTRY ||--o{ TRACK : "path match (string equality, NOT enforced)"
+    TRACK_GROUP ||--o{ TRACK : "embeds tracks[]"
+    TRACK_GROUP ||--o{ NOTE : "subcollection, keyed by trackPath"
+    TRACK_GROUP ||--o{ ASSET_LINK : "embeds assets[] (group-level)"
+    TRACK ||--o{ ASSET_LINK : "embeds assets[] (track-level)"
+    ASSET_LINK }o--|| ASSET : "assetId (real FK)"

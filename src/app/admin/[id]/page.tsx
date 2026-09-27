@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { AssetPicker, type AssetsLoadKind } from "@/components/AssetPicker";
+import { TagChips } from "@/components/TagChips";
 import { TrackSearch } from "@/components/TrackSearch";
 import {
   assetLinkIds,
@@ -11,6 +12,9 @@ import {
   uid,
 } from "@/lib/asset";
 import type { Asset, AssetLink, CatalogEntry, TrackGroup } from "@/types";
+import tagsTaxonomy from "../../../../tags.json";
+
+const TRACK_TAG_SUGGESTIONS = Object.keys(tagsTaxonomy.track?.tags ?? {});
 
 /** element colors */
 const colors = {
@@ -68,10 +72,18 @@ interface TrackEntry {
   title: string;
   stage: string;
   assets: AssetLink[];
+  tags: string[];
 }
 
 function newTrack(): TrackEntry {
-  return { _id: uid(), path: "", title: "", stage: "mixing", assets: [] };
+  return {
+    _id: uid(),
+    path: "",
+    title: "",
+    stage: "mixing",
+    assets: [],
+    tags: [],
+  };
 }
 
 function fromTrackGroup(trackGroup: TrackGroup): {
@@ -91,6 +103,7 @@ function fromTrackGroup(trackGroup: TrackGroup): {
             title: t.title,
             stage: t.stage ?? "mixing",
             assets: t.assets ?? [],
+            tags: t.tags ?? [],
           }))
         : [newTrack()],
     assets: trackGroup.assets ?? [],
@@ -183,6 +196,7 @@ export default function EditTrackGroupPage({
     title: t.title.trim() || t.path.split("/").pop() || t.path,
     stage: t.stage,
     assets: t.assets,
+    tags: t.tags,
   });
 
   const flashSaved = (id: string) => {
@@ -257,10 +271,70 @@ export default function EditTrackGroupPage({
       setSavingRowId(null);
     }
   };
+  const moveTrack = async (id: string, direction: -1 | 1) => {
+    const idx = tracks.findIndex((t) => t._id === id);
+    const swapIdx = idx + direction;
+    if (idx === -1 || swapIdx < 0 || swapIdx >= tracks.length || isBusy) return;
+    const reordered = [...tracks];
+    [reordered[idx], reordered[swapIdx]] = [reordered[swapIdx], reordered[idx]];
+    setTracks(reordered);
+
+    const validReordered = reordered.filter((t) => t.path.trim());
+    if (validReordered.length === 0) return;
+
+    setSavingRowId(id);
+    setErrorMsg("");
+    try {
+      const payload = { tracks: validReordered.map(stripIdAndTrim) };
+      const res = await fetch(`/api/track-groups/${trackGroupId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) throw new Error((await res.text()) || "Failed");
+      setSavedTracks(validReordered);
+    } catch (err) {
+      setErrorMsg(
+        err instanceof Error ? err.message : "Failed to reorder tracks.",
+      );
+      setStatus("error");
+    } finally {
+      setSavingRowId(null);
+    }
+  };
+
+  const patchTrackTags = async (id: string, nextTags: string[]) => {
+    const updated = tracks.map((t) =>
+      t._id === id ? { ...t, tags: nextTags } : t,
+    );
+    setTracks(updated);
+
+    const validUpdated = updated.filter((t) => t.path.trim());
+    if (validUpdated.length === 0) return;
+
+    setSavingRowId(id);
+    setErrorMsg("");
+    try {
+      const payload = { tracks: validUpdated.map(stripIdAndTrim) };
+      const res = await fetch(`/api/track-groups/${trackGroupId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) throw new Error((await res.text()) || "Failed");
+      setSavedTracks(validUpdated);
+    } catch (err) {
+      setErrorMsg(err instanceof Error ? err.message : "Failed to save tag.");
+      setStatus("error");
+    } finally {
+      setSavingRowId(null);
+    }
+  };
+
   const updateTrack = useCallback(
     (
       id: string,
-      field: keyof Omit<TrackEntry, "_id" | "assets">,
+      field: keyof Omit<TrackEntry, "_id" | "assets" | "tags">,
       value: string,
     ) =>
       setTracks((prev) =>
@@ -273,7 +347,13 @@ export default function EditTrackGroupPage({
       setTracks((prev) =>
         prev.map((t) =>
           t._id === id
-            ? { ...t, path: entry.path, title: entry.title, stage: entry.stage }
+            ? {
+                ...t,
+                path: entry.path,
+                title: entry.title,
+                stage: entry.stage,
+                tags: entry.tags ?? [],
+              }
             : t,
         ),
       ),
@@ -531,7 +611,7 @@ export default function EditTrackGroupPage({
             </div>
           </div>
           <div className="space-y-3">
-            {tracks.map((track) => {
+            {tracks.map((track, idx) => {
               const cardBorder =
                 justSavedId === track._id
                   ? colors.trackCard.justSaved
@@ -544,7 +624,7 @@ export default function EditTrackGroupPage({
                   key={track._id}
                   className={`${cardBorder} rounded p-3 space-y-2 transition-colors duration-500`}
                 >
-                  <div className="flex gap-2 items-center">
+                  <div className="flex gap-2 items-center flex-wrap">
                     <input
                       value={track.title}
                       onChange={(e) =>
@@ -553,18 +633,64 @@ export default function EditTrackGroupPage({
                       className="flex-1 bg-neutral-900 border border-neutral-700 rounded px-2 py-1.5 text-sm text-neutral-100 focus:outline-none focus:border-green-600"
                       placeholder="Track title"
                     />
-                    <select
-                      value={track.stage}
-                      onChange={(e) =>
-                        updateTrack(track._id, "stage", e.target.value)
+                    {track.tags.length > 0 && (
+                      <span className="text-xs text-neutral-600">
+                        Tag Chips:
+                      </span>
+                    )}
+                    <TagChips
+                      tags={track.tags}
+                      entityType="track"
+                      suggestions={TRACK_TAG_SUGGESTIONS}
+                      listId={`track-tags-${track._id}`}
+                      onAdd={(tag) =>
+                        patchTrackTags(
+                          track._id,
+                          Array.from(new Set([...track.tags, tag])),
+                        )
                       }
-                      className="bg-neutral-900 border border-neutral-700 rounded px-2 py-1.5 text-sm text-neutral-100 focus:outline-none focus:border-green-600"
+                      onRemove={(tag) =>
+                        patchTrackTags(
+                          track._id,
+                          track.tags.filter((t) => t !== tag),
+                        )
+                      }
+                    />
+                    {track.tags.length === 0 &&
+                      track.stage &&
+                      track.stage !== "unknown" && (
+                        <>
+                          <span className="text-xs text-neutral-600">
+                            Stage Chips:
+                          </span>
+                          <span
+                            title="Legacy stage value from before tagging existed — not yet migrated to a tag."
+                            className="text-xs px-2 py-0.5 rounded border border-dashed border-neutral-700 text-neutral-500"
+                          >
+                            {track.stage}
+                          </span>
+                        </>
+                      )}
+                    <button
+                      type="button"
+                      onClick={() => moveTrack(track._id, -1)}
+                      disabled={idx === 0 || isBusy}
+                      aria-label="Move track up"
+                      title="Move up"
+                      className={`text-base px-1 ${colors.trackCard.saveBtn} disabled:opacity-30`}
                     >
-                      <option value="writing">writing</option>
-                      <option value="tracking">tracking</option>
-                      <option value="mixing">mixing</option>
-                      <option value="mastering">mastering</option>
-                    </select>
+                      ▲
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => moveTrack(track._id, 1)}
+                      disabled={idx === tracks.length - 1 || isBusy}
+                      aria-label="Move track down"
+                      title="Move down"
+                      className={`text-base px-1 ${colors.trackCard.saveBtn} disabled:opacity-30`}
+                    >
+                      ▼
+                    </button>
                     <button
                       type="button"
                       onClick={() => saveRow(track._id)}

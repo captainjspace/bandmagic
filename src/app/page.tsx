@@ -4,7 +4,7 @@ import Link from "next/link";
 import { config } from "@/lib/config";
 import { getTrackGroups } from "@/lib/firestore";
 import { mockTrackGroups } from "@/lib/mock";
-import { stageClass } from "@/lib/stage";
+import { tagBgClass, tagClass } from "@/lib/tag";
 import type { TrackGroup } from "@/types";
 
 /** element colors */
@@ -87,7 +87,7 @@ export default async function HomePage() {
                     {trackGroup.description}
                   </p>
                 )}
-                <div className="flex items-center gap-3 mt-3">
+                <div className="flex items-center gap-3 mt-3 flex-wrap">
                   {(() => {
                     const n = trackGroup.tracks.filter((t) =>
                       t.path?.trim(),
@@ -104,23 +104,57 @@ export default async function HomePage() {
                   <span className={`${colors.trackGroupCard.meta} text-xs`}>
                     {new Date(trackGroup.createdAt).toLocaleDateString()}
                   </span>
-                  <div className="flex gap-1.5 ml-1">
-                    {[
+                  {(() => {
+                    const validTracks = trackGroup.tracks.filter((t) =>
+                      t.path?.trim(),
+                    );
+                    const tagChips = [
+                      ...new Set(validTracks.flatMap((t) => t.tags ?? [])),
+                    ];
+                    const stageChips = [
                       ...new Set(
-                        trackGroup.tracks
-                          .filter((t) => t.path?.trim())
+                        validTracks
+                          .filter((t) => !t.tags || t.tags.length === 0)
                           .map((t) => t.stage)
-                          .filter(Boolean),
+                          .filter((s): s is string => !!s && s !== "unknown"),
                       ),
-                    ].map((stage) => (
-                      <span
-                        key={stage}
-                        className={`text-xs border px-1.5 py-0.5 rounded ${stageClass(stage)}`}
-                      >
-                        {stage}
-                      </span>
-                    ))}
-                  </div>
+                    ];
+                    return (
+                      <>
+                        {tagChips.length > 0 && (
+                          <div className="flex items-center gap-1.5 ml-1">
+                            <span className="text-xs text-neutral-600">
+                              Tag Chips:
+                            </span>
+                            {tagChips.map((tag) => (
+                              <span
+                                key={tag}
+                                className={`text-xs border px-1.5 py-0.5 rounded ${tagClass(tag, "track")} ${tagBgClass(tag, "track")}`}
+                              >
+                                {tag}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                        {stageChips.length > 0 && (
+                          <div className="flex items-center gap-1.5 ml-1">
+                            <span className="text-xs text-neutral-600">
+                              Stage Chips:
+                            </span>
+                            {stageChips.map((stage) => (
+                              <span
+                                key={stage}
+                                title="Legacy stage value — not yet migrated to a tag"
+                                className="text-xs border border-dashed border-neutral-700 text-neutral-500 px-1.5 py-0.5 rounded"
+                              >
+                                {stage}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </>
+                    );
+                  })()}
                 </div>
               </Link>
               <Link

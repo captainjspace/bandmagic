@@ -91,6 +91,66 @@
     @apply text-neutral-400 border-neutral-700;
   }
 
+  .stage-ideation {
+    @apply text-slate-400 border-slate-700;
+  }
+  .stage-ideation-bg {
+    @apply bg-slate-950/30;
+  }
+  .stage-morphing {
+    @apply text-purple-400 border-purple-800;
+  }
+  .stage-morphing-bg {
+    @apply bg-purple-950/30;
+  }
+  .stage-overdubbing {
+    @apply text-amber-400 border-amber-800;
+  }
+  .stage-overdubbing-bg {
+    @apply bg-amber-950/30;
+  }
+  .stage-scheduled {
+    @apply text-cyan-400 border-cyan-800;
+  }
+  .stage-scheduled-bg {
+    @apply bg-cyan-950/30;
+  }
+  .stage-released {
+    @apply text-emerald-400 border-emerald-800;
+  }
+  .stage-released-bg {
+    @apply bg-emerald-950/30;
+  }
+
+  /*
+   * Generic color palette for tag chips — named by color, not by tag, so any
+   * number of tags can share one. Which tag uses which color is declared in
+   * tags.json (each tag's optional "color" field), not here — this file only
+   * defines what each color name looks like. Add a new one here only when a
+   * tags.json entry actually asks for a color CSS doesn't have yet.
+   */
+  .tag-default {
+    @apply text-neutral-300 border-neutral-700;
+  }
+  .tag-sky {
+    @apply text-sky-400 border-sky-800;
+  }
+  .tag-sky-bg {
+    @apply bg-sky-950/30;
+  }
+  .tag-indigo {
+    @apply text-indigo-400 border-indigo-800;
+  }
+  .tag-indigo-bg {
+    @apply bg-indigo-950/30;
+  }
+  .tag-emerald {
+    @apply text-emerald-400 border-emerald-800;
+  }
+  .tag-emerald-bg {
+    @apply bg-emerald-950/30;
+  }
+
   .asset-lyrics {
     @apply text-violet-400 border-violet-800;
   }

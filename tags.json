@@ -1,0 +1,118 @@
+{
+  "_meta": {
+    "description": "Reference taxonomy of tags this app recognizes, grouped by the entity type they can be attached to. Declarative reference, but the color field IS live — src/lib/tag.ts reads it directly to style chips, so this file is the single place a tag's color gets decided (see \"color\" below; CSS itself still lives in globals.css, this just says which tag uses which one). An actual tag assignment on an entity is expected to be a flat array of these tag keys (e.g. a track's tags: string[]), not a typed value. New tags get added here only once a real use case surfaces; don't pre-populate speculative ones.",
+    "conventions": "All fields below are optional and default to \"unset\"/false when omitted — omit rather than writing out false/empty explicitly (e.g. {\"name\": \"Mastering\"} with nothing else is normal, not incomplete).",
+    "fields": {
+      "name": "Human-readable display label. Falls back to the tag key itself if omitted.",
+      "description": "What this tag means and when to apply it, including where it came from. Omit if the name is self-explanatory.",
+      "display_inherit_up": "If true, this tag should also be visually surfaced on the entity's parent(s) when displayed (e.g. a track tag showing through on its song). Omitted = false.",
+      "display_inherit_down": "If true, this tag should also be visually surfaced on the entity's children when displayed (e.g. a song tag showing through on all its tracks). Omitted = false.",
+      "color": "Optional palette name matching a .tag-<color>/.tag-<color>-bg pair already defined in src/app/globals.css (e.g. \"sky\", \"indigo\", \"emerald\"). Multiple tags can share one color. Omitted = the neutral default chip style — most tags should stay uncolored until there's a real reason to pull the eye to them."
+    }
+  },
+  "track-group": {
+    "tags": {
+      "learning": {
+        "name": "Learning",
+        "description": "A track group assembled as a practice/teaching packet for the band (e.g. isolated stems + a reference demo) rather than a release or rough-cuts drop.",
+        "color": "sky"
+      }
+    }
+  },
+  "track": {
+    "tags": {
+      "learning": {
+        "name": "Learning",
+        "description": "A deliberately bare-bones version of a part (e.g. an isolated instrument track, often paired with a chord chart) meant to help a band member learn their part — not a polished reference mix. Surfaced from the Magi-cali rhythm-guitar upload, 2026-09-27. Purely informational: a learning-tagged track can sit in any track group (including a non-learning one), and a learning track group can still contain an untagged full demo mix alongside it — no rules attached to this tag.",
+        "color": "sky"
+      },
+
+      "master": {
+        "name": "Master",
+        "description": "This version is the mastered/final production of the track, distinct from a rough mix or demo. Should surface on the parent song when displayed (e.g. \"this song has a master\") — that's what display_inherit_up covers, no separate song-level tag needed.",
+        "display_inherit_up": true,
+        "color": "indigo"
+      },
+      "mix_review": {
+        "name": "Mix Review",
+        "description": "This track is looking for feedback to determine of the mix is ready",
+        "display_inherit_up": true,
+        "display_inherit_down": false
+      },
+
+      "release_ready": {
+        "name": "Release ready",
+        "description": "This track is now mastered and waiting for other asset on the song",
+        "display_inherit_up": true,
+        "display_inherit_down": false
+      },
+
+      "master_track_released": {
+        "name": "Master Track Released",
+        "description": "This version has been publicly released - the should only happen when the song is released",
+        "display_inherit_up": true,
+        "display_inherit_down": false
+      },
+      "protected": {
+        "name": "Protected",
+        "description": "This track is protected - most likely it is .wav master track released"
+      }
+    }
+  },
+  "song": {
+    "tags": {
+      "writing": {
+        "name": "Writing",
+        "description": "This song is in progress it is still being worked on",
+        "display_inherit_up": false,
+        "display_inherit_down": false
+      },
+      "played_live": {
+        "name": "Played Live",
+        "description": "This song has been performed live - a strong indicator of progress",
+        "display_inherit_up": false,
+        "display_inherit_down": false
+      },
+      "studio_tracking": {
+        "name": "Studio Tracking",
+        "description": "We are now creating tracks and versions"
+      },
+      "overdubbing": {
+        "name": "Overdubbing",
+        "description": "Main tracks have been created and mixing is underway - we are track patching"
+      },
+      "mixing": {},
+      "mastering": {},
+
+      "assets_completed": {
+        "name": "Assets Completed",
+        "description": "This song has all asset required for release including a master track, supporting documentation for public metadata and art work required",
+        "display_inherit_up": true,
+        "display_inherit_down": false
+      },
+      "published": {
+        "name": "Published",
+        "description": "Published songs are released and protected - the song should have master released track, and additional assets - ID3 Tags, ISRC,etc",
+        "display_inherit_up": false,
+        "display_inherit_down": false
+      }
+    }
+  },
+  "asset": {
+    "tags": {
+      "required": {
+        "name": "required",
+        "description": "This asset is required for release -- artwork, lyrics, yaml id 3 "
+      },
+      "artwork": {
+        "name": "Artwork",
+        "description": "This album or single artwork to be updloaded to distrokid",
+        "display_inherit_up": true
+      },
+      "ID3": {
+        "name": "ID3 Tags Doc",
+        "description": "The ID3 Tags yaml file will include all the relevant ID3 tags for metadata bearing formats like mp3 and m4a including artwork path / urls / embedded lyrics and has been tested witht yaml_id3 - works successful tagging is critical"
+      }
+    }
+  }
+}

@@ -67,6 +67,7 @@ export interface Track {
   title: string;
   stage?: string;
   assets?: AssetLink[];
+  tags?: string[];
 }
 
 export interface TrackGroup {
@@ -104,6 +105,7 @@ export interface CatalogEntry {
   title: string;
   size?: number;
   syncedAt?: string;
+  tags?: string[];
 }
 
 export interface Song {
@@ -116,4 +118,5 @@ export interface Song {
   createdBy: string;
   updatedAt: string;
   updatedBy: string;
+  tags?: string[];
 }

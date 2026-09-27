@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { stageClass } from "@/lib/stage";
+import { tagBgClass, tagClass } from "@/lib/tag";
 import type { CatalogEntry } from "@/types/index.js";
 
 let _cache: CatalogEntry[] | null = null;
@@ -95,33 +95,54 @@ export function TrackSearch({ value, onSelect, onClear }: Props) {
       />
       {open && filtered.length > 0 && (
         <ul className="absolute z-50 bottom-full mb-1 w-full bg-neutral-900 border border-neutral-700 rounded shadow-xl max-h-64 overflow-y-auto">
-          {filtered.map((entry) => (
-            <li key={entry.id}>
-              <button
-                type="button"
-                onMouseDown={() => {
-                  onSelect(entry);
-                  setQuery("");
-                  setOpen(false);
-                }}
-                className="w-full text-left px-3 py-2 hover:bg-neutral-800 transition-colors flex items-center gap-3"
-              >
-                <div className="flex-1 min-w-0">
-                  <div className="text-sm text-neutral-100 truncate">
-                    {entry.title}
-                  </div>
-                  <div className="text-xs text-neutral-500 font-mono truncate">
-                    {entry.path}
-                  </div>
-                </div>
-                <span
-                  className={`text-xs border px-1.5 py-0.5 rounded shrink-0 ${stageClass(entry.stage)}`}
+          {filtered.map((entry) => {
+            const hasTags = !!entry.tags && entry.tags.length > 0;
+            const legacyStage =
+              !hasTags && entry.stage && entry.stage !== "unknown"
+                ? entry.stage
+                : null;
+            return (
+              <li key={entry.id}>
+                <button
+                  type="button"
+                  onMouseDown={() => {
+                    onSelect(entry);
+                    setQuery("");
+                    setOpen(false);
+                  }}
+                  className="w-full text-left px-3 py-2 hover:bg-neutral-800 transition-colors flex items-center gap-3"
                 >
-                  {entry.stage}
-                </span>
-              </button>
-            </li>
-          ))}
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm text-neutral-100 truncate">
+                      {entry.title}
+                    </div>
+                    <div className="text-xs text-neutral-500 font-mono truncate">
+                      {entry.path}
+                    </div>
+                  </div>
+                  {hasTags && entry.tags && (
+                    <span
+                      title="Tag Chips"
+                      className={`text-xs border px-1.5 py-0.5 rounded shrink-0 ${tagClass(entry.tags[0], "track")} ${tagBgClass(entry.tags[0], "track")}`}
+                    >
+                      {entry.tags[0]}
+                      {entry.tags.length > 1
+                        ? ` +${entry.tags.length - 1}`
+                        : ""}
+                    </span>
+                  )}
+                  {legacyStage && (
+                    <span
+                      title="Stage Chips (legacy — not yet migrated to a tag)"
+                      className="text-xs border border-dashed border-neutral-700 text-neutral-500 px-1.5 py-0.5 rounded shrink-0"
+                    >
+                      {legacyStage}
+                    </span>
+                  )}
+                </button>
+              </li>
+            );
+          })}
         </ul>
       )}
       {open && !loading && catalog.length > 0 && filtered.length === 0 && (

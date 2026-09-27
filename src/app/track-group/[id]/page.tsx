@@ -5,7 +5,7 @@ import { useCallback, useEffect, useState } from "react";
 import type { AssetsLoadKind } from "@/components/AssetPicker";
 import { type PlayerTrack, usePlayer } from "@/components/PlayerProvider";
 import { assetClass, driveDocKind } from "@/lib/asset";
-import { stageBgClass, stageClass } from "@/lib/stage";
+import { tagBgClass, tagClass } from "@/lib/tag";
 import type { Asset, AssetLink, Note, TrackGroup } from "@/types";
 
 /** element colors */
@@ -139,6 +139,48 @@ function AssetLinksSection({
           );
         })}
       </div>
+    </div>
+  );
+}
+
+/** Shows real tags labeled "Tag Chips:", or — only when there are none yet —
+ * the legacy stage value labeled "Stage Chips:" so it's clear which kind of
+ * data is being shown, not a silent merge of the two. */
+function LabeledTags({
+  tags,
+  stage,
+  className,
+}: {
+  tags?: string[];
+  stage?: string;
+  className?: string;
+}) {
+  const hasTags = !!tags && tags.length > 0;
+  const legacyStage = !hasTags && stage && stage !== "unknown" ? stage : null;
+  if (!hasTags && !legacyStage) return null;
+
+  return (
+    <div className={`flex items-center gap-1 flex-wrap ${className ?? ""}`}>
+      <span className="text-xs text-neutral-600">
+        {hasTags ? "Tag Chips:" : "Stage Chips:"}
+      </span>
+      {hasTags
+        ? tags?.map((tag) => (
+            <span
+              key={tag}
+              className={`text-xs border px-1 py-0 rounded inline-block ${tagClass(tag, "track")} ${tagBgClass(tag, "track")}`}
+            >
+              {tag}
+            </span>
+          ))
+        : legacyStage && (
+            <span
+              title="Legacy stage value — not yet migrated to a tag"
+              className="text-xs border border-dashed border-neutral-700 text-neutral-500 px-1 py-0 rounded inline-block"
+            >
+              {legacyStage}
+            </span>
+          )}
     </div>
   );
 }
@@ -379,13 +421,11 @@ export default function TrackGroupPage({
               </span>
               <div className="min-w-0 flex-1">
                 <div className="text-sm truncate">{track.title}</div>
-                {track.stage && (
-                  <span
-                    className={`text-xs border px-1 py-0 rounded mt-0.5 inline-block ${stageClass(track.stage)} ${stageBgClass(track.stage)}`}
-                  >
-                    {track.stage}
-                  </span>
-                )}
+                <LabeledTags
+                  tags={track.tags}
+                  stage={track.stage}
+                  className="mt-0.5"
+                />
               </div>
             </button>
           ))}
@@ -399,13 +439,11 @@ export default function TrackGroupPage({
                 <h2 className={`text-lg font-semibold ${colors.page.title}`}>
                   {active.title}
                 </h2>
-                {active.stage && (
-                  <span
-                    className={`text-xs border px-1.5 py-0.5 rounded ${stageClass(active.stage)} ${stageBgClass(active.stage)}`}
-                  >
-                    {active.stage}
-                  </span>
-                )}
+                <LabeledTags
+                  tags={active.tags}
+                  stage={active.stage}
+                  className="mt-1"
+                />
               </div>
               <TrackPlayer
                 key={active.path}
