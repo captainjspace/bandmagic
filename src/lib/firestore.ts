@@ -1,6 +1,13 @@
 import { FieldValue, Firestore, Timestamp } from "@google-cloud/firestore";
 import { normalize, SWEEP_THRESHOLD, scoreMatch } from "@/lib/filename-match";
-import type { Asset, CatalogEntry, Note, Song, TrackGroup } from "@/types";
+import type {
+  Asset,
+  AssetLink,
+  CatalogEntry,
+  Note,
+  Song,
+  TrackGroup,
+} from "@/types";
 
 const firestoreConfig = {
   databaseId: "bandmagic",
@@ -95,20 +102,7 @@ export async function updateTrackGroup(
         assets: patch.assets !== undefined ? patch.assets : old?.assets,
       });
       const deltas = diffCounts(oldCounts, newCounts);
-      const assetIds = Object.keys(deltas);
-      if (assetIds.length > 0) {
-        const assetRefs = assetIds.map((aid) =>
-          db().collection(firestoreConfig.assetsdb).doc(aid),
-        );
-        const assetSnaps = await tx.getAll(...assetRefs);
-        assetSnaps.forEach((assetSnap, i) => {
-          // Asset may already be gone (deleteAsset cleanup races); skip rather than fail the whole save.
-          if (!assetSnap.exists) return;
-          tx.update(assetRefs[i], {
-            usageCount: FieldValue.increment(deltas[assetIds[i]]),
-          });
-        });
-      }
+      await applyDeltasInTx(tx, deltas);
       tx.update(ref, patch);
     });
   } else {
@@ -202,6 +196,40 @@ export async function deleteAsset(id: string): Promise<void> {
     // Best-effort reference cleanup; still proceed with the delete either way.
     console.error("deleteAsset reference cleanup failed", err);
   }
+  try {
+    const songs = await getSongs();
+    const affected = songs.filter((s) =>
+      (s.assets ?? []).some((l) => l.assetId === id),
+    );
+    if (affected.length > 0) {
+      const batch = db().batch();
+      for (const s of affected) {
+        batch.update(db().collection(firestoreConfig.songsdb).doc(s.id), {
+          assets: (s.assets ?? []).filter((l) => l.assetId !== id),
+        });
+      }
+      await batch.commit();
+    }
+  } catch (err) {
+    console.error("deleteAsset song reference cleanup failed", err);
+  }
+  try {
+    const entries = await getCatalog();
+    const affected = entries.filter((e) =>
+      (e.assets ?? []).some((l) => l.assetId === id),
+    );
+    if (affected.length > 0) {
+      const batch = db().batch();
+      for (const e of affected) {
+        batch.update(db().collection("catalog").doc(e.id), {
+          assets: (e.assets ?? []).filter((l) => l.assetId !== id),
+        });
+      }
+      await batch.commit();
+    }
+  } catch (err) {
+    console.error("deleteAsset catalog reference cleanup failed", err);
+  }
   await db().collection(firestoreConfig.assetsdb).doc(id).delete();
 }
 
@@ -223,18 +251,40 @@ export async function applyAssetUsageDelta(
   }
 }
 
-function collectAssetLinks(
-  trackGroup: Pick<TrackGroup, "tracks" | "assets">,
-): Record<string, number> {
+function collectAssetLinks(entity: {
+  assets?: AssetLink[];
+  tracks?: { assets?: AssetLink[] }[];
+}): Record<string, number> {
   const counts: Record<string, number> = {};
   const bump = (assetId: string) => {
     counts[assetId] = (counts[assetId] ?? 0) + 1;
   };
-  for (const t of trackGroup.tracks) {
+  for (const t of entity.tracks ?? []) {
     for (const link of t.assets ?? []) bump(link.assetId);
   }
-  for (const link of trackGroup.assets ?? []) bump(link.assetId);
+  for (const link of entity.assets ?? []) bump(link.assetId);
   return counts;
+}
+
+/** Applies denormalized usageCount deltas inside an in-flight transaction, tolerating
+ *  an asset doc that's already gone (deleteAsset cleanup races) by skipping it rather
+ *  than failing the whole save. Shared by updateTrackGroup/updateSong/updateCatalogEntry. */
+async function applyDeltasInTx(
+  tx: FirebaseFirestore.Transaction,
+  deltas: Record<string, number>,
+): Promise<void> {
+  const assetIds = Object.keys(deltas);
+  if (assetIds.length === 0) return;
+  const assetRefs = assetIds.map((aid) =>
+    db().collection(firestoreConfig.assetsdb).doc(aid),
+  );
+  const assetSnaps = await tx.getAll(...assetRefs);
+  assetSnaps.forEach((assetSnap, i) => {
+    if (!assetSnap.exists) return;
+    tx.update(assetRefs[i], {
+      usageCount: FieldValue.increment(deltas[assetIds[i]]),
+    });
+  });
 }
 
 function diffCounts(
@@ -266,11 +316,24 @@ export async function getCatalogEntry(
 export async function updateCatalogEntry(
   id: string,
   patch: Partial<
-    Pick<CatalogEntry, "songId" | "stage" | "tags" | "title" | "mix">
+    Pick<CatalogEntry, "songId" | "stage" | "tags" | "title" | "mix" | "assets">
   >,
 ): Promise<CatalogEntry> {
   const ref = db().collection("catalog").doc(id);
-  await ref.update(patch);
+  if (patch.assets !== undefined) {
+    await db().runTransaction(async (tx) => {
+      const snap = await tx.get(ref);
+      const old = snap.exists ? (snap.data() as CatalogEntry) : null;
+      const deltas = diffCounts(
+        collectAssetLinks(old ?? {}),
+        collectAssetLinks({ assets: patch.assets }),
+      );
+      await applyDeltasInTx(tx, deltas);
+      tx.update(ref, patch);
+    });
+  } else {
+    await ref.update(patch);
+  }
   const doc = await ref.get();
   return { id: doc.id, ...doc.data() } as CatalogEntry;
 }
@@ -326,21 +389,33 @@ export async function getSongByName(name: string): Promise<Song | null> {
 export async function updateSong(
   id: string,
   patch: Partial<
-    Pick<Song, "name" | "folderPrefix" | "latestPath" | "aliases" | "tags">
+    Pick<
+      Song,
+      "name" | "folderPrefix" | "latestPath" | "aliases" | "tags" | "assets"
+    >
   >,
   actor: string,
 ): Promise<void> {
-  await db()
-    .collection(firestoreConfig.songsdb)
-    .doc(id)
-    .set(
-      {
-        ...patch,
-        updatedAt: Timestamp.now().toDate().toISOString(),
-        updatedBy: actor,
-      },
-      { merge: true },
-    );
+  const ref = db().collection(firestoreConfig.songsdb).doc(id);
+  const withAudit = {
+    ...patch,
+    updatedAt: Timestamp.now().toDate().toISOString(),
+    updatedBy: actor,
+  };
+  if (patch.assets !== undefined) {
+    await db().runTransaction(async (tx) => {
+      const snap = await tx.get(ref);
+      const old = snap.exists ? (snap.data() as Song) : null;
+      const deltas = diffCounts(
+        collectAssetLinks(old ?? {}),
+        collectAssetLinks({ assets: patch.assets }),
+      );
+      await applyDeltasInTx(tx, deltas);
+      tx.set(ref, withAudit, { merge: true });
+    });
+    return;
+  }
+  await ref.set(withAudit, { merge: true });
 }
 
 /**

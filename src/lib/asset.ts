@@ -61,6 +61,26 @@ export function reconcileAssetLinks(
   );
 }
 
+export interface EffectiveAssetLink extends AssetLink {
+  inherited: boolean;
+}
+
+/** A track's own asset links plus its parent song's, deduped by assetId. Inherited
+ *  links are flagged so the UI can render them read-only - removing one has to happen
+ *  on the song, since there's nothing to remove on the track itself (same class of bug
+ *  as an un-removable stage->tag fallback chip). */
+export function effectiveAssets(
+  ownLinks: AssetLink[] | undefined,
+  songLinks: AssetLink[] | undefined,
+): EffectiveAssetLink[] {
+  const ownIds = new Set((ownLinks ?? []).map((l) => l.assetId));
+  const own = (ownLinks ?? []).map((l) => ({ ...l, inherited: false }));
+  const inherited = (songLinks ?? [])
+    .filter((l) => !ownIds.has(l.assetId))
+    .map((l) => ({ ...l, inherited: true }));
+  return [...own, ...inherited];
+}
+
 /** Maps assetId -> a human label of where else it's already linked ("Track Group", "Track: Magical"),
  *  for surfacing a "already associated" hint in AssetPicker dropdowns. */
 export function assetLocationMap(
