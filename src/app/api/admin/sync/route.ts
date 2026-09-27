@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
     const parts = o.name.split("/");
     const filename = parts[parts.length - 1];
     const mix = filename.replace(/\.[^.]+$/, "");
-    const stage = stageFromPath(o.name) ?? "unknown";
+    const stage = stageFromPath(o.name) ?? "";
     // song is the folder directly containing the file, or filename if flat
     const isFolderName = parts.length >= 3;
     const song = isFolderName ? parts[parts.length - 2] : mix;
@@ -58,6 +58,6 @@ export async function POST(req: NextRequest) {
     ),
   );
 
-  const synced = await syncCatalog(entries);
+  const synced = (await syncCatalog(entries)).length;
   return NextResponse.json({ synced, message: `${synced} tracks indexed` });
 }

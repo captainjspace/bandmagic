@@ -1,29 +1,93 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { config } from "@/lib/config";
-import { getSong, updateCatalogEntry } from "@/lib/firestore";
+import { getCatalogEntry, getSong, updateCatalogEntry } from "@/lib/firestore";
+import { mockCatalog } from "@/lib/mock";
+
+export async function GET(
+  _req: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  const { id } = await params;
+  if (config.useMock) {
+    const entry = mockCatalog.find((e) => e.id === id);
+    if (!entry)
+      return NextResponse.json({ error: "Not found" }, { status: 404 });
+    return NextResponse.json(entry);
+  }
+  const entry = await getCatalogEntry(id);
+  if (!entry) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  return NextResponse.json(entry);
+}
 
 export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params;
-  const { songId } = await req.json();
-  if (typeof songId !== "string" || !songId) {
+  const { songId, stage, tags, title, mix } = await req.json();
+  const hasSongId = songId !== undefined;
+  const hasStage = stage !== undefined;
+  const hasTags = tags !== undefined;
+  const hasTitle = title !== undefined;
+  const hasMix = mix !== undefined;
+
+  if (!hasSongId && !hasStage && !hasTags && !hasTitle && !hasMix) {
     return NextResponse.json(
-      { error: 'Missing "songId" body' },
+      { error: 'Provide "songId", "stage", "tags", "title", and/or "mix"' },
+      { status: 400 },
+    );
+  }
+  if (hasSongId && (typeof songId !== "string" || !songId)) {
+    return NextResponse.json(
+      { error: '"songId" must be a non-empty string' },
+      { status: 400 },
+    );
+  }
+  if (hasStage && (typeof stage !== "string" || !stage)) {
+    return NextResponse.json(
+      { error: '"stage" must be a non-empty string' },
+      { status: 400 },
+    );
+  }
+  if (
+    hasTags &&
+    (!Array.isArray(tags) || !tags.every((t) => typeof t === "string"))
+  ) {
+    return NextResponse.json(
+      { error: '"tags" must be an array of strings' },
+      { status: 400 },
+    );
+  }
+  if (hasTitle && (typeof title !== "string" || !title.trim())) {
+    return NextResponse.json(
+      { error: '"title" must be a non-empty string' },
+      { status: 400 },
+    );
+  }
+  if (hasMix && typeof mix !== "string") {
+    return NextResponse.json(
+      { error: '"mix" must be a string' },
       { status: 400 },
     );
   }
 
   if (config.useMock) {
-    return NextResponse.json({ id, songId });
+    return NextResponse.json({ id, songId, stage, tags, title, mix });
   }
 
-  const song = await getSong(songId);
-  if (!song) {
-    return NextResponse.json({ error: "Song not found" }, { status: 404 });
+  if (hasSongId) {
+    const song = await getSong(songId);
+    if (!song) {
+      return NextResponse.json({ error: "Song not found" }, { status: 404 });
+    }
   }
 
-  const entry = await updateCatalogEntry(id, { songId });
+  const entry = await updateCatalogEntry(id, {
+    ...(hasSongId ? { songId } : {}),
+    ...(hasStage ? { stage } : {}),
+    ...(hasTags ? { tags } : {}),
+    ...(hasTitle ? { title: title.trim() } : {}),
+    ...(hasMix ? { mix } : {}),
+  });
   return NextResponse.json(entry);
 }

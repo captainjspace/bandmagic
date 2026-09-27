@@ -42,6 +42,16 @@ const LINKS = [
     title: "Songs",
     desc: "Inspect the GCS bucket backing the catalog.",
   },
+  {
+    href: "/admin/songs",
+    title: "Edit Songs",
+    desc: "Every field on the Song documents, labeled and editable.",
+  },
+  {
+    href: "/admin/catalog",
+    title: "Edit Catalog",
+    desc: "Every field on the CatalogEntry (track) documents, labeled and editable.",
+  },
 ];
 
 export default function AdminHubPage() {

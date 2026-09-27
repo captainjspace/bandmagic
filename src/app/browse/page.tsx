@@ -2,11 +2,15 @@
 
 import { useEffect, useState } from "react";
 import { SongPicker } from "@/components/SongPicker";
+import { TagChips } from "@/components/TagChips";
 import { stageBgClass, stageClass } from "@/lib/stage";
-import type { CatalogEntry, Song } from "@/types";
+import type { CatalogEntry, Song, TrackGroup } from "@/types";
+import tagsTaxonomy from "../../../tags.json";
 
 const UNCLASSIFIED = "unclassified";
 
+const TRACK_TAG_SUGGESTIONS = Object.keys(tagsTaxonomy.track?.tags ?? {});
+const SONG_TAG_SUGGESTIONS = Object.keys(tagsTaxonomy.song?.tags ?? {});
 
 const colors = {
   page: {
@@ -35,15 +39,31 @@ function sizeLabel(bytes?: number) {
   return `${n} B`;
 }
 
+/** Distinct non-"unknown" stage values a path already carries on any curated track group. */
+function inheritedStages(path: string, memberOf: TrackGroup[]): string[] {
+  const stages = new Set<string>();
+  for (const tg of memberOf) {
+    for (const t of tg.tracks) {
+      if (t.path === path && t.stage && t.stage !== "unknown") {
+        stages.add(t.stage);
+      }
+    }
+  }
+  return [...stages];
+}
+
 interface Group {
   key: string;
   name: string;
   entries: CatalogEntry[];
+  trackGroupCount: number;
+  songTags: string[];
 }
 
 export default function BrowsePage() {
   const [catalog, setCatalog] = useState<CatalogEntry[]>([]);
   const [songs, setSongs] = useState<Song[]>([]);
+  const [trackGroups, setTrackGroups] = useState<TrackGroup[]>([]);
   const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
 
@@ -51,16 +71,30 @@ export default function BrowsePage() {
     Promise.all([
       fetch("/api/catalog").then((r) => r.json()) as Promise<CatalogEntry[]>,
       fetch("/api/songs").then((r) => r.json()) as Promise<Song[]>,
-    ]).then(([catalogData, songsData]) => {
+      fetch("/api/track-groups").then((r) => r.json()) as Promise<TrackGroup[]>,
+    ]).then(([catalogData, songsData, trackGroupsData]) => {
       setCatalog(catalogData);
       setSongs(songsData);
+      setTrackGroups(trackGroupsData);
       const songIds = new Set(catalogData.map((e) => e.songId ?? UNCLASSIFIED));
       setExpanded(songIds);
       setLoading(false);
     });
   }, []);
 
-  const songNames = new Map(songs.map((s) => [s.id, s.name]));
+  const songsById = new Map(songs.map((s) => [s.id, s]));
+
+  // Cross-reference: which track groups reference each catalog path, and what
+  // stage those groups already assigned it — derived entirely from data
+  // already fetched above, no new field or endpoint.
+  const trackGroupsByPath = new Map<string, TrackGroup[]>();
+  for (const tg of trackGroups) {
+    for (const t of tg.tracks) {
+      if (!trackGroupsByPath.has(t.path)) trackGroupsByPath.set(t.path, []);
+      trackGroupsByPath.get(t.path)?.push(tg);
+    }
+  }
+
   const byGroup = new Map<string, CatalogEntry[]>();
   for (const entry of catalog) {
     const key = entry.songId ?? UNCLASSIFIED;
@@ -68,11 +102,25 @@ export default function BrowsePage() {
     byGroup.get(key)?.push(entry);
   }
 
-  const groups: Group[] = Array.from(byGroup, ([key, entries]) => ({
-    key,
-    name: key === UNCLASSIFIED ? "Unclassified" : (songNames.get(key) ?? key),
-    entries: [...entries].sort((a, b) => a.title.localeCompare(b.title)),
-  })).sort((a, b) => {
+  const groups: Group[] = Array.from(byGroup, ([key, entries]) => {
+    const sortedEntries = [...entries].sort((a, b) =>
+      a.title.localeCompare(b.title),
+    );
+    const groupIds = new Set<string>();
+    for (const e of sortedEntries) {
+      for (const tg of trackGroupsByPath.get(e.path) ?? []) groupIds.add(tg.id);
+    }
+    return {
+      key,
+      name:
+        key === UNCLASSIFIED
+          ? "Unclassified"
+          : (songsById.get(key)?.name ?? key),
+      entries: sortedEntries,
+      trackGroupCount: groupIds.size,
+      songTags: key === UNCLASSIFIED ? [] : (songsById.get(key)?.tags ?? []),
+    };
+  }).sort((a, b) => {
     if (a.key === UNCLASSIFIED) return 1;
     if (b.key === UNCLASSIFIED) return -1;
     return a.name.localeCompare(b.name);
@@ -103,6 +151,28 @@ export default function BrowsePage() {
     });
   };
 
+  const patchTrackTags = async (entry: CatalogEntry, nextTags: string[]) => {
+    setCatalog((prev) =>
+      prev.map((e) => (e.id === entry.id ? { ...e, tags: nextTags } : e)),
+    );
+    await fetch(`/api/catalog/${encodeURIComponent(entry.id)}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ tags: nextTags }),
+    });
+  };
+
+  const patchSongTags = async (songId: string, nextTags: string[]) => {
+    setSongs((prev) =>
+      prev.map((s) => (s.id === songId ? { ...s, tags: nextTags } : s)),
+    );
+    await fetch(`/api/songs/${encodeURIComponent(songId)}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ tags: nextTags }),
+    });
+  };
+
   return (
     <div className="max-w-xl">
       <div className="mb-8">
@@ -121,66 +191,166 @@ export default function BrowsePage() {
           const isOpen = expanded.has(group.key);
           return (
             <div key={group.key}>
-              <button
-                onClick={() => toggle(group.key)}
-                className={`w-full flex items-center gap-2 px-3 py-2 rounded ${colors.folder.header}`}
+              <div
+                className={`w-full flex items-center gap-2 px-3 py-2 rounded flex-wrap ${colors.folder.header}`}
               >
-                <span
-                  className={`${colors.folder.toggle} text-xs w-3 shrink-0`}
+                <button
+                  type="button"
+                  onClick={() => toggle(group.key)}
+                  className="flex items-center gap-2 min-w-0 flex-1 text-left"
                 >
-                  {isOpen ? "▾" : "▸"}
-                </span>
-                <span
-                  className={`flex-1 text-left text-sm ${colors.folder.name}`}
-                >
-                  {group.name}
-                </span>
+                  <span
+                    className={`${colors.folder.toggle} text-xs w-3 shrink-0`}
+                  >
+                    {isOpen ? "▾" : "▸"}
+                  </span>
+                  <span
+                    className={`text-left text-sm truncate ${colors.folder.name}`}
+                  >
+                    {group.name}
+                  </span>
+                </button>
+                {group.key !== UNCLASSIFIED && group.songTags.length > 0 && (
+                  <span className="text-xs text-neutral-600 shrink-0">
+                    Tag Chips:
+                  </span>
+                )}
+                {group.key !== UNCLASSIFIED && (
+                  <TagChips
+                    tags={group.songTags}
+                    entityType="song"
+                    suggestions={SONG_TAG_SUGGESTIONS}
+                    listId={`song-tags-${group.key}`}
+                    onAdd={(tag) =>
+                      patchSongTags(
+                        group.key,
+                        Array.from(new Set([...group.songTags, tag])),
+                      )
+                    }
+                    onRemove={(tag) =>
+                      patchSongTags(
+                        group.key,
+                        group.songTags.filter((t) => t !== tag),
+                      )
+                    }
+                  />
+                )}
+                {group.trackGroupCount > 0 && (
+                  <span
+                    className="text-xs text-neutral-600 shrink-0"
+                    title={`Referenced in ${group.trackGroupCount} track group${group.trackGroupCount !== 1 ? "s" : ""}`}
+                  >
+                    in {group.trackGroupCount}
+                  </span>
+                )}
                 <span className={`${colors.folder.count} text-xs tabular-nums`}>
                   {group.entries.length}
                 </span>
-              </button>
+              </div>
 
               {isOpen && (
                 <div className="pl-7 space-y-1">
-                  {group.entries.map((entry) => (
-                    <div
-                      key={entry.id}
-                      className="flex items-center gap-3 px-3 py-1.5 rounded hover:bg-neutral-900 group"
-                    >
-                      <span
-                        className={`flex-1 text-sm ${colors.trackRow.name} truncate`}
+                  {group.entries.map((entry) => {
+                    const memberOf = trackGroupsByPath.get(entry.path) ?? [];
+                    const inherited = inheritedStages(entry.path, memberOf);
+                    const entryTags = entry.tags ?? [];
+                    return (
+                      <div
+                        key={entry.id}
+                        className="flex items-center gap-3 px-3 py-1.5 rounded hover:bg-neutral-900 group flex-wrap sm:flex-nowrap"
                       >
-                        {entry.title}
-                      </span>
-                      <span
-                        className={`text-xs border px-1.5 py-0.5 rounded shrink-0 ${stageClass(entry.stage)} ${stageBgClass(entry.stage)}`}
-                      >
-                        {entry.stage}
-                      </span>
-                      <span
-                        className={`${colors.trackRow.size} text-xs tabular-nums shrink-0`}
-                      >
-                        {sizeLabel(entry.size)}
-                      </span>
-                      <a
-                        href={`/api/audio?path=${encodeURIComponent(entry.path)}`}
-                        className={`text-xs ${colors.trackRow.playLink} opacity-0 group-hover:opacity-100 transition-opacity shrink-0`}
-                        target="_blank"
-                        rel="noreferrer"
-                      >
-                        play
-                      </a>
-                      <div className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
-                        <SongPicker
-                          songs={songs}
-                          loadState={loading ? "loading" : "loaded"}
-                          value={entry.songId}
-                          onAssign={(song) => handleAssign(entry, song)}
-                          onSongCreated={handleSongCreated}
+                        <span
+                          className={`w-full sm:w-auto sm:flex-1 text-sm ${colors.trackRow.name} truncate`}
+                        >
+                          {entry.title}
+                        </span>
+                        {inherited.length > 0 && (
+                          <div className="flex items-center gap-1 shrink-0">
+                            <span className="text-xs text-neutral-600">
+                              Stage Chips:
+                            </span>
+                            {inherited.map((stage) => (
+                              <span
+                                key={stage}
+                                title="Track group stage — set within a track group this file belongs to, not editable here"
+                                className={`text-xs border px-1.5 py-0.5 rounded ${stageClass(stage)} ${stageBgClass(stage)}`}
+                              >
+                                {stage}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                        {entryTags.length > 0 && (
+                          <span className="text-xs text-neutral-600 shrink-0">
+                            Tag Chips:
+                          </span>
+                        )}
+                        <TagChips
+                          tags={entryTags}
+                          entityType="track"
+                          suggestions={TRACK_TAG_SUGGESTIONS}
+                          listId={`track-tags-${entry.id}`}
+                          onAdd={(tag) =>
+                            patchTrackTags(
+                              entry,
+                              Array.from(new Set([...entryTags, tag])),
+                            )
+                          }
+                          onRemove={(tag) =>
+                            patchTrackTags(
+                              entry,
+                              entryTags.filter((t) => t !== tag),
+                            )
+                          }
                         />
+                        {entryTags.length === 0 &&
+                          entry.stage &&
+                          entry.stage !== "unknown" && (
+                            <>
+                              <span className="text-xs text-neutral-600 shrink-0">
+                                Stage Chips:
+                              </span>
+                              <span
+                                title="Legacy stage value from before tagging existed — not yet migrated to a tag."
+                                className="text-xs border border-dashed border-neutral-600 text-neutral-500 px-1.5 py-0.5 rounded shrink-0"
+                              >
+                                {entry.stage}
+                              </span>
+                            </>
+                          )}
+                        {memberOf.length > 0 && (
+                          <span
+                            className="text-xs text-neutral-500 shrink-0"
+                            title={`In: ${memberOf.map((g) => g.title).join(", ")}`}
+                          >
+                            in {memberOf.length}
+                          </span>
+                        )}
+                        <span
+                          className={`${colors.trackRow.size} text-xs tabular-nums shrink-0`}
+                        >
+                          {sizeLabel(entry.size)}
+                        </span>
+                        <a
+                          href={`/api/audio?path=${encodeURIComponent(entry.path)}`}
+                          className={`text-xs ${colors.trackRow.playLink} opacity-0 group-hover:opacity-100 transition-opacity shrink-0`}
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          play
+                        </a>
+                        <div className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                          <SongPicker
+                            songs={songs}
+                            loadState={loading ? "loading" : "loaded"}
+                            value={entry.songId}
+                            onAssign={(song) => handleAssign(entry, song)}
+                            onSongCreated={handleSongCreated}
+                          />
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>

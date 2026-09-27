@@ -96,12 +96,9 @@ export async function POST(req: NextRequest) {
       Buffer.from(await file.arrayBuffer()),
       file.type || undefined,
     );
-    await syncCatalog([entry]);
+    const [{ id }] = await syncCatalog([entry]);
 
-    return NextResponse.json(
-      { id: encodeURIComponent(path), ...entry },
-      { status: 201 },
-    );
+    return NextResponse.json({ id, ...entry }, { status: 201 });
   } catch (e) {
     const { body, status } = errorResponse(e, {
       userEmail,

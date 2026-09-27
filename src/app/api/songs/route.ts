@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { config } from "@/lib/config";
-import { getSong, getSongs, seedSongs } from "@/lib/firestore";
+import { getSongByName, getSongs, seedSongs } from "@/lib/firestore";
 import { mockSongs } from "@/lib/mock";
 
 export async function GET() {
@@ -39,6 +39,6 @@ export async function POST(req: NextRequest) {
   }
 
   await seedSongs([{ name: trimmed }], author);
-  const song = await getSong(encodeURIComponent(trimmed));
+  const song = await getSongByName(trimmed);
   return NextResponse.json(song, { status: 201 });
 }

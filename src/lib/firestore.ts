@@ -255,9 +255,19 @@ export async function getCatalog(): Promise<CatalogEntry[]> {
   return snap.docs.map((d) => ({ id: d.id, ...d.data() }) as CatalogEntry);
 }
 
+export async function getCatalogEntry(
+  id: string,
+): Promise<CatalogEntry | null> {
+  const doc = await db().collection("catalog").doc(id).get();
+  if (!doc.exists) return null;
+  return { id: doc.id, ...doc.data() } as CatalogEntry;
+}
+
 export async function updateCatalogEntry(
   id: string,
-  patch: Partial<Pick<CatalogEntry, "songId">>,
+  patch: Partial<
+    Pick<CatalogEntry, "songId" | "stage" | "tags" | "title" | "mix">
+  >,
 ): Promise<CatalogEntry> {
   const ref = db().collection("catalog").doc(id);
   await ref.update(patch);
@@ -267,19 +277,23 @@ export async function updateCatalogEntry(
 
 export async function syncCatalog(
   entries: Omit<CatalogEntry, "id">[],
-): Promise<number> {
+): Promise<{ id: string }[]> {
   const syncedAt = new Date().toISOString();
+  const existing = await db().collection("catalog").get();
+  const byPath = new Map(existing.docs.map((d) => [d.data().path, d.ref]));
+
+  const results: { id: string }[] = [];
   for (let i = 0; i < entries.length; i += 400) {
+    const chunk = entries.slice(i, i + 400);
     const batch = db().batch();
-    for (const entry of entries.slice(i, i + 400)) {
-      const ref = db()
-        .collection("catalog")
-        .doc(encodeURIComponent(entry.path));
+    for (const entry of chunk) {
+      const ref = byPath.get(entry.path) ?? db().collection("catalog").doc();
       batch.set(ref, { ...entry, syncedAt }, { merge: true });
+      results.push({ id: ref.id });
     }
     await batch.commit();
   }
-  return entries.length;
+  return results;
 }
 
 // --- songs ---
@@ -298,9 +312,22 @@ export async function getSong(id: string): Promise<Song | null> {
   return { id: doc.id, ...doc.data() } as Song;
 }
 
+export async function getSongByName(name: string): Promise<Song | null> {
+  const snap = await db()
+    .collection(firestoreConfig.songsdb)
+    .where("name", "==", name)
+    .limit(1)
+    .get();
+  if (snap.empty) return null;
+  const doc = snap.docs[0];
+  return { id: doc.id, ...doc.data() } as Song;
+}
+
 export async function updateSong(
   id: string,
-  patch: Partial<Pick<Song, "folderPrefix" | "latestPath" | "aliases">>,
+  patch: Partial<
+    Pick<Song, "name" | "folderPrefix" | "latestPath" | "aliases" | "tags">
+  >,
   actor: string,
 ): Promise<void> {
   await db()
@@ -329,30 +356,30 @@ export async function seedSongs(
   let updated = 0;
   const now = Timestamp.now().toDate().toISOString();
 
+  const existingSongs = await db().collection(firestoreConfig.songsdb).get();
+  const byName = new Map(existingSongs.docs.map((d) => [d.data().name, d.ref]));
+
   for (let i = 0; i < entries.length; i += 400) {
     const chunk = entries.slice(i, i + 400);
-    const refs = chunk.map((e) =>
-      db().collection(firestoreConfig.songsdb).doc(encodeURIComponent(e.name)),
-    );
-    const existing = await db().getAll(...refs);
-
     const batch = db().batch();
-    chunk.forEach((entry, idx) => {
-      const exists = existing[idx].exists;
+    for (const entry of chunk) {
+      const existingRef = byName.get(entry.name);
+      const ref = existingRef ?? db().collection(firestoreConfig.songsdb).doc();
+      if (!existingRef) byName.set(entry.name, ref);
       batch.set(
-        refs[idx],
+        ref,
         {
           name: entry.name,
           aliases: entry.aliases ?? [],
           updatedAt: now,
           updatedBy: actor,
-          ...(exists ? {} : { createdAt: now, createdBy: actor }),
+          ...(existingRef ? {} : { createdAt: now, createdBy: actor }),
         },
         { merge: true },
       );
-      if (exists) updated++;
+      if (existingRef) updated++;
       else created++;
-    });
+    }
     await batch.commit();
   }
 

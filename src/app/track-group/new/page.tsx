@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { AssetPicker, type AssetsLoadKind } from "@/components/AssetPicker";
+import { TagChips } from "@/components/TagChips";
 import { TrackSearch } from "@/components/TrackSearch";
 import {
   assetLinkIds,
@@ -12,6 +13,9 @@ import {
   uid,
 } from "@/lib/asset";
 import type { Asset, AssetLink, CatalogEntry } from "@/types";
+import tagsTaxonomy from "../../../../tags.json";
+
+const TRACK_TAG_SUGGESTIONS = Object.keys(tagsTaxonomy.track?.tags ?? {});
 
 /** element colors */
 const colors = {
@@ -52,10 +56,18 @@ interface TrackEntry {
   title: string;
   stage: string;
   assets: AssetLink[];
+  tags: string[];
 }
 
 function newTrack(): TrackEntry {
-  return { _id: uid(), path: "", title: "", stage: "mixing", assets: [] };
+  return {
+    _id: uid(),
+    path: "",
+    title: "",
+    stage: "mixing",
+    assets: [],
+    tags: [],
+  };
 }
 
 export default function NewTrackGroupPage() {
@@ -108,14 +120,30 @@ export default function NewTrackGroupPage() {
   const addTrack = () => setTracks((prev) => [...prev, newTrack()]);
   const removeTrack = (id: string) =>
     setTracks((prev) => prev.filter((t) => t._id !== id));
+  const moveTrack = (id: string, direction: -1 | 1) =>
+    setTracks((prev) => {
+      const idx = prev.findIndex((t) => t._id === id);
+      const swapIdx = idx + direction;
+      if (idx === -1 || swapIdx < 0 || swapIdx >= prev.length) return prev;
+      const next = [...prev];
+      [next[idx], next[swapIdx]] = [next[swapIdx], next[idx]];
+      return next;
+    });
   const updateTrack = useCallback(
     (
       id: string,
-      field: keyof Omit<TrackEntry, "_id" | "assets">,
+      field: keyof Omit<TrackEntry, "_id" | "assets" | "tags">,
       value: string,
     ) =>
       setTracks((prev) =>
         prev.map((t) => (t._id === id ? { ...t, [field]: value } : t)),
+      ),
+    [],
+  );
+  const setTrackTags = useCallback(
+    (id: string, nextTags: string[]) =>
+      setTracks((prev) =>
+        prev.map((t) => (t._id === id ? { ...t, tags: nextTags } : t)),
       ),
     [],
   );
@@ -124,7 +152,13 @@ export default function NewTrackGroupPage() {
       setTracks((prev) =>
         prev.map((t) =>
           t._id === id
-            ? { ...t, path: entry.path, title: entry.title, stage: entry.stage }
+            ? {
+                ...t,
+                path: entry.path,
+                title: entry.title,
+                stage: entry.stage,
+                tags: entry.tags ?? [],
+              }
             : t,
         ),
       ),
@@ -370,7 +404,7 @@ export default function NewTrackGroupPage() {
             </button>
           </div>
           <div className="space-y-3">
-            {tracks.map((track) => (
+            {tracks.map((track, idx) => (
               <div
                 key={track._id}
                 className={`border rounded p-3 space-y-2 ${track.path.trim() ? "border-neutral-800" : "border-neutral-800/50 opacity-60"}`}
@@ -384,18 +418,44 @@ export default function NewTrackGroupPage() {
                     className="flex-1 bg-neutral-900 border border-neutral-700 rounded px-2 py-1.5 text-sm text-neutral-100 focus:outline-none focus:border-green-600"
                     placeholder="Track title"
                   />
-                  <select
-                    value={track.stage}
-                    onChange={(e) =>
-                      updateTrack(track._id, "stage", e.target.value)
+                  <TagChips
+                    tags={track.tags}
+                    entityType="track"
+                    suggestions={TRACK_TAG_SUGGESTIONS}
+                    listId={`track-tags-${track._id}`}
+                    onAdd={(tag) =>
+                      setTrackTags(
+                        track._id,
+                        Array.from(new Set([...track.tags, tag])),
+                      )
                     }
-                    className="bg-neutral-900 border border-neutral-700 rounded px-2 py-1.5 text-sm text-neutral-100 focus:outline-none focus:border-green-600"
+                    onRemove={(tag) =>
+                      setTrackTags(
+                        track._id,
+                        track.tags.filter((t) => t !== tag),
+                      )
+                    }
+                  />
+                  <button
+                    type="button"
+                    onClick={() => moveTrack(track._id, -1)}
+                    disabled={idx === 0}
+                    aria-label="Move track up"
+                    title="Move up"
+                    className={`text-xs px-1 ${colors.trackCard.addBtn} disabled:opacity-30 transition-colors`}
                   >
-                    <option value="writing">writing</option>
-                    <option value="tracking">tracking</option>
-                    <option value="mixing">mixing</option>
-                    <option value="mastering">mastering</option>
-                  </select>
+                    ▲
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => moveTrack(track._id, 1)}
+                    disabled={idx === tracks.length - 1}
+                    aria-label="Move track down"
+                    title="Move down"
+                    className={`text-xs px-1 ${colors.trackCard.addBtn} disabled:opacity-30 transition-colors`}
+                  >
+                    ▼
+                  </button>
                   {tracks.length > 1 && (
                     <button
                       type="button"
