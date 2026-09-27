@@ -24,7 +24,8 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params;
-  const { name, aliases, folderPrefix, latestPath, tags } = await req.json();
+  const { name, aliases, folderPrefix, latestPath, tags, assets } =
+    await req.json();
 
   if (name !== undefined && (typeof name !== "string" || !name.trim())) {
     return NextResponse.json(
@@ -62,6 +63,16 @@ export async function PATCH(
       { status: 400 },
     );
   }
+  if (
+    assets !== undefined &&
+    (!Array.isArray(assets) ||
+      !assets.every((l) => l && typeof l.assetId === "string"))
+  ) {
+    return NextResponse.json(
+      { error: '"assets" must be an array of asset links' },
+      { status: 400 },
+    );
+  }
 
   const author =
     req.headers
@@ -76,6 +87,7 @@ export async function PATCH(
     ...(folderPrefix !== undefined ? { folderPrefix } : {}),
     ...(latestPath !== undefined ? { latestPath } : {}),
     ...(tags !== undefined ? { tags } : {}),
+    ...(assets !== undefined ? { assets } : {}),
   };
 
   if (config.useMock) {

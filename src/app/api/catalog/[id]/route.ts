@@ -24,16 +24,27 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params;
-  const { songId, stage, tags, title, mix } = await req.json();
+  const { songId, stage, tags, title, mix, assets } = await req.json();
   const hasSongId = songId !== undefined;
   const hasStage = stage !== undefined;
   const hasTags = tags !== undefined;
   const hasTitle = title !== undefined;
   const hasMix = mix !== undefined;
+  const hasAssets = assets !== undefined;
 
-  if (!hasSongId && !hasStage && !hasTags && !hasTitle && !hasMix) {
+  if (
+    !hasSongId &&
+    !hasStage &&
+    !hasTags &&
+    !hasTitle &&
+    !hasMix &&
+    !hasAssets
+  ) {
     return NextResponse.json(
-      { error: 'Provide "songId", "stage", "tags", "title", and/or "mix"' },
+      {
+        error:
+          'Provide "songId", "stage", "tags", "title", "mix", and/or "assets"',
+      },
       { status: 400 },
     );
   }
@@ -70,9 +81,19 @@ export async function PATCH(
       { status: 400 },
     );
   }
+  if (
+    hasAssets &&
+    (!Array.isArray(assets) ||
+      !assets.every((l) => l && typeof l.assetId === "string"))
+  ) {
+    return NextResponse.json(
+      { error: '"assets" must be an array of asset links' },
+      { status: 400 },
+    );
+  }
 
   if (config.useMock) {
-    return NextResponse.json({ id, songId, stage, tags, title, mix });
+    return NextResponse.json({ id, songId, stage, tags, title, mix, assets });
   }
 
   if (hasSongId) {
@@ -88,6 +109,7 @@ export async function PATCH(
     ...(hasTags ? { tags } : {}),
     ...(hasTitle ? { title: title.trim() } : {}),
     ...(hasMix ? { mix } : {}),
+    ...(hasAssets ? { assets } : {}),
   });
   return NextResponse.json(entry);
 }
