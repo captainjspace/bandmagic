@@ -544,3 +544,90 @@ export async function migrateAssetIdsToAssetLinks() {
     `Migrated ${migratedDocs} of ${snapshot.size} track group documents.`,
   );
 }
+
+/**
+ * migrateSongIds - one-off utility, run manually. Every Song doc created before
+ * the 2026-09-27 fix has an id derived from its name (`encodeURIComponent(name)`)
+ * instead of a Firestore auto-gen id. For each such doc: create a new auto-gen-id
+ * doc with the same data, repoint every CatalogEntry.songId that referenced the old
+ * id, then delete the old doc. Idempotent: a doc already on an auto-gen id will
+ * never satisfy the legacy-id check below, so re-running finds nothing to migrate.
+ * One song's migration failing doesn't abort the run - it's recorded in `skipped`.
+ */
+export async function migrateSongIds(
+  actor: string,
+): Promise<{ migrated: number; skipped: string[] }> {
+  let migrated = 0;
+  const skipped: string[] = [];
+  const now = Timestamp.now().toDate().toISOString();
+
+  const songsSnap = await db().collection(firestoreConfig.songsdb).get();
+  const legacy = songsSnap.docs.filter(
+    (d) => d.id === encodeURIComponent(d.data().name ?? ""),
+  );
+
+  for (const doc of legacy) {
+    const data = doc.data();
+    try {
+      const newRef = db().collection(firestoreConfig.songsdb).doc();
+      await newRef.set({
+        ...data,
+        updatedAt: now,
+        updatedBy: actor,
+      });
+
+      const catalogSnap = await db()
+        .collection("catalog")
+        .where("songId", "==", doc.id)
+        .get();
+      if (!catalogSnap.empty) {
+        const batch = db().batch();
+        for (const catalogDoc of catalogSnap.docs) {
+          batch.update(catalogDoc.ref, { songId: newRef.id });
+        }
+        await batch.commit();
+      }
+
+      await doc.ref.delete();
+      migrated++;
+    } catch (err) {
+      console.error(`migrateSongIds failed for "${data.name}"`, err);
+      skipped.push(data.name ?? doc.id);
+    }
+  }
+
+  return { migrated, skipped };
+}
+
+/**
+ * migrateCatalogEntryIds - one-off utility, run manually. Every CatalogEntry doc
+ * created before the 2026-09-27 fix has an id derived from its path
+ * (`encodeURIComponent(path)`) instead of a Firestore auto-gen id. Nothing
+ * references CatalogEntry.id as a foreign key (TrackGroup.tracks[] joins by
+ * `path` string equality), so this is a plain create+delete with no repointing.
+ * Idempotent, same as migrateSongIds above.
+ */
+export async function migrateCatalogEntryIds(): Promise<{
+  migrated: number;
+}> {
+  let migrated = 0;
+
+  const catalogSnap = await db().collection("catalog").get();
+  const legacy = catalogSnap.docs.filter(
+    (d) => d.id === encodeURIComponent(d.data().path ?? ""),
+  );
+
+  for (const doc of legacy) {
+    const data = doc.data();
+    try {
+      const newRef = db().collection("catalog").doc();
+      await newRef.set(data);
+      await doc.ref.delete();
+      migrated++;
+    } catch (err) {
+      console.error(`migrateCatalogEntryIds failed for "${data.path}"`, err);
+    }
+  }
+
+  return { migrated };
+}
