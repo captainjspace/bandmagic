@@ -9,6 +9,8 @@ erDiagram
         string createdBy
         string updatedAt
         string updatedBy
+        string_array tags
+        AssetLink_array assets "song-owned assets (lyrics, chord charts); tracks of this song inherit these for display"
     }
 
     CATALOG_ENTRY {
@@ -21,6 +23,8 @@ erDiagram
         string title
         number size
         string syncedAt
+        string_array tags
+        AssetLink_array assets "this track's own assets, in addition to its song's inherited ones"
     }
 
     TRACK_GROUP {
@@ -72,4 +76,6 @@ erDiagram
     TRACK_GROUP ||--o{ NOTE : "subcollection, keyed by trackPath"
     TRACK_GROUP ||--o{ ASSET_LINK : "embeds assets[] (group-level)"
     TRACK ||--o{ ASSET_LINK : "embeds assets[] (track-level)"
+    SONG ||--o{ ASSET_LINK : "embeds assets[] (song-level, inherited by its CATALOG_ENTRYs for display)"
+    CATALOG_ENTRY ||--o{ ASSET_LINK : "embeds assets[] (track-level, own)"
     ASSET_LINK }o--|| ASSET : "assetId (real FK)"

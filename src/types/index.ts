@@ -106,6 +106,7 @@ export interface CatalogEntry {
   size?: number;
   syncedAt?: string;
   tags?: string[];
+  assets?: AssetLink[];
 }
 
 export interface Song {
@@ -119,4 +120,5 @@ export interface Song {
   updatedAt: string;
   updatedBy: string;
   tags?: string[];
+  assets?: AssetLink[];
 }
