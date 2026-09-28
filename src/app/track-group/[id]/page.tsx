@@ -4,9 +4,17 @@ import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import type { AssetsLoadKind } from "@/components/AssetPicker";
 import { type PlayerTrack, usePlayer } from "@/components/PlayerProvider";
+import { SongChip } from "@/components/SongChip";
 import { assetClass, driveDocKind } from "@/lib/asset";
 import { tagBgClass, tagClass } from "@/lib/tag";
-import type { Asset, AssetLink, Note, TrackGroup } from "@/types";
+import type {
+  Asset,
+  AssetLink,
+  CatalogEntry,
+  Note,
+  Song,
+  TrackGroup,
+} from "@/types";
 
 /** element colors */
 const colors = {
@@ -326,6 +334,8 @@ export default function TrackGroupPage({
   const [assetsLoad, setAssetsLoad] = useState<AssetsLoadKind>("loading");
   const [activeTrack, setActiveTrack] = useState<string | null>(null);
   const [trackGroupId, setTrackGroupId] = useState<string>("");
+  const [catalog, setCatalog] = useState<CatalogEntry[]>([]);
+  const [songs, setSongs] = useState<Song[]>([]);
 
   const fetchAssets = useCallback(async () => {
     try {
@@ -356,6 +366,14 @@ export default function TrackGroupPage({
     });
     // eslint-disable-next-line react-hooks/set-state-in-effect -- one-shot fetch on mount; setState fires after await
     fetchAssets();
+    fetch("/api/catalog")
+      .then((r) => r.json())
+      .then(setCatalog)
+      .catch(() => {});
+    fetch("/api/songs")
+      .then((r) => r.json())
+      .then(setSongs)
+      .catch(() => {});
   }, [params, fetchAssets]);
 
   if (!trackGroup) {
@@ -365,6 +383,14 @@ export default function TrackGroupPage({
   const validTracks = trackGroup.tracks.filter((t) => t.path?.trim());
   const active = validTracks.find((t) => t.path === activeTrack);
   const assetsById = new Map(assets.map((a) => [a.id, a]));
+  // Track (embedded in TrackGroup) has no songId of its own — derive song
+  // ownership the same way Browse does, by joining on path via the catalog.
+  const songsById = new Map(songs.map((s) => [s.id, s]));
+  const songNameByPath = new Map(
+    catalog
+      .filter((e) => e.songId)
+      .map((e) => [e.path, songsById.get(e.songId as string)?.name]),
+  );
 
   return (
     <div className="max-w-2xl">
@@ -421,11 +447,15 @@ export default function TrackGroupPage({
               </span>
               <div className="min-w-0 flex-1">
                 <div className="text-sm truncate">{track.title}</div>
-                <LabeledTags
-                  tags={track.tags}
-                  stage={track.stage}
-                  className="mt-0.5"
-                />
+                <div className="flex items-center gap-1.5 flex-wrap mt-0.5">
+                  {songNameByPath.get(track.path) && (
+                    <SongChip
+                      name={songNameByPath.get(track.path) as string}
+                      size="sm"
+                    />
+                  )}
+                  <LabeledTags tags={track.tags} stage={track.stage} />
+                </div>
               </div>
             </button>
           ))}

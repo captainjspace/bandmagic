@@ -3,6 +3,7 @@
 import { useSearchParams } from "next/navigation";
 import { Suspense, useCallback, useEffect, useState } from "react";
 import { AssetPicker, type AssetsLoadKind } from "@/components/AssetPicker";
+import { SongChip } from "@/components/SongChip";
 import { SongPicker } from "@/components/SongPicker";
 import { TagChips } from "@/components/TagChips";
 import {
@@ -19,32 +20,36 @@ const UNCLASSIFIED = "unclassified";
 const TRACK_TAG_SUGGESTIONS = Object.keys(tagsTaxonomy.track?.tags ?? {});
 const SONG_TAG_SUGGESTIONS = Object.keys(tagsTaxonomy.song?.tags ?? {});
 
-/** element colors — bright cards (white + rbyellow frame) against the app's dark backdrop. */
 const colors = {
   page: {
     title: "text-rbblue-500",
-    subtitle: "text-rbred-400",
-    loading: "text-neutral-400",
-    empty: "text-neutral-400",
+    subtitle: "text-rbblue-700",
+    loading: "text-neutral-500",
+    empty: "text-neutral-500",
   },
-  card: {
-    container:
-      "bg-white border-2 border-rbyellow-400 hover:border-rbyellow-500",
-    name: "text-rbyellow-800",
-    toggle: "text-neutral-400 hover:text-rbpurple-600",
-    count: "text-rbred-600",
-    label: "text-neutral-500",
-    editBtn: "text-neutral-500 hover:text-green-600",
-    saveBtn: "text-green-600 hover:text-green-500",
-    cancelBtn: "text-neutral-500 hover:text-neutral-700",
-    inputBorder: "border-rbyellow-300 focus:border-rbyellow-600",
+  song: {
+    box: "border border-rbyellow-800 rounded-lg hover:border-rbyellow-600 transition-colors",
+    name: "text-gradient-brand font-bold",
+    toggle: "text-rbyellow-700 hover:text-rbyellow-500",
+    count: "text-rbyellow-600",
+    label: "text-neutral-600",
+    actions: "text-rbyellow-500 hover:text-rbyellow-300",
   },
-  trackRow: {
-    hover: "hover:bg-rbyellow-100",
-    name: "text-rbblue-700",
-    size: "text-neutral-500",
-    playLink: "text-green-600 hover:underline",
-    label: "text-neutral-500",
+  track: {
+    box: "border border-cyan-800 rounded hover:border-cyan-600 transition-colors",
+    hover: "hover:bg-neutral-900",
+    name: "text-cyan-400",
+    size: "text-rbyellow-500",
+    playLink: "text-green-500 hover:underline",
+    label: "text-neutral-600",
+    actions: "text-cyan-400 hover:text-cyan-300",
+  },
+  panel: {
+    border: "border-neutral-800",
+    saveBtn: "text-green-500 hover:text-green-400",
+    cancelBtn: "text-neutral-600 hover:text-neutral-400",
+    inputBg:
+      "bg-neutral-950 border-neutral-700 text-neutral-100 focus:border-green-600",
   },
 };
 
@@ -97,7 +102,6 @@ function AssetChip({
   inherited,
 }: {
   asset: Asset | undefined;
-  assetId: string;
   inherited: boolean;
 }) {
   if (!asset) return null;
@@ -108,10 +112,10 @@ function AssetChip({
           ? "Inherited from this track's song — remove it on the song, not here."
           : undefined
       }
-      className={`text-xs border rounded px-1.5 py-0.5 ${
+      className={`text-xs border rounded px-1.5 py-0.5 shrink-0 ${
         inherited
-          ? "border-dashed border-neutral-400 text-neutral-500"
-          : "border-violet-700 text-violet-700"
+          ? "border-dashed border-neutral-700 text-neutral-500"
+          : "border-violet-800 text-violet-400"
       }`}
     >
       {asset.title}
@@ -132,9 +136,12 @@ function BrowsePageInner() {
   const [assetsLoad, setAssetsLoad] = useState<AssetsLoadKind>("loading");
   const [userEmail, setUserEmail] = useState("");
 
-  const [editingSongId, setEditingSongId] = useState<string | null>(null);
+  // "Actions" panel open state doubles as edit-mode state — opening it seeds the
+  // draft and shows the asset picker + field editor together; there's nothing
+  // else behind it, so one flag covers both.
+  const [openSongId, setOpenSongId] = useState<string | null>(null);
   const [songDraft, setSongDraft] = useState<DraftSong>(emptySongDraft());
-  const [editingTrackId, setEditingTrackId] = useState<string | null>(null);
+  const [openTrackId, setOpenTrackId] = useState<string | null>(null);
   const [trackDraft, setTrackDraft] = useState<DraftEntry>(emptyEntryDraft());
 
   useEffect(() => {
@@ -157,6 +164,8 @@ function BrowsePageInner() {
       setSongs(songsData);
       setTrackGroups(trackGroupsData);
       setAssets(assetsData);
+      const songIds = new Set(catalogData.map((e) => e.songId ?? UNCLASSIFIED));
+      setExpanded(songIds);
       setLoading(false);
     });
     fetch("/api/auth/me")
@@ -219,9 +228,32 @@ function BrowsePageInner() {
     });
   };
 
-  // Deep-link: ?editSong=<id> / ?editTrack=<id> expands + opens the editor for
-  // a specific song or track and scrolls it into view. Runs once data is loaded.
-  // biome-ignore lint/correctness/useExhaustiveDependencies: deliberately one-shot once loading flips to false; re-running on every songs/catalog update would re-force the editor open after the user closes it.
+  const startEditSong = (song: Song) => {
+    setOpenSongId(song.id);
+    setSongDraft({
+      name: song.name,
+      aliases: (song.aliases ?? []).join(", "),
+      folderPrefix: song.folderPrefix ?? "",
+      latestPath: song.latestPath ?? "",
+    });
+  };
+  const closeSongActions = () => {
+    setOpenSongId(null);
+    setSongDraft(emptySongDraft());
+  };
+
+  const startEditTrack = (entry: CatalogEntry) => {
+    setOpenTrackId(entry.id);
+    setTrackDraft({ title: entry.title, mix: entry.mix });
+  };
+  const closeTrackActions = () => {
+    setOpenTrackId(null);
+    setTrackDraft(emptyEntryDraft());
+  };
+
+  // Deep-link: ?editSong=<id> / ?editTrack=<id> expands + opens the actions
+  // panel for a specific song or track and scrolls it into view.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: deliberately one-shot once loading flips to false; re-running on every songs/catalog update would re-force the panel open after the user closes it.
   useEffect(() => {
     if (loading) return;
     const editSongId = searchParams.get("editSong");
@@ -230,13 +262,7 @@ function BrowsePageInner() {
       const song = songsById.get(editSongId);
       if (song) {
         setExpanded((prev) => new Set(prev).add(editSongId));
-        setEditingSongId(song.id);
-        setSongDraft({
-          name: song.name,
-          aliases: (song.aliases ?? []).join(", "),
-          folderPrefix: song.folderPrefix ?? "",
-          latestPath: song.latestPath ?? "",
-        });
+        startEditSong(song);
         document
           .getElementById(`song-${editSongId}`)
           ?.scrollIntoView({ block: "center" });
@@ -246,8 +272,7 @@ function BrowsePageInner() {
       const entry = catalog.find((e) => e.id === editTrackId);
       if (entry) {
         setExpanded((prev) => new Set(prev).add(entry.songId ?? UNCLASSIFIED));
-        setEditingTrackId(entry.id);
-        setTrackDraft({ title: entry.title, mix: entry.mix });
+        startEditTrack(entry);
         document
           .getElementById(`track-${editTrackId}`)
           ?.scrollIntoView({ block: "center" });
@@ -321,19 +346,6 @@ function BrowsePageInner() {
     });
   };
 
-  const startEditSong = (song: Song) => {
-    setEditingSongId(song.id);
-    setSongDraft({
-      name: song.name,
-      aliases: (song.aliases ?? []).join(", "),
-      folderPrefix: song.folderPrefix ?? "",
-      latestPath: song.latestPath ?? "",
-    });
-  };
-  const cancelEditSong = () => {
-    setEditingSongId(null);
-    setSongDraft(emptySongDraft());
-  };
   const saveEditSong = async (id: string) => {
     const res = await fetch(`/api/songs/${encodeURIComponent(id)}`, {
       method: "PATCH",
@@ -352,17 +364,9 @@ function BrowsePageInner() {
       const updated: Song = await res.json();
       setSongs((prev) => prev.map((s) => (s.id === id ? updated : s)));
     }
-    cancelEditSong();
+    closeSongActions();
   };
 
-  const startEditTrack = (entry: CatalogEntry) => {
-    setEditingTrackId(entry.id);
-    setTrackDraft({ title: entry.title, mix: entry.mix });
-  };
-  const cancelEditTrack = () => {
-    setEditingTrackId(null);
-    setTrackDraft(emptyEntryDraft());
-  };
   const saveEditTrack = async (id: string) => {
     const res = await fetch(`/api/catalog/${encodeURIComponent(id)}`, {
       method: "PATCH",
@@ -376,12 +380,12 @@ function BrowsePageInner() {
       const updated: CatalogEntry = await res.json();
       setCatalog((prev) => prev.map((e) => (e.id === id ? updated : e)));
     }
-    cancelEditTrack();
+    closeTrackActions();
   };
 
   return (
-    <div className="w-screen relative left-1/2 -translate-x-1/2 px-6 max-w-[1800px]">
-      <div className="mb-8 px-1">
+    <div className="max-w-4xl mx-auto">
+      <div className="mb-8">
         <h1 className={`text-2xl font-bold ${colors.page.title}`}>Songs</h1>
         <p className={`${colors.page.subtitle} text-sm mt-1`}>
           Organized by folder
@@ -389,99 +393,96 @@ function BrowsePageInner() {
       </div>
 
       {loading && (
-        <p className={`${colors.page.loading} text-sm px-1`}>Loading...</p>
+        <p className={`${colors.page.loading} text-sm`}>Loading...</p>
       )}
 
-      <div className="catalog-grid">
+      <div className="space-y-3">
         {groups.map((group) => {
           const isOpen = expanded.has(group.key);
           const song =
             group.key === UNCLASSIFIED ? undefined : songsById.get(group.key);
+          const actionsOpen = !!song && openSongId === song.id;
           return (
             <div
               key={group.key}
               id={`song-${group.key}`}
-              className={`rounded-lg p-3 ${colors.card.container} transition-colors`}
+              className={`p-3 ${colors.song.box}`}
             >
-              <div className="flex items-start gap-2">
+              <div className="flex items-center gap-3 flex-wrap">
                 <button
                   type="button"
                   onClick={() => toggle(group.key)}
-                  className="flex items-center gap-2 min-w-0 flex-1 text-left"
+                  className="flex items-center gap-2 min-w-0"
                 >
                   <span
-                    className={`${colors.card.toggle} text-xs w-3 shrink-0`}
+                    className={`${colors.song.toggle} text-xs w-3 shrink-0`}
                   >
                     {isOpen ? "▾" : "▸"}
                   </span>
-                  <span
-                    className={`text-lg font-semibold truncate ${colors.card.name}`}
-                  >
+                  <span className={`text-lg ${colors.song.name} truncate`}>
                     {group.name}
                   </span>
                 </button>
-                {group.trackGroupCount > 0 && (
-                  <span
-                    className={`text-xs shrink-0 ${colors.card.label}`}
-                    title={`Referenced in ${group.trackGroupCount} track group${group.trackGroupCount !== 1 ? "s" : ""}`}
-                  >
-                    in {group.trackGroupCount}
-                  </span>
+                {group.songTags.length > 0 && (
+                  <div className="flex items-center gap-1.5">
+                    <span className={`text-xs ${colors.song.label}`}>
+                      Tags:
+                    </span>
+                    <TagChips
+                      tags={group.songTags}
+                      entityType="song"
+                      suggestions={SONG_TAG_SUGGESTIONS}
+                      listId={`song-tags-${group.key}`}
+                      onAdd={(tag) =>
+                        patchSongTags(
+                          group.key,
+                          Array.from(new Set([...group.songTags, tag])),
+                        )
+                      }
+                      onRemove={(tag) =>
+                        patchSongTags(
+                          group.key,
+                          group.songTags.filter((t) => t !== tag),
+                        )
+                      }
+                    />
+                  </div>
                 )}
-                <span
-                  className={`${colors.card.count} text-xs tabular-nums shrink-0`}
-                >
-                  {group.entries.length}
-                </span>
+                <div className="flex items-center gap-3 ml-auto shrink-0">
+                  {song && (
+                    <button
+                      type="button"
+                      onClick={() =>
+                        actionsOpen ? closeSongActions() : startEditSong(song)
+                      }
+                      className={`text-xs ${colors.song.actions} transition-colors`}
+                    >
+                      {actionsOpen ? "× close" : "+ Actions"}
+                    </button>
+                  )}
+                  {group.trackGroupCount > 0 && (
+                    <span
+                      className={`text-xs ${colors.song.label}`}
+                      title={`Referenced in ${group.trackGroupCount} track group${group.trackGroupCount !== 1 ? "s" : ""}`}
+                    >
+                      in {group.trackGroupCount}
+                    </span>
+                  )}
+                  <span
+                    className={`${colors.song.count} text-sm tabular-nums font-semibold`}
+                  >
+                    {group.entries.length}
+                  </span>
+                </div>
               </div>
 
               {song && (
-                <div className="flex items-center gap-2 flex-wrap mt-1.5">
-                  {group.songTags.length > 0 && (
-                    <span className={`text-xs ${colors.card.label}`}>
-                      Tag Chips:
-                    </span>
-                  )}
-                  <TagChips
-                    tags={group.songTags}
-                    entityType="song"
-                    suggestions={SONG_TAG_SUGGESTIONS}
-                    listId={`song-tags-${group.key}`}
-                    onAdd={(tag) =>
-                      patchSongTags(
-                        group.key,
-                        Array.from(new Set([...group.songTags, tag])),
-                      )
-                    }
-                    onRemove={(tag) =>
-                      patchSongTags(
-                        group.key,
-                        group.songTags.filter((t) => t !== tag),
-                      )
-                    }
-                  />
-                  <button
-                    type="button"
-                    onClick={() =>
-                      editingSongId === song.id
-                        ? cancelEditSong()
-                        : startEditSong(song)
-                    }
-                    className={`text-xs ${colors.card.editBtn} transition-colors`}
-                  >
-                    {editingSongId === song.id ? "cancel" : "+ edit"}
-                  </button>
-                </div>
-              )}
-
-              {song && (
-                <div className="flex items-center gap-1.5 flex-wrap mt-1.5">
+                <div className="flex items-center gap-1.5 flex-wrap mt-2">
                   {effectiveAssets(song.assets, undefined)
                     .filter((l) => l.inherited)
                     .map((l) => (
                       <AssetChip
                         key={l.linkId}
-                        assetId={l.assetId}
                         asset={assetsById.get(l.assetId)}
                         inherited
                       />
@@ -496,194 +497,193 @@ function BrowsePageInner() {
                 </div>
               )}
 
-              {song && editingSongId === song.id && (
-                <div className="mt-2 pt-2 border-t border-rbyellow-200 space-y-1.5">
-                  <input
-                    value={songDraft.name}
-                    onChange={(e) =>
-                      setSongDraft((d) => ({ ...d, name: e.target.value }))
-                    }
-                    placeholder="Name"
-                    className={`w-full bg-white border rounded px-2 py-1 text-sm text-neutral-800 focus:outline-none ${colors.card.inputBorder}`}
-                  />
-                  <input
-                    value={songDraft.aliases}
-                    onChange={(e) =>
-                      setSongDraft((d) => ({ ...d, aliases: e.target.value }))
-                    }
-                    placeholder="Aliases (comma-separated)"
-                    className={`w-full bg-white border rounded px-2 py-1 text-sm text-neutral-800 focus:outline-none ${colors.card.inputBorder}`}
-                  />
-                  <input
-                    value={songDraft.folderPrefix}
-                    onChange={(e) =>
-                      setSongDraft((d) => ({
-                        ...d,
-                        folderPrefix: e.target.value,
-                      }))
-                    }
-                    placeholder="Folder Prefix"
-                    className={`w-full bg-white border rounded px-2 py-1 text-sm font-mono text-neutral-800 focus:outline-none ${colors.card.inputBorder}`}
-                  />
-                  <input
-                    value={songDraft.latestPath}
-                    onChange={(e) =>
-                      setSongDraft((d) => ({
-                        ...d,
-                        latestPath: e.target.value,
-                      }))
-                    }
-                    placeholder="Latest Path"
-                    className={`w-full bg-white border rounded px-2 py-1 text-sm font-mono text-neutral-800 focus:outline-none ${colors.card.inputBorder}`}
-                  />
-                  <div className="flex gap-2">
-                    <button
-                      type="button"
-                      onClick={() => saveEditSong(song.id)}
-                      className={`text-xs px-2 ${colors.card.saveBtn} transition-colors`}
-                    >
-                      save
-                    </button>
-                    <button
-                      type="button"
-                      onClick={cancelEditSong}
-                      className={`text-xs px-2 ${colors.card.cancelBtn} transition-colors`}
-                    >
-                      cancel
-                    </button>
+              {song && actionsOpen && (
+                <div
+                  className={`mt-3 pt-3 border-t ${colors.panel.border} space-y-3`}
+                >
+                  <div className="space-y-1.5">
+                    <p className="text-xs text-neutral-600">Fields</p>
+                    <input
+                      value={songDraft.name}
+                      onChange={(e) =>
+                        setSongDraft((d) => ({ ...d, name: e.target.value }))
+                      }
+                      placeholder="Name"
+                      className={`w-full border rounded px-2 py-1 text-sm focus:outline-none ${colors.panel.inputBg}`}
+                    />
+                    <input
+                      value={songDraft.aliases}
+                      onChange={(e) =>
+                        setSongDraft((d) => ({
+                          ...d,
+                          aliases: e.target.value,
+                        }))
+                      }
+                      placeholder="Aliases (comma-separated)"
+                      className={`w-full border rounded px-2 py-1 text-sm focus:outline-none ${colors.panel.inputBg}`}
+                    />
+                    <input
+                      value={songDraft.folderPrefix}
+                      onChange={(e) =>
+                        setSongDraft((d) => ({
+                          ...d,
+                          folderPrefix: e.target.value,
+                        }))
+                      }
+                      placeholder="Folder Prefix"
+                      className={`w-full border rounded px-2 py-1 text-sm font-mono focus:outline-none ${colors.panel.inputBg}`}
+                    />
+                    <input
+                      value={songDraft.latestPath}
+                      onChange={(e) =>
+                        setSongDraft((d) => ({
+                          ...d,
+                          latestPath: e.target.value,
+                        }))
+                      }
+                      placeholder="Latest Path"
+                      className={`w-full border rounded px-2 py-1 text-sm font-mono focus:outline-none ${colors.panel.inputBg}`}
+                    />
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => saveEditSong(song.id)}
+                        className={`text-xs px-2 ${colors.panel.saveBtn} transition-colors`}
+                      >
+                        save
+                      </button>
+                      <button
+                        type="button"
+                        onClick={closeSongActions}
+                        className={`text-xs px-2 ${colors.panel.cancelBtn} transition-colors`}
+                      >
+                        cancel
+                      </button>
+                    </div>
                   </div>
                 </div>
               )}
 
               {isOpen && (
-                <div className="mt-2 pt-2 border-t border-rbyellow-200 space-y-1">
+                <div className="mt-3 space-y-2">
                   {group.entries.map((entry) => {
                     const memberOf = trackGroupsByPath.get(entry.path) ?? [];
                     const inherited = inheritedStages(entry.path, memberOf);
                     const entryTags = entry.tags ?? [];
-                    const isEditingTrack = editingTrackId === entry.id;
+                    const trackActionsOpen = openTrackId === entry.id;
+                    const effectiveTrackAssets = effectiveAssets(
+                      entry.assets,
+                      song?.assets,
+                    );
+                    const filename = entry.path.split("/").pop() ?? entry.path;
                     return (
                       <div
                         key={entry.id}
                         id={`track-${entry.id}`}
-                        className={`rounded px-2 py-1.5 group ${colors.trackRow.hover}`}
+                        className={`px-3 py-2 group ${colors.track.box} ${colors.track.hover}`}
                       >
-                        <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+                        <div className="flex items-center gap-3 flex-wrap">
                           <span
-                            className={`w-full sm:w-auto sm:flex-1 text-sm ${colors.trackRow.name} truncate`}
+                            className={`text-sm font-mono ${colors.track.name} truncate`}
                           >
-                            {entry.title}
+                            {filename}
                           </span>
-                          {inherited.length > 0 && (
-                            <div className="flex items-center gap-1 shrink-0">
-                              <span
-                                className={`text-xs ${colors.trackRow.label}`}
-                              >
-                                Stage Chips:
+                          <SongChip
+                            name={group.name}
+                            size="lg"
+                            title={`Owned by song: ${group.name}`}
+                          />
+                          <span
+                            title={
+                              inherited.length > 0
+                                ? `Track group stage: ${inherited.join(", ")}`
+                                : undefined
+                            }
+                            className={`text-xs border px-1.5 py-0.5 rounded shrink-0 ${stageClass(inherited[0] ?? entry.stage)} ${stageBgClass(inherited[0] ?? entry.stage)}`}
+                          >
+                            {inherited[0] ?? entry.stage ?? "unknown"}
+                          </span>
+                          {entryTags.length > 0 && (
+                            <div className="flex items-center gap-1.5">
+                              <span className={`text-xs ${colors.track.label}`}>
+                                Tags:
                               </span>
-                              {inherited.map((stage) => (
-                                <span
-                                  key={stage}
-                                  title="Track group stage — set within a track group this file belongs to, not editable here"
-                                  className={`text-xs border px-1.5 py-0.5 rounded ${stageClass(stage)} ${stageBgClass(stage)}`}
-                                >
-                                  {stage}
-                                </span>
-                              ))}
+                              <TagChips
+                                tags={entryTags}
+                                entityType="track"
+                                suggestions={TRACK_TAG_SUGGESTIONS}
+                                listId={`track-tags-${entry.id}`}
+                                onAdd={(tag) =>
+                                  patchTrackTags(
+                                    entry,
+                                    Array.from(new Set([...entryTags, tag])),
+                                  )
+                                }
+                                onRemove={(tag) =>
+                                  patchTrackTags(
+                                    entry,
+                                    entryTags.filter((t) => t !== tag),
+                                  )
+                                }
+                              />
                             </div>
                           )}
-                          {entryTags.length > 0 && (
-                            <span
-                              className={`text-xs ${colors.trackRow.label} shrink-0`}
-                            >
-                              Tag Chips:
-                            </span>
-                          )}
-                          <TagChips
-                            tags={entryTags}
-                            entityType="track"
-                            suggestions={TRACK_TAG_SUGGESTIONS}
-                            listId={`track-tags-${entry.id}`}
-                            onAdd={(tag) =>
-                              patchTrackTags(
-                                entry,
-                                Array.from(new Set([...entryTags, tag])),
-                              )
-                            }
-                            onRemove={(tag) =>
-                              patchTrackTags(
-                                entry,
-                                entryTags.filter((t) => t !== tag),
-                              )
-                            }
-                          />
-                          {entryTags.length === 0 &&
-                            entry.stage &&
-                            entry.stage !== "unknown" && (
-                              <>
-                                <span
-                                  className={`text-xs ${colors.trackRow.label} shrink-0`}
-                                >
-                                  Stage Chips:
-                                </span>
-                                <span
-                                  title="Legacy stage value from before tagging existed — not yet migrated to a tag."
-                                  className="text-xs border border-dashed border-neutral-400 text-neutral-500 px-1.5 py-0.5 rounded shrink-0"
-                                >
-                                  {entry.stage}
-                                </span>
-                              </>
-                            )}
                           {memberOf.length > 0 && (
                             <span
-                              className={`text-xs ${colors.trackRow.label} shrink-0`}
+                              className={`text-xs ${colors.track.label} shrink-0`}
                               title={`In: ${memberOf.map((g) => g.title).join(", ")}`}
                             >
                               in {memberOf.length}
                             </span>
                           )}
-                          <span
-                            className={`${colors.trackRow.size} text-xs tabular-nums shrink-0`}
-                          >
-                            {sizeLabel(entry.size)}
-                          </span>
-                          <a
-                            href={`/api/audio?path=${encodeURIComponent(entry.path)}`}
-                            className={`text-xs ${colors.trackRow.playLink} opacity-0 group-hover:opacity-100 transition-opacity shrink-0`}
-                            target="_blank"
-                            rel="noreferrer"
-                          >
-                            play
-                          </a>
-                          <div className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
-                            <SongPicker
-                              songs={songs}
-                              loadState={loading ? "loading" : "loaded"}
-                              value={entry.songId}
-                              onAssign={(song) => handleAssign(entry, song)}
-                              onSongCreated={handleSongCreated}
-                            />
+                          <div className="flex items-center gap-3 ml-auto shrink-0">
+                            <a
+                              href={`/api/audio?path=${encodeURIComponent(entry.path)}`}
+                              className={`text-xs ${colors.track.playLink} opacity-0 group-hover:opacity-100 transition-opacity`}
+                              target="_blank"
+                              rel="noreferrer"
+                            >
+                              play
+                            </a>
+                            <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+                              <SongPicker
+                                songs={songs}
+                                loadState={loading ? "loading" : "loaded"}
+                                value={entry.songId}
+                                onAssign={(song) => handleAssign(entry, song)}
+                                onSongCreated={handleSongCreated}
+                              />
+                            </div>
+                            {entryTags.length === 0 && (
+                              <span className="text-xs text-transparent select-none">
+                                Tags:
+                              </span>
+                            )}
+                            <button
+                              type="button"
+                              onClick={() =>
+                                trackActionsOpen
+                                  ? closeTrackActions()
+                                  : startEditTrack(entry)
+                              }
+                              className={`text-xs ${colors.track.actions} transition-colors`}
+                            >
+                              {trackActionsOpen ? "× close" : "+ Actions"}
+                            </button>
+                            <span
+                              className={`${colors.track.size} text-xs tabular-nums`}
+                            >
+                              {sizeLabel(entry.size)}
+                            </span>
                           </div>
-                          <button
-                            type="button"
-                            onClick={() =>
-                              isEditingTrack
-                                ? cancelEditTrack()
-                                : startEditTrack(entry)
-                            }
-                            className={`text-xs shrink-0 ${colors.card.editBtn} transition-colors`}
-                          >
-                            {isEditingTrack ? "cancel" : "+ edit"}
-                          </button>
                         </div>
 
-                        <div className="flex items-center gap-1.5 flex-wrap mt-1">
-                          {effectiveAssets(entry.assets, song?.assets)
+                        <div className="flex items-center gap-1.5 flex-wrap mt-1.5">
+                          {effectiveTrackAssets
                             .filter((l) => l.inherited)
                             .map((l) => (
                               <AssetChip
                                 key={l.linkId}
-                                assetId={l.assetId}
                                 asset={assetsById.get(l.assetId)}
                                 inherited
                               />
@@ -697,45 +697,50 @@ function BrowsePageInner() {
                           />
                         </div>
 
-                        {isEditingTrack && (
-                          <div className="mt-1.5 space-y-1.5">
-                            <input
-                              value={trackDraft.title}
-                              onChange={(e) =>
-                                setTrackDraft((d) => ({
-                                  ...d,
-                                  title: e.target.value,
-                                }))
-                              }
-                              placeholder="Title"
-                              className={`w-full bg-white border rounded px-2 py-1 text-sm text-neutral-800 focus:outline-none ${colors.card.inputBorder}`}
-                            />
-                            <input
-                              value={trackDraft.mix}
-                              onChange={(e) =>
-                                setTrackDraft((d) => ({
-                                  ...d,
-                                  mix: e.target.value,
-                                }))
-                              }
-                              placeholder="Mix"
-                              className={`w-full bg-white border rounded px-2 py-1 text-sm font-mono text-neutral-800 focus:outline-none ${colors.card.inputBorder}`}
-                            />
-                            <div className="flex gap-2">
-                              <button
-                                type="button"
-                                onClick={() => saveEditTrack(entry.id)}
-                                className={`text-xs px-2 ${colors.card.saveBtn} transition-colors`}
-                              >
-                                save
-                              </button>
-                              <button
-                                type="button"
-                                onClick={cancelEditTrack}
-                                className={`text-xs px-2 ${colors.card.cancelBtn} transition-colors`}
-                              >
-                                cancel
-                              </button>
+                        {trackActionsOpen && (
+                          <div
+                            className={`mt-2 pt-2 border-t ${colors.panel.border} space-y-3`}
+                          >
+                            <div className="space-y-1.5">
+                              <p className="text-xs text-neutral-600">Fields</p>
+                              <input
+                                value={trackDraft.title}
+                                onChange={(e) =>
+                                  setTrackDraft((d) => ({
+                                    ...d,
+                                    title: e.target.value,
+                                  }))
+                                }
+                                placeholder="Title"
+                                className={`w-full border rounded px-2 py-1 text-sm focus:outline-none ${colors.panel.inputBg}`}
+                              />
+                              <input
+                                value={trackDraft.mix}
+                                onChange={(e) =>
+                                  setTrackDraft((d) => ({
+                                    ...d,
+                                    mix: e.target.value,
+                                  }))
+                                }
+                                placeholder="Mix"
+                                className={`w-full border rounded px-2 py-1 text-sm font-mono focus:outline-none ${colors.panel.inputBg}`}
+                              />
+                              <div className="flex gap-2">
+                                <button
+                                  type="button"
+                                  onClick={() => saveEditTrack(entry.id)}
+                                  className={`text-xs px-2 ${colors.panel.saveBtn} transition-colors`}
+                                >
+                                  save
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={closeTrackActions}
+                                  className={`text-xs px-2 ${colors.panel.cancelBtn} transition-colors`}
+                                >
+                                  cancel
+                                </button>
+                              </div>
                             </div>
                           </div>
                         )}
@@ -750,7 +755,7 @@ function BrowsePageInner() {
       </div>
 
       {!loading && groups.length === 0 && (
-        <p className={`${colors.page.empty} text-sm px-1`}>
+        <p className={`${colors.page.empty} text-sm`}>
           No tracks in the catalog yet.
         </p>
       )}
@@ -761,7 +766,7 @@ function BrowsePageInner() {
 export default function BrowsePage() {
   return (
     <Suspense
-      fallback={<div className="px-1 text-sm text-neutral-400">Loading...</div>}
+      fallback={<div className="text-sm text-neutral-500">Loading...</div>}
     >
       <BrowsePageInner />
     </Suspense>
