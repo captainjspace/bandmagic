@@ -262,10 +262,14 @@
 
   /* rborange scale — 500 is oklch(80% 0.88 100) */
   --color-rborange-100: oklch(0.8 0.88 100);
+  --color-rborange-200: oklch(0.75 0.88 100);
   --color-rborange-300: oklch(0.72 0.88 100);
+  --color-rborange-400: oklch(0.7 0.88 100);
   --color-rborange-500: var(--rb-orange);
+  --color-rborange-600: oklch(0.45 0.88 100);
   --color-rborange-700: oklch(0.4 0.88 100);
-  --color-rborange-900: oklch(0.27 0.88 100);
+  --color-rborange-800: oklch(0.35 0.88 100);
+  --color-rborange-900: oklch(0.25 0.88 100);
 
   /* rbviolet scale - 500 is  oklch(0.4 0.4 310) */
   --color-rbviolet-100: oklch(0.4 0.46 310);

@@ -11,15 +11,15 @@ const MAX_UPLOAD_BYTES = 32 * 1024 * 1024;
 
 /** element colors */
 const colors = {
-  label: "text-neutral-500",
-  changeSong: "text-neutral-500 hover:text-neutral-300",
-  input: "text-neutral-100 placeholder-neutral-600",
+  label: "text-rbcyan-500",
+  changeSong: "text-rbcyan-500 hover:text-rbcyan-300",
+  input: "text-rbcyan-100 placeholder-neutral-600",
   submit: "bg-green-600 hover:bg-green-500 text-black",
   error: "text-red-400",
   success: "text-green-400",
-  tabIdle: "text-neutral-500 hover:text-neutral-300",
-  tabOn: "bg-neutral-800 text-neutral-100",
-  empty: "text-neutral-600",
+  tabIdle: "text-rbcyan-500 hover:text-rbcyan-300",
+  tabOn: "bg-neutral-800 text-rbcyan-100",
+  empty: "text-rbcyan-600",
 };
 
 type Mode = "upload" | "existing";
@@ -196,7 +196,7 @@ export function AddTrackModal({ onClose }: Props) {
           </p>
           {song ? (
             <div className="flex items-center gap-2 bg-neutral-950 border border-neutral-700 rounded px-3 py-2">
-              <span className="flex-1 text-sm text-neutral-100 truncate">
+              <span className="flex-1 text-sm text-rbcyan-100 truncate">
                 {song.name}
               </span>
               <button
@@ -248,7 +248,7 @@ export function AddTrackModal({ onClose }: Props) {
                     type="file"
                     accept={AUDIO_ACCEPT}
                     onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-                    className="w-full text-sm text-neutral-300 file:mr-3 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-xs file:bg-neutral-800 file:text-neutral-200 hover:file:bg-neutral-700"
+                    className="w-full text-sm text-rbcyan-300 file:mr-3 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-xs file:bg-neutral-800 file:text-rbcyan-200 hover:file:bg-neutral-700"
                   />
                 </div>
                 <div className="flex gap-2">
@@ -276,7 +276,7 @@ export function AddTrackModal({ onClose }: Props) {
                       onChange={(e) =>
                         setStage(e.target.value as (typeof STAGES)[number])
                       }
-                      className="bg-neutral-950 border border-neutral-700 rounded px-2 py-1.5 text-sm text-neutral-100 focus:outline-none focus:border-green-600"
+                      className="bg-neutral-950 border border-neutral-700 rounded px-2 py-1.5 text-sm text-rbcyan-100 focus:outline-none focus:border-green-600"
                     >
                       {STAGES.map((s) => (
                         <option key={s} value={s}>
@@ -334,10 +334,10 @@ export function AddTrackModal({ onClose }: Props) {
                             onChange={() => toggleSelected(entry.id)}
                             className="shrink-0"
                           />
-                          <span className="flex-1 truncate text-neutral-100">
+                          <span className="flex-1 truncate text-rbcyan-100">
                             {entry.title}
                           </span>
-                          <span className="text-xs text-neutral-600 shrink-0">
+                          <span className="text-xs text-rbcyan-600 shrink-0">
                             {entry.stage}
                           </span>
                         </label>

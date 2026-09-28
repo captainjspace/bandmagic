@@ -13,7 +13,7 @@ import {
 } from "@/lib/asset";
 import { stageBgClass, stageClass } from "@/lib/stage";
 import type { Asset, CatalogEntry, Song, TrackGroup } from "@/types";
-import tagsTaxonomy from "../../../tags.json" with {type: "json"};
+import tagsTaxonomy from "../../../tags.json" with { type: "json" };
 
 const UNCLASSIFIED = "unclassified";
 
@@ -465,7 +465,7 @@ function BrowsePageInner() {
                       className={`text-xs ${colors.song.label}`}
                       title={`Referenced in ${group.trackGroupCount} track group${group.trackGroupCount !== 1 ? "s" : ""}`}
                     >
-                      in {group.trackGroupCount}
+                      Track Groups Count: {group.trackGroupCount}
                     </span>
                   )}
                   <span
@@ -633,7 +633,7 @@ function BrowsePageInner() {
                               className={`text-xs ${colors.track.label} shrink-0`}
                               title={`In: ${memberOf.map((g) => g.title).join(", ")}`}
                             >
-                              in {memberOf.length}
+                              Track Groups: in {memberOf.length}
                             </span>
                           )}
                           <div className="flex items-center gap-3 ml-auto shrink-0">
@@ -766,7 +766,7 @@ function BrowsePageInner() {
 export default function BrowsePage() {
   return (
     <Suspense
-      fallback={<div className="text-sm text-neutral-500">Loading...</div>}
+      fallback={<div className="text-sm text-rbpurple-500">Loading...</div>}
     >
       <BrowsePageInner />
     </Suspense>

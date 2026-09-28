@@ -4,15 +4,16 @@ import Link from "next/link";
 import { useState } from "react";
 import { AddAssetModal } from "@/components/AddAssetModal";
 import { AddTrackModal } from "@/components/AddTrackModal";
+import { NavMenu } from "@/components/NavMenu";
 
 /** element colors */
 const colors = {
-  bar: "bg-neutral-950/90 backdrop-blur border-b border-neutral-800",
+  bar: "bg-rbcyan-300/10 backdrop-blur border-b border-rbred-800",
   brand:
-    "font-agincourt text-rbyellow-500 text-2xl sm:text-4xl md:text-feature-title leading-none tracking-wide",
-  navLink: "hover:text-neutral-100 transition-colors",
+    "font-agincourt text-rbyellow-600 text-2xl sm:text-4xl md:text-feature-title leading-none tracking-wide",
+  navLink: "hover:text-rborange-500 transition-colors",
   action:
-    "border border-neutral-700 hover:border-green-600 hover:text-green-400 text-neutral-300 rounded px-2.5 py-1 transition-colors disabled:opacity-50",
+    "border border-rbpurple-700 hover:border-rbred-500 hover:text-rborange-300 text-rbcyan-500 rounded px-2.5 py-1 transition-colors disabled:opacity-50",
 };
 
 type ActiveModal = "track" | "asset" | null;
@@ -40,8 +41,9 @@ export function AppHeader() {
           <Link href="/" className={colors.brand}>
             Rolling Blackout
           </Link>
-          <div className="flex items-center gap-4">
-            <nav className="flex gap-6 text-xs text-neutral-400">
+          <NavMenu />
+          <div className="font-agincourt flex items-center gap-4">
+            <nav className="flex gap-6 text-sm text-rborange-700">
               <Link href="/" className={colors.navLink}>
                 TrackGroups
               </Link>
@@ -55,29 +57,34 @@ export function AppHeader() {
                 Admin
               </Link>
             </nav>
-            <div className="flex items-center gap-2 text-xs">
-              <button
-                type="button"
-                onClick={() => setActiveModal("track")}
-                className={colors.action}
-              >
-                + Track
-              </button>
-              <button
-                type="button"
-                onClick={() => setActiveModal("asset")}
-                className={colors.action}
-              >
-                + Asset
-              </button>
-              <button
-                type="button"
-                onClick={sync}
-                disabled={syncing}
-                className={colors.action}
-              >
-                {syncing ? "↻ Syncing…" : "↻ Sync"}
-              </button>
+
+            <div className="outline-rbmist-300 outline-offset-4 border border-rbviolet-900 rounded-sm">
+              <div className="flex items-center gap-2 text-sm">
+                <button
+                  type="button"
+                  onClick={() => setActiveModal("track")}
+                  className={colors.action}
+                >
+                  🛤️ + Track
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveModal("asset")}
+                  className={colors.action}
+                >
+                  💼 + Asset
+                </button>
+                <button
+                  type="button"
+                  onClick={sync}
+                  disabled={syncing}
+                  className={colors.action}
+                >
+                  {" "}
+                  🕰️
+                  {syncing ? "↻ Syncing…" : "↻ Sync"}
+                </button>
+              </div>
             </div>
           </div>
         </div>
