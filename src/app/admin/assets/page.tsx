@@ -9,25 +9,25 @@ import type { Asset, AssetSubtype } from "@/types";
 /** element colors */
 const colors = {
   page: {
-    title: "text-neutral-100",
-    subtitle: "text-neutral-500",
-    navLink: "text-neutral-500 hover:text-neutral-300",
-    fieldLabel: "text-neutral-500",
-    count: "text-neutral-600",
+    title: "test-rbblue-500",
+    subtitle: "test-rborange-300",
+    navLink: "test-rborange-500 hover:test-rborange-300",
+    fieldLabel: "test-rbred-500",
+    count: "test-rborange-600",
   },
   status: {
     success: "text-green-400",
     error: "text-red-400",
   },
   row: {
-    title: "text-neutral-100",
-    url: "text-neutral-500 hover:text-neutral-300",
-    kindBadge: "text-neutral-500",
-    usage: "text-neutral-600",
-    editBtn: "text-neutral-600 hover:text-green-400",
-    deleteBtn: "text-neutral-600 hover:text-red-400",
+    title: "test-rbcyan-300",
+    url: "test-rborange-500 hover:test-rbyellow-300",
+    kindBadge: "test-rborange-500",
+    usage: "test-rbred-500",
+    editBtn: "test-rborange-300 hover:text-green-400",
+    deleteBtn: "test-rbred-600 hover:text-red-400",
     saveBtn: "text-green-500 hover:text-green-400",
-    cancelBtn: "text-neutral-600 hover:text-neutral-400",
+    cancelBtn: "test-rborange-700 hover:test-rbyellow-300",
   },
 };
 

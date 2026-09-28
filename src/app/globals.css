@@ -11,10 +11,14 @@
 @layer base {
   :root {
     /* brand color primitives */
-    --rb-yellow: oklch(0.87 0.18 100.2);
+    --rb-yellow: oklch(0.905 0.18 100.2);
     --rb-purple: oklch(0.57 0.29 306.86);
     --rb-red: oklch(0.54 0.22 28.76);
     --rb-blue: oklch(0.56 0.22 259.44);
+    --rb-orange: oklch(0.8 0.88 100.44);
+    --rb-violet: oklch(0.14 0.66 250.44);
+    --rb-cyan: oklch(68.5% 0.169 237.323);
+    --rb-mist: oklch(37.8% 0.015 216);
 
     /* feature title design tokens */
     --feature-title-typeface-style-stack: "AgincourtStd", serif;
@@ -67,14 +71,22 @@
   }
 
   .text-gradient-brand {
-    @apply inline-block text-transparent bg-clip-text bg-gradient-to-r from-rbblue-500 via-rbyellow-700 to-rbpurple-700;
+    @apply inline-block text-transparent bg-clip-text bg-gradient-to-r from-rbcyan-500 via-rbpurple-500 to-rbred-500;
+  }
+
+  .text-gradient-yworange {
+    @apply inline-block text-transparent bg-clip-text bg-gradient-to-r from-rbred-300 via-rborange-500 to-rbyellow-500;
+  }
+
+  .text-gradient-mistpurple {
+    @apply inline-block text-transparent bg-clip-text bg-gradient-to-r from-rbmist-300 via-rbviolet-300 to-rbpurple-700;
   }
 
   .stage-writing {
-    @apply text-blue-400 border-blue-800;
+    @apply text-rbblue-300 border-rbblue-700;
   }
   .stage-writing-bg {
-    @apply bg-blue-950/30;
+    @apply bg-rbblue-900/30;
   }
   .stage-tracking {
     @apply text-yellow-400 border-yellow-800;
@@ -137,19 +149,19 @@
    * tags.json entry actually asks for a color CSS doesn't have yet.
    */
   .tag-default {
-    @apply text-neutral-300 border-neutral-700;
+    @apply text-rborange-100 border-rborange-700;
   }
   .tag-sky {
-    @apply text-sky-400 border-sky-800;
+    @apply text-rbcyan-300 border-rbcyan-700;
   }
   .tag-sky-bg {
-    @apply bg-sky-950/30;
+    @apply bg-rbcyan-700/30;
   }
   .tag-indigo {
-    @apply text-indigo-400 border-indigo-800;
+    @apply text-rbblue-100 border-rbviolet-500;
   }
   .tag-indigo-bg {
-    @apply bg-indigo-950/30;
+    @apply bg-rbviolet-700/30;
   }
   .tag-emerald {
     @apply text-emerald-400 border-emerald-800;
@@ -159,34 +171,34 @@
   }
 
   .asset-lyrics {
-    @apply text-violet-400 border-violet-800;
+    @apply text-rbviolet-100 border-rbviolet-500;
   }
   .asset-lyrics-bg {
-    @apply bg-violet-950/30;
+    @apply bg-rbmist-900/30;
   }
   .asset-lyrics-stripped {
-    @apply text-fuchsia-400 border-fuchsia-800;
+    @apply text-rborange-500 border-rbred-700;
   }
   .asset-lyrics-stripped-bg {
-    @apply bg-fuchsia-950/30;
+    @apply bg-rbred-500/30;
   }
   .asset-chord-chart {
-    @apply text-amber-400 border-amber-800;
+    @apply text-rbyellow-300 border-rborange-500;
   }
   .asset-chord-chart-bg {
-    @apply bg-amber-950/30;
+    @apply bg-rbviolet-300/30;
   }
   .asset-press-release {
-    @apply text-rose-400 border-rose-800;
+    @apply text-rbmist-500 border-rbred-500;
   }
   .asset-press-release-bg {
-    @apply bg-rose-950/30;
+    @apply bg-neutral-950/30;
   }
   .asset-review {
-    @apply text-cyan-400 border-cyan-800;
+    @apply text-rbcyan-300 border-rbblue-700;
   }
   .asset-review-bg {
-    @apply bg-cyan-950/30;
+    @apply bg-rbpurple-700/30;
   }
   .asset-post {
     @apply text-indigo-400 border-indigo-800;
@@ -195,10 +207,10 @@
     @apply bg-indigo-950/30;
   }
   .asset-other {
-    @apply text-neutral-400 border-neutral-700;
+    @apply text-rborange-500 border-rbred-500;
   }
   .asset-other-bg {
-    @apply bg-neutral-900/40;
+    @apply bg-rbblue-500/40;
   }
 }
 
@@ -208,7 +220,7 @@
 
   --text-feature-title: var(--feature-title-typeface-size-number);
 
-  /* rbyellow scale — 500 is the brand anchor oklch(0.87 0.18 100.2) */
+  /* rbyellow scale — 500 is the brand anchor oklch(0.91 0.185 98.9) */
   --color-rbyellow-100: oklch(0.96 0.05 100);
   --color-rbyellow-200: oklch(0.93 0.09 100);
   --color-rbyellow-300: oklch(0.91 0.13 100);
@@ -220,12 +232,12 @@
   --color-rbyellow-900: oklch(0.5 0.15 100);
   --color-rbyellow-950: oklch(0.38 0.12 100);
 
-  /* rbpurple scale — 500 is oklch(0.57 0.29 306.86) */
-  --color-rbpurple-100: oklch(0.95 0.07 307);
-  --color-rbpurple-300: oklch(0.78 0.17 307);
+  /* rbpurple scale — 500 is oklch(0.42 0.19 290.86) */
+  --color-rbpurple-100: oklch(0.95 0.07 291);
+  --color-rbpurple-300: oklch(0.78 0.17 291);
   --color-rbpurple-500: var(--rb-purple);
-  --color-rbpurple-700: oklch(0.42 0.25 307);
-  --color-rbpurple-900: oklch(0.28 0.18 307);
+  --color-rbpurple-700: oklch(0.42 0.25 291);
+  --color-rbpurple-900: oklch(0.28 0.18 291);
 
   /* rbred scale — 500 is oklch(0.54 0.22 28.76) */
   --color-rbred-100: oklch(0.94 0.06 29);
@@ -240,6 +252,34 @@
   --color-rbblue-500: var(--rb-blue);
   --color-rbblue-700: oklch(0.41 0.2 259);
   --color-rbblue-900: oklch(0.27 0.14 259);
+
+  /* rbcyan scale — 500 is oklch(72.5% 0.169 237) */
+  --color-rbcyan-100: oklch(0.94 0.06 259);
+  --color-rbcyan-300: oklch(0.76 0.14 259);
+  --color-rbcyan-500: var(--rb-cyan);
+  --color-rbcyan-700: oklch(0.41 0.2 259);
+  --color-rbcyan-900: oklch(0.27 0.14 259);
+
+  /* rborange scale — 500 is oklch(80% 0.88 100) */
+  --color-rborange-100: oklch(0.8 0.88 100);
+  --color-rborange-300: oklch(0.72 0.88 100);
+  --color-rborange-500: var(--rb-orange);
+  --color-rborange-700: oklch(0.4 0.88 100);
+  --color-rborange-900: oklch(0.27 0.88 100);
+
+  /* rbviolet scale - 500 is  oklch(0.4 0.4 310) */
+  --color-rbviolet-100: oklch(0.4 0.46 310);
+  --color-rbviolet-300: oklch(0.3 0.46 310);
+  --color-rbviolet-500: var(--rb-violet);
+  --color-rbviolet-700: oklch(0.2 0.46 310);
+  --color-rbviolet-900: oklch(0.1 0.46 310);
+
+  /* rbmist-accent scale - 500 is  oklch(88.8% 0.017 216) */
+  --color-rbmist-100: oklch(89.8% 0.011 226);
+  --color-rbmist-300: oklch(89.8% 0.014 226);
+  --color-rbmist-500: var(--rb-mist);
+  --color-rbmist-700: oklch(91.8% 0.021 226);
+  --color-rbmist-900: oklch(93.8% 0.024 226);
 
   --animate-fade-in-scale: fade-in-scale 0.3s ease-out;
   @keyframes fade-in-scale {
