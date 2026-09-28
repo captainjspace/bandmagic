@@ -445,7 +445,7 @@ function BrowsePageInner() {
                     <SongChip name={group.name} size="xl" />
                   </div>
                 )}
-                {group.songTags.length > 0 && (
+                {song && (
                   <div className="flex items-center gap-1.5">
                     <span className={`text-xs ${colors.song.label}`}>
                       Tags:
@@ -635,31 +635,29 @@ function BrowsePageInner() {
                           >
                             {inherited[0] ?? entry.stage ?? "unknown"}
                           </span>
-                          {entryTags.length > 0 && (
-                            <div className="flex items-center gap-1.5">
-                              <span className={`text-xs ${colors.track.label}`}>
-                                Tags:
-                              </span>
-                              <TagChips
-                                tags={entryTags}
-                                entityType="track"
-                                suggestions={TRACK_TAG_SUGGESTIONS}
-                                listId={`track-tags-${entry.id}`}
-                                onAdd={(tag) =>
-                                  patchTrackTags(
-                                    entry,
-                                    Array.from(new Set([...entryTags, tag])),
-                                  )
-                                }
-                                onRemove={(tag) =>
-                                  patchTrackTags(
-                                    entry,
-                                    entryTags.filter((t) => t !== tag),
-                                  )
-                                }
-                              />
-                            </div>
-                          )}
+                          <div className="flex items-center gap-1.5">
+                            <span className={`text-xs ${colors.track.label}`}>
+                              Tags:
+                            </span>
+                            <TagChips
+                              tags={entryTags}
+                              entityType="track"
+                              suggestions={TRACK_TAG_SUGGESTIONS}
+                              listId={`track-tags-${entry.id}`}
+                              onAdd={(tag) =>
+                                patchTrackTags(
+                                  entry,
+                                  Array.from(new Set([...entryTags, tag])),
+                                )
+                              }
+                              onRemove={(tag) =>
+                                patchTrackTags(
+                                  entry,
+                                  entryTags.filter((t) => t !== tag),
+                                )
+                              }
+                            />
+                          </div>
                           {memberOf.length > 0 && (
                             <button
                               type="button"
@@ -690,11 +688,6 @@ function BrowsePageInner() {
                                 onSongCreated={handleSongCreated}
                               />
                             </div>
-                            {entryTags.length === 0 && (
-                              <span className="text-xs text-transparent select-none">
-                                Tags:
-                              </span>
-                            )}
                             <span
                               className={`${colors.track.size} text-xs tabular-nums`}
                             >
