@@ -1,5 +1,5 @@
-/** Song is the rbyellow entity everywhere it's referenced — Browse's song boxes,
- *  and here as a compact "which song owns this track" chip. */
+/** Compact "which song owns this track" chip — used on the track-group detail
+ *  page, where tracks from different songs sit side by side. */
 export function SongChip({
   name,
   size = "md",
@@ -18,10 +18,12 @@ export function SongChip({
   return (
     <span
       title={title}
-      className={`inline-flex items-center rounded border border-rbyellow-800 text-rbyellow-400 bg-rbyellow-950/20 shrink-0 max-w-full ${sizeClass}`}
+      className={`inline-flex items-center rounded border border-rbyellow-800 bg-rbyellow-950/20 shrink-0 max-w-full ${sizeClass}`}
     >
-      <span aria-hidden>♪</span>
-      <span className="truncate">{name}</span>
+      <span aria-hidden className="text-rbyellow-500">
+        ♪
+      </span>
+      <span className="text-gradient-brand font-semibold truncate">{name}</span>
     </span>
   );
 }
