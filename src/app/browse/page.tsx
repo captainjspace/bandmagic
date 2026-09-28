@@ -3,7 +3,6 @@
 import { useSearchParams } from "next/navigation";
 import { Suspense, useCallback, useEffect, useState } from "react";
 import { AssetPicker, type AssetsLoadKind } from "@/components/AssetPicker";
-import { SongChip } from "@/components/SongChip";
 import { SongPicker } from "@/components/SongPicker";
 import { TagChips } from "@/components/TagChips";
 import {
@@ -588,11 +587,6 @@ function BrowsePageInner() {
                           >
                             {filename}
                           </span>
-                          <SongChip
-                            name={group.name}
-                            size="lg"
-                            title={`Owned by song: ${group.name}`}
-                          />
                           <span
                             title={
                               inherited.length > 0
