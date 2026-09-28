@@ -34,7 +34,6 @@ const colors = {
     toggle: "text-rbyellow-700 hover:text-rbyellow-500",
     count: "text-rbyellow-600",
     label: "text-neutral-600",
-    actions: "text-rbyellow-500 hover:text-rbyellow-300",
   },
   track: {
     box: "border border-cyan-800 rounded hover:border-cyan-600 transition-colors",
@@ -43,7 +42,6 @@ const colors = {
     size: "text-rbyellow-500",
     playLink: "text-green-500 hover:underline",
     label: "text-neutral-600",
-    actions: "text-cyan-400 hover:text-cyan-300",
   },
   panel: {
     border: "border-neutral-800",
@@ -422,19 +420,31 @@ function BrowsePageInner() {
               id={`song-${group.key}`}
               className={`p-3 ${colors.song.box}`}
             >
-              <div className="flex items-center gap-3 flex-wrap">
+              <div className="flex items-center gap-2 flex-wrap">
                 <button
                   type="button"
                   onClick={() => toggle(group.key)}
-                  className="flex items-center gap-2 min-w-0"
+                  title={isOpen ? "Collapse" : "Expand"}
+                  className={`${colors.song.toggle} text-xs w-3 shrink-0 p-1 -m-1`}
                 >
-                  <span
-                    className={`${colors.song.toggle} text-xs w-3 shrink-0`}
-                  >
-                    {isOpen ? "▾" : "▸"}
-                  </span>
-                  <SongChip name={group.name} size="xl" />
+                  {isOpen ? "▾" : "▸"}
                 </button>
+                {song ? (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      actionsOpen ? closeSongActions() : startEditSong(song)
+                    }
+                    title={actionsOpen ? "Close editor" : "Edit song"}
+                    className={`min-w-0 transition-transform hover:scale-105 ${actionsOpen ? "ring-2 ring-rbyellow-500 rounded" : ""}`}
+                  >
+                    <SongChip name={group.name} size="xl" />
+                  </button>
+                ) : (
+                  <div className="min-w-0">
+                    <SongChip name={group.name} size="xl" />
+                  </div>
+                )}
                 {group.songTags.length > 0 && (
                   <div className="flex items-center gap-1.5">
                     <span className={`text-xs ${colors.song.label}`}>
@@ -461,17 +471,6 @@ function BrowsePageInner() {
                   </div>
                 )}
                 <div className="flex items-center gap-3 ml-auto shrink-0">
-                  {song && (
-                    <button
-                      type="button"
-                      onClick={() =>
-                        actionsOpen ? closeSongActions() : startEditSong(song)
-                      }
-                      className={`text-xs ${colors.song.actions} transition-colors`}
-                    >
-                      {actionsOpen ? "× close" : "+ Actions"}
-                    </button>
-                  )}
                   {group.trackGroups.length > 0 && (
                     <button
                       type="button"
@@ -612,7 +611,20 @@ function BrowsePageInner() {
                         className={`px-3 py-2 group ${colors.track.box} ${colors.track.hover}`}
                       >
                         <div className="flex items-center gap-3 flex-wrap">
-                          <TrackChip name={filename} size="lg" />
+                          <button
+                            type="button"
+                            onClick={() =>
+                              trackActionsOpen
+                                ? closeTrackActions()
+                                : startEditTrack(entry)
+                            }
+                            title={
+                              trackActionsOpen ? "Close editor" : "Edit track"
+                            }
+                            className={`min-w-0 transition-transform hover:scale-105 ${trackActionsOpen ? "ring-2 ring-cyan-500 rounded" : ""}`}
+                          >
+                            <TrackChip name={filename} size="lg" />
+                          </button>
                           <span
                             title={
                               inherited.length > 0
@@ -683,17 +695,6 @@ function BrowsePageInner() {
                                 Tags:
                               </span>
                             )}
-                            <button
-                              type="button"
-                              onClick={() =>
-                                trackActionsOpen
-                                  ? closeTrackActions()
-                                  : startEditTrack(entry)
-                              }
-                              className={`text-xs ${colors.track.actions} transition-colors`}
-                            >
-                              {trackActionsOpen ? "× close" : "+ Actions"}
-                            </button>
                             <span
                               className={`${colors.track.size} text-xs tabular-nums`}
                             >
