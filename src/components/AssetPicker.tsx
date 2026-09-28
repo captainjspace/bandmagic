@@ -10,7 +10,7 @@ import type { Asset, AssetSubtype } from "@/types";
 const colors = {
   trigger: "text-rbyellow-600 hover:text-green-500",
   newLink: "text-rbyellow-500 hover:text-green-400",
-  searchText: "text-rbyellow-100 placeholder-text-rborange-600",
+  searchText: "text-rbyellow-100 placeholder-rborange-600",
   rowTitle: "text-rbyellow-100",
   rowUrl: "text-rbyellow-500",
   empty: "text-rbyellow-600",
@@ -18,20 +18,20 @@ const colors = {
   chip: {
     title: "text-rbyellow-200",
     remove: "text-rbyellow-600 hover:text-red-400",
-    loading: "text-rbyellow-500 border-text-rborange-700",
+    loading: "text-rbyellow-500 border-rborange-700",
     error: "text-amber-400 border-amber-800",
     missing: "text-red-400 border-red-800",
   },
   rowHint: "text-amber-500",
   create: {
     label: "text-rbyellow-500",
-    input: "text-rbyellow-100 placeholder-text-rborange-600",
+    input: "text-rbyellow-100 placeholder-rborange-600",
     submit: "bg-green-600 hover:bg-green-500 text-black",
     cancel: "text-rbyellow-500 hover:text-rbyellow-300",
     error: "text-red-400",
     hint: "text-rbyellow-600",
     tabIdle: "text-rbyellow-500 hover:text-rbyellow-300",
-    tabOn: "bg-text-rborange-800 text-rbyellow-100",
+    tabOn: "bg-rborange-800 text-rbyellow-100",
   },
 };
 
@@ -261,10 +261,10 @@ export function AssetPicker({
         </div>
 
         {open && (
-          <div className="absolute z-50 top-full mt-1 w-full bg-text-rborange-900 border border-text-rborange-700 rounded shadow-xl">
+          <div className="absolute z-50 top-full mt-1 w-full bg-rborange-900 border border-rborange-700 rounded shadow-xl">
             {mode === "search" && (
               <>
-                <div className="flex items-stretch border-b border-text-rborange-700">
+                <div className="flex items-stretch border-b border-rborange-700">
                   <input
                     autoFocus
                     value={query}
@@ -276,12 +276,12 @@ export function AssetPicker({
                           ? "Asset list unavailable — Create new still works"
                           : "Search title, subtype, or URL…"
                     }
-                    className={`flex-1 bg-text-rborange-900 rounded-tl px-3 py-2 text-sm ${colors.searchText} focus:outline-none`}
+                    className={`flex-1 bg-rborange-900 rounded-tl px-3 py-2 text-sm ${colors.searchText} focus:outline-none`}
                   />
                   <button
                     type="button"
                     onClick={startCreate}
-                    className={`text-xs px-3 ${colors.modeToggle} border-l border-text-rborange-700 transition-colors`}
+                    className={`text-xs px-3 ${colors.modeToggle} border-l border-rborange-700 transition-colors`}
                   >
                     + Create new
                   </button>
@@ -302,7 +302,7 @@ export function AssetPicker({
                           <button
                             type="button"
                             onMouseDown={() => attach(asset.id)}
-                            className="w-full text-left px-3 py-2 hover:bg-text-rborange-800 transition-colors flex items-center gap-3"
+                            className="w-full text-left px-3 py-2 hover:bg-rborange-800 transition-colors flex items-center gap-3"
                           >
                             <span
                               className={`text-xs border px-1.5 py-0.5 rounded shrink-0 uppercase tracking-wider ${assetClass(asset.subtype)}`}
@@ -388,7 +388,7 @@ export function AssetPicker({
                     value={draftUrl}
                     onChange={(e) => setDraftUrl(e.target.value)}
                     placeholder="https://docs.google.com/document/... or https://blog.example.com/..."
-                    className={`w-full bg-text-rborange-950 border border-text-rborange-700 rounded px-2 py-1.5 text-xs ${colors.create.input} focus:outline-none focus:border-green-600 font-mono`}
+                    className={`w-full bg-rborange-900 border border-rborange-700 rounded px-2 py-1.5 text-xs ${colors.create.input} focus:outline-none focus:border-green-600 font-mono`}
                   />
                 )}
 
@@ -397,14 +397,14 @@ export function AssetPicker({
                     value={draftTitle}
                     onChange={(e) => setDraftTitle(e.target.value)}
                     placeholder="Display title"
-                    className={`flex-1 bg-text-rborange-950 border border-text-rborange-700 rounded px-2 py-1.5 text-sm ${colors.create.input} focus:outline-none focus:border-green-600`}
+                    className={`flex-1 bg-rborange-900 border border-rborange-700 rounded px-2 py-1.5 text-sm ${colors.create.input} focus:outline-none focus:border-green-600`}
                   />
                   <select
                     value={draftSubtype}
                     onChange={(e) =>
                       setDraftSubtype(e.target.value as AssetSubtype)
                     }
-                    className={`bg-text-rborange-950 border border-text-rborange-700 rounded px-1.5 py-1.5 text-xs ${colors.create.input} focus:outline-none focus:border-green-600`}
+                    className={`bg-rborange-900 border border-rborange-700 rounded px-1.5 py-1.5 text-xs ${colors.create.input} focus:outline-none focus:border-green-600`}
                   >
                     {SUBTYPES.map((s) => (
                       <option key={s} value={s}>
