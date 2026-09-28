@@ -1,43 +1,34 @@
 # CLAUDE.md
 
-## Working Style
-(TBD)
-
-
-## Architecture Invariants section near the top of CLAUDE.md, above build/test instructions.
+## Architecture Invariants
 
 - Song "folders" are VIRTUAL groupings derived from metadata, not real storage directories. Never assume a filesystem/GCS folder hierarchy exists for songs.
 - Folder/song matching must be fuzzy/normalized (case- and punctuation-insensitive), never exact-string only.
 
-## Tooling section (already decided — do not re-evaluate)
+## Tooling (decided — do not re-evaluate)
 
-- merge into any existing Commands/Scripts section if presen 
-- Lint/format: Biome (not ESLint/Prettier). Run `biome check --write .` before commits.
-- Tests: Vitest. Run `vitest run` after any change to entity/matching/seed logic.
-
-## Testing/Verification'
-create one after Tooling.
+- Lint/format: Biome (not ESLint/Prettier). Suppression comments use `// biome-ignore lint/<rule>: <reason>`, not `eslint-disable`.
+- Tests: Vitest.
 
 ## Data Seeding Checklist
 
-Before declaring any classification/matching feature done: 
-(1) confirm the source collection is actually seeded and non-empty, 
-(2) print counts per bucket, 
-(3) confirm zero unexpected 'Unclassified' rows.
+Before declaring any classification/matching feature done:
+1. Confirm the source collection is actually seeded and non-empty.
+2. Print counts per bucket.
+3. Confirm zero unexpected "Unclassified" rows.
 
 ## Environment Constraints
 
-- Commands needing sudo, SSH packet capture (tcpdump), or secret generation will be blocked 
-  >> output the exact command for me to run manually instead of attempting it.
-- The microk8s node has a known containerd/CDI bug blocking image pulls. Default to local Docker/Podman for container work unless I say otherwise.
-
+- Commands needing sudo, SSH packet capture (tcpdump), or secret generation will be blocked — output the exact command for the user to run manually instead of attempting it.
+- The microk8s node has a known containerd/CDI bug blocking image pulls. Default to local Docker/Podman for container work unless told otherwise.
 
 ## Exploration Budget
 
-- Before broad codebase exploration, state your model of the data/storage layer in 2-3 sentences and ask me to confirm. 
-- Prefer a Task agent with a narrow question over many sequential Read/Grep calls.
+- Before broad codebase exploration, state your model of the data/storage layer in 2-3 sentences and confirm before continuing.
+- Prefer a Task/Explore agent with a narrow question over many sequential Read/Grep calls.
 
 ## Git workflow — ⚠️ main is hot
+
 A push to `main` is auto-built and deployed to production Cloud Run (`.github/workflows/deploy.yaml`). There is no staging gate — `main` going green on GitHub Actions means it's live for the band.
 
 - Never commit or push directly to `main`. Do all work on a feature branch (`git checkout -b <name>`) and open a PR for review before merging.
@@ -45,56 +36,56 @@ A push to `main` is auto-built and deployed to production Cloud Run (`.github/wo
 - Claude creates feature branches, commits, pushes, and opens PRs freely. Claude does **not** merge PRs to `main` — the user always does that merge themselves, since it's the production deploy trigger and they own that call.
 - Before merging: run `pnpm build` and, if touching Docker/deploy-relevant files, `docker build .` locally to confirm the container still builds clean.
 
-# Next Actions:
-
-Start a new feature branch.
-- Desktop Application: the main screen should scroll under the header with "always available links"
+# Next Actions
 
 ## Done
 
-- [x] **1 — Browse Page organizing principle.** Song = folder with many tracks (1 "latest" by date). `src/app/browse/page.tsx` groups tracks by song into collapsible, default-open sections.
+- [x] **1 — Browse Page organizing principle.** Song = folder with many tracks (1 "latest" by date). `src/app/browse/page.tsx` groups tracks by song into collapsible sections.
 - [x] **2 — Adding Media.** `SongPicker.tsx` (find or create a song folder) + `AddTrackModal.tsx` (upload new mix, or attach an existing unclassified catalog entry), wired into the header's "+ Track" button.
-- [x] **5 — Adding Tracks creates the song folder lazily.** `POST /api/catalog` generates `song.folderPrefix` on first upload if unset, then adds the track. (Was still unchecked on this list — code is ahead of the doc.)
+- [x] **3 (partial) — Header always-available links.** `AppHeader.tsx` carries "+ Track", "+ Asset", and "↻ Sync" as persistent header actions (confirmed shipped; the "scroll under header" framing in an earlier draft of this list is superseded by this).
+- [x] **5 — Adding Tracks creates the song folder lazily.** `POST /api/catalog` generates `song.folderPrefix` on first upload if unset, then adds the track.
 - [x] **6 — MasterSongFolder Firestore table.** `Song` type (`src/types/index.ts`) has PK, `folderPrefix`, name, audit columns, author. `getSongs`/`getSong`/`updateSong`/`seedSongs` in `src/lib/firestore.ts`.
 - [x] **Track reordering.** Move-up/move-down buttons on both the Edit (`src/app/admin/[id]/page.tsx`) and New (`src/app/track-group/new/page.tsx`) track-group pages; edit-page version persists immediately via `PUT /api/track-groups/[id]`.
-- [x] **Mobile song-name clipping (Browse page).** Row now wraps below `sm:` so the name gets its own full-width line instead of being squeezed by fixed-width siblings.
-- [x] **Track ↔ track-group cross-reference (Browse page).** Each track row and each song-folder header now shows how many track groups reference it (hover for the titles). Purely derived client-side from `GET /api/track-groups` joined against catalog paths — no new endpoint or schema change. `src/app/browse/page.tsx`.
-- [x] **`tags[]` replaces the scalar `stage` badge on the Browse page (2026-09-27).** `CatalogEntry.tags` and `Song.tags` (new optional `string[]` fields) are editable via `+ tag` / `tag ×` chips, persisted through `PATCH /api/catalog/[id]` and the new `PATCH /api/songs/[id]` (tags-only). Track rows also show read-only **inherited status chips**: distinct non-`"unknown"` `Track.stage` values already set on any track group this file belongs to (reuses the same path-join as the cross-reference above, so e.g. a file marked `mixing` inside a track group now shows that on the Browse page too, instead of the catalog's own stale/unclassified `stage`). `tags.json` at the repo root is the reference vocabulary feeding the `<datalist>` suggestions.
-- [x] **Tag color is declared in `tags.json`, not duplicated in code (2026-09-27, revised same day).** First pass hardcoded a `COLORED` name-set in `src/lib/tag.ts` — flagged immediately as the same "which tags are special" list existing redundantly in three places (`tags.json`, `tag.ts`, `globals.css`). Fixed: each tag entry in `tags.json` can carry an optional `"color"` field (e.g. `"sky"`, `"indigo"`); `tagClass`/`tagBgClass` in `src/lib/tag.ts` read it directly from the taxonomy (`entityType` param selects which top-level section, e.g. `"track"` vs `"song"`, since tags are namespaced per entity type). `globals.css`'s `.tag-<color>` classes are keyed by color name, not tag name, so multiple tags can share one — CSS still has to define what each color *looks like* (Tailwind can't do that from runtime JSON), but "which tag gets which color" now lives in exactly one place. `tags.json`'s `_meta` also now documents that every field is optional and omitting it (rather than writing `false`/empty explicitly) is the intended, blessed shorthand.
-- [x] **`stageFromPath` fallback changed from `"unknown"` to `""` (2026-09-27).** `src/app/api/admin/sync/route.ts`. The literal string `"unknown"` was truthy and silently defeated every `.filter(Boolean)` aggregation in the app (including the TrackGroups homepage list); `""` is falsy and gets excluded naturally, no aggregation code needed to change. Re-running "↻ Sync catalog" retroactively cleans up existing `"unknown"` entries. Classifier itself is still weak — see the open item below.
-- [x] **Tags Phase 2 — `tags[]` extended to embedded `Track` (2026-09-27).** `Track.tags?: string[]` added alongside `CatalogEntry.tags`/`Song.tags`. Seeded from the picked `CatalogEntry.tags` at `TrackSearch` selection time (`admin/[id]/page.tsx`, `track-group/new/page.tsx`), then edited independently per track group — same snapshot-then-diverge pattern `title`/`stage` already used. `TagChips` extracted to a shared component (`src/components/TagChips.tsx`, 4+ call sites now) instead of staying duplicated in `browse/page.tsx`. The old `STAGES`-driven `<select>` per track row is gone from both editors.
-- [x] **Regression found and fixed: Phase 2 made pre-existing stage data invisible (2026-09-27, same day).** Replacing the stage display with a tags-only display broke every track group created *before* `tags` existed — they have real `stage` values (`mixing`, `tracking`, etc.) but empty `tags`, so the homepage, `/track-group/[id]`, and the `admin/[id]` editor all went blank where a badge used to be. Caught via user screenshots, not caught by `pnpm build` (a type-check can't see this class of bug — this is exactly what CLAUDE.md's own Data Seeding Checklist warns about: verify against real/existing data, not just types). Fixed via a small multi-agent workflow (implement fallback in parallel across 5 files + an oversight agent that reviewed every diff and re-ran build/lint) — `effectiveTags(tags, stage)` in `src/lib/tag.ts` falls back to `[stage]` when `tags` is empty and `stage` isn't `"unknown"`. Read-only pages (`src/app/page.tsx`, `/track-group/[id]`, `TrackSearch` dropdown) use it directly. The two editors (`admin/[id]`, `browse/page.tsx`) deliberately do **not** feed the fallback into `TagChips`' editable array — that would create an un-removable chip, since removing it wouldn't clear the underlying `stage` field. Instead they render a separate, visually distinct (dashed border, muted, no `×`) read-only legacy chip alongside the editor.
-- [x] **Chip provenance labels added (2026-09-27).** Per explicit feedback ("better to have more data visible than less... label the data"): every chip group across all 5 pages now has a visible `"Tag Chips:"` or `"Stage Chips:"` text label (not just color/tooltip) — real tags vs. legacy-stage-standing-in-for-a-tag are never silently merged into one unlabeled list. `track-group/[id]` got a small local `LabeledTags` component for its two call sites (tracklist row + active track panel) rather than duplicating the branch logic. One deliberate exception: `TrackSearch`'s single-line dropdown row keeps the distinction via a `title` tooltip only (`"Tag Chips"` / `"Stage Chips (legacy...)"`) rather than inline text, since the row is already tight (title + path already truncate) — flagged here in case that's not acceptable and needs revisiting.
-- [x] **Edit Songs / Edit Catalog admin screens (2026-09-27).** New `src/app/admin/songs/page.tsx` and `src/app/admin/catalog/page.tsx` — every field on `Song` and `CatalogEntry` shown with a label, editable inline (copies `admin/assets/page.tsx`'s list + inline-edit-toggle pattern, not a separate per-record page). Fully closes the old "6a — Song CRUD is create+read only" gap: `GET`/`PATCH /api/songs/[id]` widened from tags-only to every field (`name`/`aliases`/`folderPrefix`/`latestPath`/`tags`); new `GET`/`PATCH /api/catalog/[id]` widened to also accept `title`/`mix`, plus a new `getCatalogEntry` in `src/lib/firestore.ts` (was missing — only bulk `getCatalog()` existed). Deliberately **not** editable: `CatalogEntry.path` (the fragile join key — see the ERD note) and `stage` (superseded by tags, shown read-only so nothing's invisible). No `DELETE` for either entity yet — unsafe for `CatalogEntry` specifically until something reconciles a deletion against `TrackGroup.tracks[]` referencing its path by string, the way `deleteAsset` already does for assets. Two admin-hub cards added linking to both. **Bug caught in this pass, not by `pnpm build`:** the three new `fetch` calls in `admin/catalog/page.tsx` initially built URLs as `` `/api/catalog/${entry.id}` `` — but catalog doc IDs are `encodeURIComponent(path)` and already contain a literal `%2F`, so every other call site in the app double-encodes (`encodeURIComponent(entry.id)`) before building the URL; skipping that silently 404s on any path containing `/` (i.e. nearly all of them). Caught by curl-testing the real route, not by types. Fixed; verified with a properly double-encoded request.
-- [x] **Real data bug found + Song/CatalogEntry IDs switched to Firestore auto-gen (2026-09-27).** The same double-encoding class of bug above was *also* present in the brand-new `admin/songs/page.tsx` (missed when fixing the catalog page) — real duplicate/malformed `Song` docs resulted in production ("Bad Booze" / "Bad%20Booze", "Born of the Earth" / "Born%20of%20the%20Earth"; the latter is missing its `name` field entirely, which is why `getSongs()`'s `.orderBy("name")` silently hid it from every list in the app — Firestore excludes docs missing an ordered-on field). Found via the user reading Firestore directly, not via any test. Fixed the immediate bug (added the missing `encodeURIComponent`), but the user correctly pushed further: the *root* defect is that `Song.id`/`CatalogEntry.id` were derived from `encodeURIComponent(name)`/`encodeURIComponent(path)` — a mutable, encoding-sensitive display field — instead of an opaque identifier. Switched both to Firestore's native auto-gen ID (`.doc()` with no argument) for all *new* docs going forward. The one real risk: `seedSongs`/`syncCatalog` were idempotent only because the ID was predictable from name/path; replaced that with an upfront full-collection read building a `name`→ref / `path`→ref map, so existing entries still update in place instead of duplicating. Verified against real data: creating the same song name twice now updates one doc (confirmed via returned id staying identical across both calls); running "↻ Sync catalog" twice back-to-back left the catalog count unchanged at 44 (the one thing that absolutely could not regress). No migration of already-existing derived-ID docs — they keep working fine as opaque strings, nothing forces new-format consistency. The two malformed docs above, plus one `"ZZZ Autogen ID Test"` song created during this verification, are manual Firebase-console cleanup, not automated (no `DELETE` route exists, and per-user preference, one-off data fixes go through the console or documented scripts against the API — not throwaway direct-Firestore code).
+- [x] **Mobile song-name clipping (Browse page).** Row wraps below `sm:` so the name gets its own full-width line.
+- [x] **Track ↔ track-group cross-reference (Browse page).** Each track row and song-folder header shows how many track groups reference it. Derived client-side from `GET /api/track-groups` joined against catalog paths — no new endpoint or schema change.
+- [x] **`tags[]` replaces the scalar `stage` badge on the Browse page (2026-09-27).** `CatalogEntry.tags` and `Song.tags` are editable via `+ tag` / `tag ×` chips, persisted through `PATCH /api/catalog/[id]` and `PATCH /api/songs/[id]`. Track rows show read-only inherited stage chips from any track group the file belongs to. `tags.json` at the repo root is the reference vocabulary.
+- [x] **Tag color declared in `tags.json`, not duplicated in code (2026-09-27).** Each tag entry can carry an optional `"color"` field; `tagClass`/`tagBgClass` in `src/lib/tag.ts` read it directly. `globals.css`'s `.tag-<color>` classes are keyed by color name, not tag name, so multiple tags can share one.
+- [x] **`stageFromPath` fallback changed from `"unknown"` to `""` (2026-09-27).** `""` is falsy and gets excluded naturally by every `.filter(Boolean)` aggregation, whereas the literal string `"unknown"` was truthy and polluted them. Classifier itself still weak — see Partially done.
+- [x] **Tags Phase 2 — `tags[]` extended to embedded `Track` (2026-09-27).** `Track.tags?: string[]` seeded from the picked `CatalogEntry.tags` at selection time, then edited independently per track group. `TagChips` extracted to a shared component (`src/components/TagChips.tsx`).
+- [x] **Regression fixed: tags rollout hid pre-existing stage data (2026-09-27).** `effectiveTags(tags, stage)` in `src/lib/tag.ts` falls back to `[stage]` when `tags` is empty and `stage` isn't `"unknown"`. Read-only pages call it directly; the two editors deliberately do **not** feed the fallback into the editable tag array (would create an un-removable chip) — they render a separate, visually distinct read-only legacy chip instead.
+- [x] **Chip provenance labels (2026-09-27).** Every chip group has a visible `"Tag Chips:"` / `"Stage Chips:"` text label — real tags vs. legacy-stage-standing-in-for-a-tag are never silently merged into one unlabeled list.
+- [x] **Edit Songs / Edit Catalog admin screens (2026-09-27).** `src/app/admin/songs/page.tsx` and `src/app/admin/catalog/page.tsx` — every field on `Song`/`CatalogEntry` editable inline. `GET`/`PATCH /api/songs/[id]` and `/api/catalog/[id]` widened to the full field set. Deliberately not editable: `CatalogEntry.path` (fragile join key) and `stage` (superseded by tags). No `DELETE` for either entity.
+- [x] **Song/CatalogEntry IDs switched to Firestore auto-gen, going forward (2026-09-27).** IDs were previously derived from `encodeURIComponent(name)`/`encodeURIComponent(path)` — a mutable, encoding-sensitive display field, and the root cause of a real duplicate-doc production bug. `seedSongs`/`syncCatalog` now build a `name`→ref / `path`→ref map from one upfront collection read so new entries get a real auto-gen id while re-syncs still update in place (idempotency preserved — verified by running "↻ Sync catalog" twice with no count change). Existing (already-created) docs kept their old derived IDs until the migration below.
+- [x] **Migrate existing Song/CatalogEntry docs to auto-gen IDs (2026-09-27, PR #8).** `migrateSongIds`/`migrateCatalogEntryIds` in `src/lib/firestore.ts` — for each legacy-ID doc (detected by `id === encodeURIComponent(name|path)`), creates a new auto-gen-id doc with the same data, repoints every `CatalogEntry.songId` reference (only needed for Song — nothing references `CatalogEntry.id` as a FK), then deletes the old doc. Idempotent; skips a doc on error rather than aborting the run. Ships as a committed standalone runner (`src/lib/util-migrate-song-catalog-ids.ts`, run manually via `node`), matching the existing `util-migrate-asset-links.ts`/`renameCollection` precedent rather than a new API route. **Merged but not yet executed against real production data** — that's a manual one-time run, still pending.
+- [x] **Song-owned assets with track inheritance (2026-09-27, PR #9).** `Song.assets`/`CatalogEntry.assets?: AssetLink[]` (new). A track displays its own assets plus its parent song's, via `effectiveAssets()` in `src/lib/asset.ts` — inherited chips are read-only/non-removable from the track (same fix class as the tags/stage fallback bug above; removing one means editing the song). `usageCount`/reference-integrity extended to match: `updateSong`/`updateCatalogEntry` share the same transactional delta logic `updateTrackGroup` already had (`collectAssetLinks` generalized, `applyDeltasInTx` extracted), and `deleteAsset` now cleans up stale links on Songs and CatalogEntries too, not just TrackGroups.
+- [x] **Browse page consolidated into a catalog-management surface (2026-09-27, PR #9, then fixed same day after visual verification).** Song and track rows both get `+tag`/`+asset`/`+edit` inline — editing `Song.aliases/folderPrefix/latestPath` and `CatalogEntry.title/mix` no longer requires navigating to `/admin/songs`/`/admin/catalog`. **PR #9's first cut shipped without a browser check and broke in production**: a narrow multi-column card grid (`auto-fill`/`minmax`) squeezed track titles to zero visible width once every chip/button competed for space in a ~260px card, and a white-card restyle killed legibility against the rest of the dark app. Fixed via a user-provided annotated mockup (screenshot with boxes/arrows) once two verbal-only guesses had already missed — for non-trivial visual changes, ask for a rough mockup before iterating further rather than guessing again. Current shape: single-column dark layout, song boxes (rbyellow border) nesting track boxes (cyan border), tags always visible as labeled chips, asset chips/picker always visible (same as tags — moved out of the actions panel after a follow-up "assets should display on top" note), field editing (name/aliases/folderPrefix/latestPath for songs, title/mix for tracks) consolidated behind one `+Actions` toggle per row instead of separate always-visible buttons. Track name displays the real filename from `CatalogEntry.path`, not the derived `title` — grounds the UI in the actual stored object per explicit feedback. New shared `SongChip` component (`src/components/SongChip.tsx`) shows song ownership on a track — used on Browse (large) and added to `/track-group/[id]`'s tracklist (small), deriving ownership via a client-side path→`CatalogEntry.songId`→`Song.name` join since embedded `Track` has no `songId` of its own (no schema change). `?editSong=<id>`/`?editTrack=<id>` deep-links still open and scroll to a specific row's editor.
+- [x] **ERD diagram.** `docs/erd.mmd` documents the as-built domain model (see the "Domain model — ERD" section below) and is kept current as the schema changes — most recently for the ID-migration and asset-inheritance work above.
 
 ## Partially done — needs a follow-up pass
 
-- [ ] **3 — Sync consolidation.** `AppHeader.tsx` has one "↻ Sync" button (good — sync is out of the admin page), but it's a single combined action rather than the two described (storage catalog vs. asset catalog) — confirm `/api/admin/sync` actually covers both, or split visibly if not.
-- [ ] **3a — Auto-save on blur.** Not implemented anywhere (no `onBlur` handlers found). Still open despite item 3 being checked off above.
-- [ ] **`stageFromPath` still can't classify most real GCS paths.** The *symptom* is fixed (2026-09-27: `src/app/api/admin/sync/route.ts` now falls back to `""` instead of the literal string `"unknown"` — a real fix, not cosmetic, since `""` is falsy and gets naturally excluded by every existing `.filter(Boolean)` aggregation, e.g. the TrackGroups homepage list, whereas `"unknown"` was a truthy string that polluted those aggregations too; re-running "↻ Sync catalog" retroactively cleans up old entries). The underlying *cause* is still open: `stageFromPath` (`src/lib/gcs.ts`) still fails to match most real GCS path conventions — it just fails quietly now instead of mislabeling. Low priority now that `stage` is deprecated in favor of tags (see below) for display purposes.
+- [ ] **3 — Sync consolidation.** `AppHeader.tsx` has one "↻ Sync" button rather than two separate ones (storage catalog vs. asset catalog) — confirm `/api/admin/sync` actually covers both, or split visibly if not.
+- [ ] **3a — Auto-save on blur.** Not implemented anywhere (no `onBlur` handlers found).
+- [ ] **`stageFromPath` still can't classify most real GCS paths.** Symptom fixed (falls back to `""`, fails quietly instead of mislabeling as `"unknown"`); underlying classifier in `src/lib/gcs.ts` is still weak. Low priority now that `stage` is deprecated in favor of tags for display.
 
 ## Open
 
-- [ ] **Migrate existing Song docs to auto-gen IDs.** 2026-09-27's fix only changed *generation going forward* — `seedSongs`/`syncCatalog` now use Firestore auto-gen IDs for new docs, but every `Song` doc created before that fix (the whole week's worth of real usage, not just the original `songlist.txt` seed batch) still has the old `encodeURIComponent(name)` derived ID. Deliberately deferred ("let's ship and go back... to keep it clean") rather than bundled into the ID-generation fix. Needs its own careful pass when picked up: create a new auto-gen-id doc per existing song (same data), repoint every `CatalogEntry.songId` that references the old id, then remove the old doc. Two open decisions from that discussion, unresolved: (a) whether to add a real `DELETE /api/songs/[id]` route so the whole migration can go through documented scripts calling the API (vs. create+repoint via API, delete old docs manually in the Firebase console — matching how the 3 stray docs from this session are being handled), (b) confirmed *not* wanted: fetching GCS object metadata as an alternative key — `CatalogEntry.path` (already a stored field) is sufficient, no new data source needed. `CatalogEntry` docs don't need this migration — nothing found duplicating there, and the fix already covers new ones correctly.
-- [ ] **4 — Manual notify action.** Notify currently only fires on create (`POST /api/track-groups` → `sendReleaseNotification`); `PUT` (update) never notifies, so there's no way to tell the band about edits to an already-live track group. On hold — decided this is a plain action (one endpoint + one button, id in, notification out), **not** a persisted `notifiable` field on `TrackGroup` — no state to track.
-- [ ] **Song Profile page** — the bigger one. Per-song view: its tracks, its assets, which track/version is "latest," which track groups (e.g. albums) it belongs to, what stage the song itself is in, and eventually which one the band voted "best mix." None of this exists yet — no `src/app/song/[id]` page, no `GET/PUT /api/songs/[id]` route, no `songId` on `Track`/`TrackGroup` (only `CatalogEntry` has it), and no voting/rating field anywhere. Needs its own data-model design pass before building. (Track ↔ track-group membership — "which tracklist(s) is this track in" — now shown on the Browse page, see Done above; the Song Profile page can reuse the same derived join.)
-- [ ] **Get Latest logic** — needs a design discussion before building: by song, by track group, or a new "songgroup" concept (a track group capped to N songs, used to track the latest version)?
+- [ ] **Run the Song/CatalogEntry ID migration against real data.** The utility from PR #8 is merged (`node src/lib/util-migrate-song-catalog-ids.ts`) but hasn't actually been executed yet — needs real ADC, not mock mode.
+- [ ] **4 — Manual notify action.** Notify currently only fires on create (`POST /api/track-groups` → `sendReleaseNotification`); `PUT` (update) never notifies. Decided: a plain action (one endpoint + one button, id in, notification out), **not** a persisted `notifiable` field — no state to track.
+- [ ] **Song Profile page** — the bigger one. Per-song view: its tracks, its assets (now real — see Done above), which track/version is "latest," which track groups it belongs to, its stage, and eventually a "best mix" vote. No `src/app/song/[id]` page yet, no `songId` on `Track`/`TrackGroup` (only `CatalogEntry` has it), no voting field anywhere. Needs its own data-model design pass before building.
+- [ ] **Get Latest logic** — needs a design discussion before building: by song, by track group, or a new "songgroup" concept (a track group capped to N songs, tracking the latest version)?
   - Album = track group with fixed versions. Songgroup = tracks the latest version, bounded by song count.
   - Admin process: check track group for the track tagged "latest" → check the master song folder → update the link.
-  - Related: if a lyrics/chords asset is attached to one track, it's really song-owned — should propagate to all tracks of that song. Write up concrete use cases before implementing.
-  - Real use case (2026-09-27): re-uploaded "Magi-cali" as just an isolated rhythm-guitar track, deliberately barebones instead of a full demo — band feedback showed a stripped-down track + chord chart teaches a part better than a polished mix. So "latest" isn't one pointer per song — a track's *purpose* (full demo vs. isolated/learning track vs. eventual final mix) is a real, independent dimension from stage. Consider whether "latest" needs to be scoped per-purpose rather than a single per-song pointer.
-  - Scale reality: Song is confirmed as purely an organizing/virtual grouping (not real storage) — expect ~100 songs total, each with potentially many recordings/versions. The eponymous "Rolling Blackout" song alone already has 100+ recordings. Any "Get Latest" or Song Profile UI needs to handle a song with a long tail of versions, not just a handful.
-  - Direction (2026-09-27, agreed, **do not build further logic than this yet**): purpose-tag matters more than recency. A track gets a purpose tag (e.g. full demo / learning-practice / final mix); recency can seed a sensible default tag on upload, but the tag itself is what's explicit and authoritative, not a timestamp. "Latest" is a query scoped *within* a purpose (e.g. "latest full demo of this song"), never a single flat pointer — the naive `SELECT track FROM catalog ORDER BY createdAt DESC LIMIT 1` is explicitly the wrong reference point, because it would surface today's barebones Magi-cali practice track as "the latest," burying the actual latest full demo. "Latest" is conceptually owned by the Song (answers "what's my current X for this song"), not by a track group or a raw catalog query. This is scoping only — stop here until a real design pass.
-- [ ] **API docs.** Need a reference/man page for the API routes.
+  - Real use case (2026-09-27): a barebones isolated rhythm-guitar re-upload of "Magi-cali" taught a part better than the polished full demo — so a track's *purpose* (full demo / learning-practice / final mix) is a real, independent dimension from stage.
+  - Scale reality: ~100 songs total, each with potentially many recordings — "Rolling Blackout" alone has 100+. Any Get Latest/Song Profile UI needs to handle a long tail of versions, not a handful.
+  - Direction (2026-09-27, agreed, **do not build further logic than this yet**): purpose-tag matters more than recency. "Latest" is a query scoped *within* a purpose (e.g. "latest full demo of this song"), never a single flat pointer or `ORDER BY createdAt DESC LIMIT 1` — that would surface today's barebones practice track as "the latest," burying the actual latest full demo. "Latest" is conceptually owned by the Song, not a track group or raw catalog query.
+- [ ] **API docs.** Need a reference for the API routes.
 - [ ] **Temporary/scoped access.** Short-lived (~1hr) tokens for a track-group link, for external viewers (family, a promoter) who need streaming access without full access. Separate mechanism from normal auth — needs its own design pass.
 - [ ] **TrackGroup `type` field** (`album | ep | single | playlist`) — not started, not in `src/types` yet.
 - [ ] **`src/lib/identity.ts` extraction** — the `x-goog-authenticated-user-email` / `LOCAL_USER_EMAIL` resolution is still inlined in 10+ routes (songs, track-groups, catalog, assets, admin/sweep-drive, admin/seed-songs, admin/sync, drive/search, track-groups/[id]/notes, auth/me).
-- [ ] **ERD diagram** — document the domain model, and where each entity's CRUD API + GUI lives.
 
 ### Function-level breakdown (for the Song/Asset work above)
 
-A. **Add New Song Record** — song folder holds the lifecycle of the song's media. Needs CRUD ops (see "Song CRUD" gap above).
+A. **Add New Song Record** — song folder holds the lifecycle of the song's media. CRUD ops now exist (see Done above).
 B. **Add / find / assign Song Folder inside MasterSongFolder.**
 C. **Add New Version** (mix, date, description) — assign song id + song folder, add media, sync media lib, add to track group, optional "mark as latest" boolean.
 
@@ -104,15 +95,15 @@ C. **Add New Version** (mix, date, description) — assign song id + song folder
 
 Manage: Track Groups | Firebase Admin | Assets | Tracks
 
-- **Song** — the folder identity; name + light metadata. Tracks are "of a song." One track is "latest" (like a build); one might be the "best mix."
+- **Song** — the folder identity; name + light metadata + its own assets (lyrics, chord charts — now real, see Done above). Tracks are "of a song." One track is "latest" (like a build); one might be the "best mix."
 - **Tracks** — folder, tracks, asset, and asset-association actions.
-- **Assets** — shared-folder table, add assets, link to track/track group, manage asset types.
+- **Assets** — shared-folder table, add assets, link to track/track group/song, manage asset types.
 - **TrackxAsset** — links track ↔ asset, with link id/type metadata; kept generic so other entities (video, images) can reuse the same link table later.
 - **TrackGroup**
 - **TrackGroupxAsset** — links track group ↔ asset.
 
 ### Browse / Tracks page (bucket administration)
-- Actions: add sub-folder, add tracks, move tracks (with a reconciliation/transaction-history process if links change), link assets (lyrics/chords) directly to tracks.
+- Actions: add sub-folder, add tracks, move tracks (with a reconciliation/transaction-history process if links change), link assets (lyrics/chords) directly to tracks — now shipped, see Done above.
 - Visibility: surface GCS metadata (bucket/folder/link path) in the UI.
 
 ### Notifications
@@ -134,87 +125,36 @@ Keep it, but let it become a link hub to the functions above (Tracks / Assets, a
 - **Shared-folder table for Assets** — a table of watched shared folders; a Go service subscribes and syncs any doc add/edit/change into the asset table (probably landing as "unclassified" until a pattern emerges).
 - **New track group as a function of Track Group** — needs a clearer proposal.
 
-# Fresh Highlights.
+# Fresh Highlights
 
-The application is live and is testing - congratulations!
-We have a few challanging tackles to make her but otherwise in execllent shape.
+The application is live and in testing. Infra is almost entirely Terraform-controlled now — cloud storage buckets (~6-10) are still the one outlier; no application is deployed outside Terraform's view. A push to `main` is built and deployed automatically.
 
-We have f solid bass of terraform the envrionment is almsot entirely controlled by tf now - clsoud storage is still a bit an outlier but we're talking  about maybe 6-10 buckets - there are no application deployed outside of terraforms view
-Further the application is proven fully git ready and a push to main will be built and deployed. 
+Shell script management moved to a more deliberate approach (the `runner` tool: compiled, hashed/tagged binaries instead of loose editable `.zsh` scripts, to keep plaintext vars out of the way and avoid accidental script mangling) — most of the old ad hoc scripts have been removed.
 
-I have removed most the zsh scripts we don't need i have resolved toa  more strategic way of managing shell scripts.  And example of this is the runner.
-It's very simple and I stumbled upon - i am compacting into hex and have ligthweight c program that can compiled with the herds dated, tagged etc.  it get the open text vars out the way and stop inadverents mess ups in scripts.
+## Repo layout (this app, `apps/rollingblackoutapp/`)
 
-
-
-
-
+```
 .
-├── apps/rollingblackoutapp
-│   ├── k8s
-│   │   ├── base
-│   │   └── overlays/local
-│   ├── logs
-│   ├── mocks
-│   ├── notes
-│   ├── public/fonts
-│   ├── scripts
-│   │   ├── deprecated
-│   │   └── util
-│   ├── src
-│   │   ├── app
-│   │   │   ├── admin
-│   │   │   │   ├── [id]
-│   │   │   │   └── assets
-│   │   │   ├── api
-│   │   │   │   ├── admin
-│   │   │   │   │   ├── sweep-drive
-│   │   │   │   │   └── sync
-│   │   │   │   ├── assets/[id]
-│   │   │   │   ├── audio
-│   │   │   │   ├── auth/me
-│   │   │   │   ├── browse
-│   │   │   │   ├── catalog
-│   │   │   │   ├── drive/search
-│   │   │   │   └── track-groups/[id]/notes
-│   │   │   ├── browse
-│   │   │   └── track-group/[id]
-│   │   ├── components
-│   │   ├── lib/auth
-│   │   └── types
-│   └── test/drive/api/files
-├── config
-├── infra
-│   ├── terraform
-│   │   ├── modules
-│   │   ├── plan_output
-│   │   │   ├── production
-│   │   │   └── rollingblackout_test_env
-│   │   └── terraform.tfstate.d
-│   │       ├── production
-│   │       └── test
-│   └── tf-import
-└── packages
-    ├── bigquery/audio_file_analysis
-    │   ├── data
-    │   └── src
-    │       ├── shell
-    │       └── sql
-    ├── blessed
-    ├── encrypto
-    ├── eventarc/drive_events
-    │   ├── scripts
-    │   └── services
-    │       ├── controller
-    │       ├── receiver
-    │       └── util
-    └── workspace
-        ├── bin
-        └── src
+├── docs
+├── k8s/{base, overlays/local}
+├── logs
+├── mocks
+├── notes
+├── public/fonts
+├── scripts/{deprecated, util}
+├── src
+│   ├── app
+│   │   ├── admin/{[id], assets, catalog, songs}
+│   │   ├── api/{admin, assets, audio, auth, browse, catalog, drive, songs, track-groups}
+│   │   ├── browse
+│   │   └── track-group/{[id], new}
+│   ├── components
+│   ├── lib/auth
+│   └── types
+└── test/drive/api/files
+```
 
-77 directories
-
-
+This app lives inside a larger monorepo (sibling `infra/terraform`, `packages/*` for BigQuery, Eventarc Drive-event services, a `workspace` package, etc.) — not detailed here since this file's scope is the Next.js app itself.
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
@@ -223,10 +163,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ```bash
 pnpm dev          # start dev server (localhost:3000)
 pnpm build        # production build (output: standalone)
-pnpm lint         # eslint
+pnpm lint         # biome check .
+pnpm format       # biome check --write .
+pnpm test         # vitest run
+pnpm test:watch   # vitest
 ```
-
-No test suite is configured. That is an open item.
 
 The app is deployed as a Docker container on port 8080 (`next.config.ts` sets `output: 'standalone'`). Dev origins include `192.168.99.239` and `192.168.3.13` (local network hosts).
 
@@ -248,9 +189,11 @@ OLTP-first across all entities. Firestore is the source of truth for transaction
 
 - Assets own document and web links (Drive docs, posts, reviews, public URLs).
 - Tracks own audio (GCS paths). A track's mp3 is **not** an asset.
-- Notes attach at version level (per-mix commentary). Assets attach at track level.
+- Notes attach at version level (per-mix commentary). Assets attach at track level — and now also at song level, inherited down to tracks for display (see Done above).
 
-**Define once, reference everywhere.** Any string, label, or classification duplicated in more than one place is a design smell, not a style nitpick — fix the structure, don't just re-type the value somewhere else. Precedent: `tags.json`'s `color` field (2026-09-27) — a tag's color was first hardcoded as a second list inside `src/lib/tag.ts`, immediately went stale relative to `tags.json`, and got collapsed into a single `color` field read directly from the taxonomy at render time; `globals.css`'s `.tag-<color>` classes are keyed by color name (not tag name) so many tags can share one. Same shape as `src/lib/stage.ts`'s `STAGES` array being the one place the `TrackStage` enum's values are enumerated. When adding a new closed vocabulary or lookup table, ask where its *one* authoritative definition should live before writing the second copy.
+**Define once, reference everywhere.** Any string, label, or classification duplicated in more than one place is a design smell, not a style nitpick — fix the structure, don't just re-type the value somewhere else. Precedent: `tags.json`'s `color` field — a tag's color was first hardcoded as a second list inside `src/lib/tag.ts`, immediately went stale relative to `tags.json`, and got collapsed into a single `color` field read directly from the taxonomy at render time; `globals.css`'s `.tag-<color>` classes are keyed by color name (not tag name) so many tags can share one. Same shape as `src/lib/stage.ts`'s `STAGES` array being the one place the `TrackStage` enum's values are enumerated, and as `collectAssetLinks`/`applyDeltasInTx` in `src/lib/firestore.ts` being the one shared usageCount-delta implementation across `TrackGroup`/`Song`/`CatalogEntry` writes rather than three copies. When adding a new closed vocabulary or lookup table, ask where its *one* authoritative definition should live before writing the second copy.
+
+**Entity color convention (2026-09-27).** Song = `rbyellow` (border + text; the song name gets `.text-gradient-brand`, and the shared `SongChip` component — `src/components/SongChip.tsx` — is the one place "how a song reference looks" is defined, reused on Browse and on `/track-group/[id]`'s tracklist rather than re-styled per page). Track = cyan. Page titles = `rbblue-500` ("royal blue" — note `rbblue`/`rbpurple`/`rbred` only have shades 100/300/500/700/900 defined, unlike `rbyellow`'s full 100-950 scale; referencing e.g. `rbblue-600` silently resolves to nothing). A box's border always matches its entity's color rather than each page inventing its own scheme.
 
 ### Domain model — ERD (as-built, 2026-09-27)
 
@@ -263,13 +206,13 @@ Diagram source: [`erd.mmd`](./docs/erd.mmd) — paste into [mermaid.live](https:
 **Firestore reality check** (what's a real top-level collection vs. embedded):
 - Top-level collections: `songs`, `catalog`, `track-groups`, `assets`.
 - Subcollection: `track-groups/{id}/notes`.
-- **Embedded, not their own collection**: `TRACK` lives only as `TrackGroup.tracks[]` — there is no `tracks` collection. `ASSET_LINK` lives only as `TrackGroup.assets[]` and each `Track.assets[]` — there is no `TrackxAsset`/`TrackGroupxAsset` collection, despite the "target shape" section describing them as if there will be one.
+- **Embedded, not their own collection**: `TRACK` lives only as `TrackGroup.tracks[]` — there is no `tracks` collection. `ASSET_LINK` lives only as `TrackGroup.assets[]`, `Track.assets[]`, `Song.assets[]`, and `CatalogEntry.assets[]` — there is no `TrackxAsset`/`TrackGroupxAsset` collection, despite the "target shape" section describing them as if there will be one.
 
 **The one gap worth internalizing:** most of the graph above is real foreign keys (`SONG.id`, `ASSET.id`), but the two links that connect the GCS-sync world to the curated-release world — `CATALOG_ENTRY.path ↔ TRACK.path` and `TRACK.path ↔ NOTE.trackPath` — are **string equality, not schema-enforced**. Nothing stops a path from drifting (a file gets renamed/moved in GCS, a track's path gets hand-typed differently) and silently breaking the join. This is exactly why the Browse page's stage values could be wrong/stuck at `"unknown"` for GCS-synced files with no editor exposed, and why "which track groups is this song in" had to be computed by scanning every `TrackGroup.tracks[].path` rather than a direct lookup (see `trackGroupsByPath` in `src/app/browse/page.tsx`). Any future work that touches path-based joins should treat this as the load-bearing fragile point in the schema.
 
 ### Catalog sync flow
 
-Admin triggers `POST /api/admin/sync` → lists all audio files in GCS under `config.prefix` → maps each to a `CatalogEntry` (path, song, stage, mix, title, size) → bulk-upserts into Firestore `catalog` collection via batched writes. Catalog doc IDs are `encodeURIComponent(path)`.
+Admin triggers `POST /api/admin/sync` → lists all audio files in GCS under `config.prefix` → maps each to a `CatalogEntry` (path, song, stage, mix, title, size) → bulk-upserts into Firestore `catalog` collection via batched writes. Catalog doc IDs are Firestore auto-gen (see Done above — migrated 2026-09-27; existing docs from before that fix used `encodeURIComponent(path)`).
 
 ### Track-group lifecycle
 
@@ -277,7 +220,7 @@ Admin triggers `POST /api/admin/sync` → lists all audio files in GCS under `co
 2. Submits `POST /api/track-groups` → creates Firestore doc → calls `sendReleaseNotification` (the function is named for the *action* of releasing to the band; Gmail + optional Google Chat webhook)
 3. Band views at `/track-group/[id]` — audio proxied through `GET /api/audio?path=` which streams directly from GCS (no signed URLs, private bucket)
 
-**Author identity:** `POST /api/track-groups` reads `x-goog-authenticated-user-email` header (set by Cloud Run / IAP) or falls back to `LOCAL_USER_EMAIL` env var. The same chain is inlined in five other routes — `src/lib/identity.ts` extraction is the natural next refactor.
+**Author identity:** `POST /api/track-groups` reads `x-goog-authenticated-user-email` header (set by Cloud Run / IAP) or falls back to `LOCAL_USER_EMAIL` env var. The same chain is inlined in five other routes — `src/lib/identity.ts` extraction is the natural next refactor (see Open above).
 
 A `type` field on `TrackGroup` (`album | ep | single | playlist | …`) is the next planned addition for differentiating collection kinds. Not yet implemented.
 
@@ -348,11 +291,11 @@ Currently wired into `/api/drive/search` and `/api/admin/sweep-drive`. Other rou
 
 ### Stage colors
 
-Stage badge colors are defined as CSS classes in `globals.css` (`@layer components`): `.stage-writing`, `.stage-tracking`, `.stage-mixing`, `.stage-mastering`, `.stage-unknown`. Background variants use the `-bg` suffix (e.g. `.stage-mixing-bg`). Use `stageClass(stage)` / `stageBgClass(stage)` from `src/lib/stage.ts` instead of hardcoded Tailwind color strings. Never re-define `STAGE_COLORS` maps in components.
+Stage badge colors are defined as CSS classes in `globals.css` (`@layer components`): `.stage-writing`, `.stage-tracking`, `.stage-mixing`, `.stage-mastering`, `.stage-unknown` (plus `.stage-ideation`, `.stage-morphing`, `.stage-overdubbing`, `.stage-scheduled`, `.stage-released`). Background variants use the `-bg` suffix (e.g. `.stage-mixing-bg`). Use `stageClass(stage)` / `stageBgClass(stage)` from `src/lib/stage.ts` instead of hardcoded Tailwind color strings. Never re-define `STAGE_COLORS` maps in components.
 
 ### Assets entity
 
-Top-level Firestore collection `assets`. Document/link records referenceable from any other entity. Replaced the old embedded `Track.docLinks[]` (2026-06-18 cutover; two `docLinks` records were hand-rewritten).
+Top-level Firestore collection `assets`. Document/link records referenceable from any other entity — now `TrackGroup`, `Track`, `Song`, and `CatalogEntry` all embed `AssetLink[]` (see Done above for the Song/CatalogEntry addition).
 
 ```ts
 type Asset = {
@@ -367,10 +310,18 @@ type Asset = {
   createdAt: Timestamp; createdBy: string  // email
   updatedAt: Timestamp; updatedBy: string
 }
+
+type AssetLink = {
+  linkId: string
+  assetId: string                // Asset.id — the real FK
+  linkType?: string
+  addedAt: string; addedBy: string
+}
 ```
 
 - For `type: 'drive'`, the Google doc-kind (doc/sheet/slide) is inferred from URL path (`/document/`, `/spreadsheets/`, `/presentation/`) — not stored separately.
-- Associations live on the referencing entity as `assetIds: string[]`, track-level (not per-version). The asset is the source of truth; `usageCount` is denormalized for OLTP read paths.
+- `usageCount` deltas are applied transactionally whenever `TrackGroup.assets`/`Track.assets` (via `updateTrackGroup`) or `Song.assets`/`CatalogEntry.assets` (via `updateSong`/`updateCatalogEntry`) change — shared logic in `collectAssetLinks`/`applyDeltasInTx`/`diffCounts`, `src/lib/firestore.ts`. `deleteAsset` strips the stale link from all four embed points before deleting the `Asset` doc (best-effort, errors logged not thrown).
+- A track's *effective* asset list (own + inherited from its song) is `effectiveAssets()` in `src/lib/asset.ts` — inherited chips are read-only, not removable from the track.
 - `createdBy` / `updatedBy` use the same `x-goog-authenticated-user-email` / `LOCAL_USER_EMAIL` resolution as `POST /api/track-groups`.
 
 <!-- BEGIN:nextjs-agent-rules -->
