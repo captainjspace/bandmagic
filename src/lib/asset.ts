@@ -4,6 +4,8 @@ const KNOWN_SUBTYPES = new Set<AssetSubtype>([
   "lyrics",
   "lyrics-stripped",
   "chord-chart",
+  "lyrics-chords",
+  "ID3-yaml-tag",
   "press-release",
   "review",
   "post",

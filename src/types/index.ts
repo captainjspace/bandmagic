@@ -36,6 +36,8 @@ export type AssetSubtype =
   | "lyrics"
   | "lyrics-stripped"
   | "chord-chart"
+  | "lyrics-chords"
+  | "ID3-yaml-tag"
   | "press-release"
   | "review"
   | "post"
@@ -47,6 +49,7 @@ export interface Asset {
   title: string;
   type: AssetType;
   subtype: AssetSubtype;
+  tags?: string[];
   usageCount: number;
   createdAt: string;
   createdBy: string;
