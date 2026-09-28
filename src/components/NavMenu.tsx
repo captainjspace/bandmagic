@@ -13,12 +13,13 @@ interface MenuLink {
 }
 
 const menuLinks: MenuLink[] = [
-  {
-    index: 0,
-    name: "rollingblackout",
-    displayName: "Rolling Blackout",
-    href: "/",
-  },
+//  {
+//    index: 0,
+//    name: "rollingblackout",
+//    displayName: "Rolling Blackout",
+//    href: "/",
+//  },
+//
   {
     index: 1,
     name: "trackgroups",
@@ -34,12 +35,13 @@ const menuLinks: MenuLink[] = [
   { index: 3, name: "assets", displayName: "Assets", href: "/admin/assets" },
   { index: 4, name: "admin", displayName: "Admin", href: "/admin" },
 ];
+
 export function NavMenu() {
   const menuItems = menuLinks.map((mLink) => (
     <MenuItem key={mLink.index}>
       <Link
         href={mLink.href}
-        className="block px-4 py-2 font-agincourt text-sm text-rborange-700 data-[focus]:bg-gray-100"
+        className="block px-4 py-2 font-mono text-sm text-rbyellow-300 data-[focus]:bg-cyan-300"
       >
         {mLink.displayName}
       </Link>
@@ -49,8 +51,11 @@ export function NavMenu() {
   return (
     <nav className="flex items-center gap-6 p-4">
       <Menu as="div" className="relative">
-        <MenuButton className="hover:underline">Rolling Blackout</MenuButton>
-        <MenuItems className="absolute left-0 mt-2 w-56 rounded-md bg-white shadow-lg ring-1 ring-black/5">
+        <MenuButton className="hover:underline text-gradient-yworange text-6xl hover:text-rborange-500">Rolling Blackout</MenuButton>
+        <MenuItems className="absolute left-0 mt-2 w-80 rounded-md 
+          bg-rbpurple-700/75 text-bold text-shadow-md text-shadow-rbred-500 
+          shadow-lg ring-1 ring-black/5 border-2  
+          border-rborange-500 rbdrop rbpuff">
           {menuItems}
         </MenuItems>
       </Menu>

@@ -29,9 +29,12 @@
     "indentStyle": "space",
     "indentWidth": 2
   },
-  "linter": {
+ "linter": {
     "enabled": true,
     "rules": {
+      "nursery": {
+        "useSortedClasses": "warn"
+      },
       "preset": "recommended",
       "a11y": {
         "recommended": false
