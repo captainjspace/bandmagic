@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useState } from "react";
 import { AddAssetModal } from "@/components/AddAssetModal";
 import { AddTrackModal } from "@/components/AddTrackModal";
@@ -15,7 +14,6 @@ const colors = {
   bar: "bg-rbcyan-300/10 backdrop-blur border-b border-rbred-800",
   brand:
   `"${textDecoration.bigWave} font-agincourt text-rborange-100 text-2xl sm:text-xl md:text-feature-title leading-none tracking-wide"`,
-  navLink: `"text-xl hover:text-rborange-500 transition-colors"`,
   action:
   "border-2 rounded-md border-rbpurple-700 hover:border-rbred-500 hover:text-rborange-300 text-rbcyan-500 rounded px-4 py-2 transition-colors disabled:opacity-50",
 };
@@ -38,9 +36,7 @@ export function AppHeader() {
 
   return (
     <>
-      <header
-        className={`fixed top-0 left-0 right-0 z-40 px-6 py-4 ${colors.bar}`}
-      >
+      <header className={`sticky top-0 z-40 px-6 py-4 ${colors.bar}`}>
 
         <div className="max-w-5xl mx-auto flex items-center justify-between gap-4">
           <div className={colors.brand}>
@@ -83,24 +79,7 @@ export function AppHeader() {
                 </button>
               </div>
             </div>
-            
-
-            <nav className="flex gap-6 text-xl text-rborange-700">
-              <Link href="/" className={colors.navLink}>
-                TrackGroups
-              </Link>
-              <Link href="/browse" className={colors.navLink}>
-                Songs
-              </Link>
-              <Link href="/admin/assets" className={colors.navLink}>
-                Assets
-              </Link>
-              <Link href="/admin" className={colors.navLink}>
-                Admin
-              </Link>
-            </nav>
           </div>
-          
         </div>
       </header>
 
