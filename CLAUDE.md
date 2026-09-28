@@ -9,6 +9,8 @@
 
 - Lint/format: Biome (not ESLint/Prettier). Suppression comments use `// biome-ignore lint/<rule>: <reason>`, not `eslint-disable`.
 - Tests: Vitest.
+- 9/28 **Note** I have enabled a nursery section in biome to skip ordering css classes or warn, i think that means check in working code before formatting
+
 
 ## Data Seeding Checklist
 
@@ -21,6 +23,7 @@ Before declaring any classification/matching feature done:
 
 - Commands needing sudo, SSH packet capture (tcpdump), or secret generation will be blocked — output the exact command for the user to run manually instead of attempting it.
 - The microk8s node has a known containerd/CDI bug blocking image pulls. Default to local Docker/Podman for container work unless told otherwise.
+- 
 
 ## Exploration Budget
 
@@ -121,7 +124,7 @@ Combine the current admin page and the track groups page:
 Keep it, but let it become a link hub to the functions above (Tracks / Assets, analog to GCS / Drive) plus admin review/search/metadata tables. Our tables are extension tables on top of the synced tables and should tolerate breaks — the orphan cleanup/reconcile process isn't 100% ready yet.
 
 ## To discuss (not yet building)
-
+- ** This is built and and deployed a while back unfortunately - we paused when the a server would be up 24/7...
 - **Shared-folder table for Assets** — a table of watched shared folders; a Go service subscribes and syncs any doc add/edit/change into the asset table (probably landing as "unclassified" until a pattern emerges).
 - **New track group as a function of Track Group** — needs a clearer proposal.
 
@@ -194,6 +197,10 @@ OLTP-first across all entities. Firestore is the source of truth for transaction
 **Define once, reference everywhere.** Any string, label, or classification duplicated in more than one place is a design smell, not a style nitpick — fix the structure, don't just re-type the value somewhere else. Precedent: `tags.json`'s `color` field — a tag's color was first hardcoded as a second list inside `src/lib/tag.ts`, immediately went stale relative to `tags.json`, and got collapsed into a single `color` field read directly from the taxonomy at render time; `globals.css`'s `.tag-<color>` classes are keyed by color name (not tag name) so many tags can share one. Same shape as `src/lib/stage.ts`'s `STAGES` array being the one place the `TrackStage` enum's values are enumerated, and as `collectAssetLinks`/`applyDeltasInTx` in `src/lib/firestore.ts` being the one shared usageCount-delta implementation across `TrackGroup`/`Song`/`CatalogEntry` writes rather than three copies. When adding a new closed vocabulary or lookup table, ask where its *one* authoritative definition should live before writing the second copy.
 
 **Entity color convention (2026-09-27).** Song = `rbyellow` (border + text; the song name gets `.text-gradient-brand`, and the shared `SongChip` component — `src/components/SongChip.tsx` — is the one place "how a song reference looks" is defined, reused on Browse and on `/track-group/[id]`'s tracklist rather than re-styled per page). Track = cyan. Page titles = `rbblue-500` ("royal blue" — note `rbblue`/`rbpurple`/`rbred` only have shades 100/300/500/700/900 defined, unlike `rbyellow`'s full 100-950 scale; referencing e.g. `rbblue-600` silently resolves to nothing). A box's border always matches its entity's color rather than each page inventing its own scheme.
+**9/28 -- this is not actually convention.  the .text-gradient-brand was somthing i did for the descriptions on the track group
+          (Notably - this happens all the time - Claude makes decision and and forgets a few weeks later) 
+          we're working on it.
+         
 
 ### Domain model — ERD (as-built, 2026-09-27)
 
