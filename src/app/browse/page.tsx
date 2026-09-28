@@ -1,11 +1,13 @@
 "use client";
 
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useCallback, useEffect, useState } from "react";
 import { AssetPicker, type AssetsLoadKind } from "@/components/AssetPicker";
 import { SongChip } from "@/components/SongChip";
 import { SongPicker } from "@/components/SongPicker";
 import { TagChips } from "@/components/TagChips";
+import { TrackChip } from "@/components/TrackChip";
 import {
   assetLinkIds,
   effectiveAssets,
@@ -29,11 +31,9 @@ const colors = {
   },
   song: {
     box: "border border-rbyellow-800 rounded-lg hover:border-rbyellow-600 transition-colors",
-    name: "text-gradient-brand font-bold",
     toggle: "text-rbyellow-700 hover:text-rbyellow-500",
     count: "text-rbyellow-600",
     label: "text-neutral-600",
-    actions: "text-rbyellow-500 hover:text-rbyellow-300",
   },
   track: {
     box: "border border-cyan-800 rounded hover:border-cyan-600 transition-colors",
@@ -42,7 +42,6 @@ const colors = {
     size: "text-rbyellow-500",
     playLink: "text-green-500 hover:underline",
     label: "text-neutral-600",
-    actions: "text-cyan-400 hover:text-cyan-300",
   },
   panel: {
     border: "border-neutral-800",
@@ -93,7 +92,7 @@ interface Group {
   key: string;
   name: string;
   entries: CatalogEntry[];
-  trackGroupCount: number;
+  trackGroups: TrackGroup[];
   songTags: string[];
 }
 
@@ -131,6 +130,9 @@ function BrowsePageInner() {
   const [trackGroups, setTrackGroups] = useState<TrackGroup[]>([]);
   const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
+  const [openTrackGroupsFor, setOpenTrackGroupsFor] = useState<Set<string>>(
+    new Set(),
+  );
 
   const [assets, setAssets] = useState<Asset[]>([]);
   const [assetsLoad, setAssetsLoad] = useState<AssetsLoadKind>("loading");
@@ -199,9 +201,10 @@ function BrowsePageInner() {
     const sortedEntries = [...entries].sort((a, b) =>
       a.title.localeCompare(b.title),
     );
-    const groupIds = new Set<string>();
+    const trackGroupsById = new Map<string, TrackGroup>();
     for (const e of sortedEntries) {
-      for (const tg of trackGroupsByPath.get(e.path) ?? []) groupIds.add(tg.id);
+      for (const tg of trackGroupsByPath.get(e.path) ?? [])
+        trackGroupsById.set(tg.id, tg);
     }
     return {
       key,
@@ -210,7 +213,7 @@ function BrowsePageInner() {
           ? "Unclassified"
           : (songsById.get(key)?.name ?? key),
       entries: sortedEntries,
-      trackGroupCount: groupIds.size,
+      trackGroups: Array.from(trackGroupsById.values()),
       songTags: key === UNCLASSIFIED ? [] : (songsById.get(key)?.tags ?? []),
     };
   }).sort((a, b) => {
@@ -221,6 +224,15 @@ function BrowsePageInner() {
 
   const toggle = (key: string) => {
     setExpanded((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  };
+
+  const toggleTrackGroups = (key: string) => {
+    setOpenTrackGroupsFor((prev) => {
       const next = new Set(prev);
       if (next.has(key)) next.delete(key);
       else next.add(key);
@@ -408,22 +420,32 @@ function BrowsePageInner() {
               id={`song-${group.key}`}
               className={`p-3 ${colors.song.box}`}
             >
-              <div className="flex items-center gap-3 flex-wrap">
+              <div className="flex items-center gap-2 flex-wrap">
                 <button
                   type="button"
                   onClick={() => toggle(group.key)}
-                  className="flex items-center gap-2 min-w-0"
+                  title={isOpen ? "Collapse" : "Expand"}
+                  className={`${colors.song.toggle} text-xs w-3 shrink-0 p-1 -m-1`}
                 >
-                  <span
-                    className={`${colors.song.toggle} text-xs w-3 shrink-0`}
-                  >
-                    {isOpen ? "▾" : "▸"}
-                  </span>
-                  <span className={`text-lg ${colors.song.name} truncate`}>
-                    {group.name}
-                  </span>
+                  {isOpen ? "▾" : "▸"}
                 </button>
-                {group.songTags.length > 0 && (
+                {song ? (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      actionsOpen ? closeSongActions() : startEditSong(song)
+                    }
+                    title={actionsOpen ? "Close editor" : "Edit song"}
+                    className={`min-w-0 transition-transform hover:scale-105 ${actionsOpen ? "ring-2 ring-rbyellow-500 rounded" : ""}`}
+                  >
+                    <SongChip name={group.name} size="xl" />
+                  </button>
+                ) : (
+                  <div className="min-w-0">
+                    <SongChip name={group.name} size="xl" />
+                  </div>
+                )}
+                {song && (
                   <div className="flex items-center gap-1.5">
                     <span className={`text-xs ${colors.song.label}`}>
                       Tags:
@@ -449,24 +471,15 @@ function BrowsePageInner() {
                   </div>
                 )}
                 <div className="flex items-center gap-3 ml-auto shrink-0">
-                  {song && (
+                  {group.trackGroups.length > 0 && (
                     <button
                       type="button"
-                      onClick={() =>
-                        actionsOpen ? closeSongActions() : startEditSong(song)
-                      }
-                      className={`text-xs ${colors.song.actions} transition-colors`}
+                      onClick={() => toggleTrackGroups(`song-${group.key}`)}
+                      className={`text-xs ${colors.song.label} hover:underline`}
                     >
-                      {actionsOpen ? "× close" : "+ Actions"}
+                      In {group.trackGroups.length} track group
+                      {group.trackGroups.length !== 1 ? "s" : ""}
                     </button>
-                  )}
-                  {group.trackGroupCount > 0 && (
-                    <span
-                      className={`text-xs ${colors.song.label}`}
-                      title={`Referenced in ${group.trackGroupCount} track group${group.trackGroupCount !== 1 ? "s" : ""}`}
-                    >
-                      Track Groups Count: {group.trackGroupCount}
-                    </span>
                   )}
                   <span
                     className={`${colors.song.count} text-sm tabular-nums font-semibold`}
@@ -475,6 +488,21 @@ function BrowsePageInner() {
                   </span>
                 </div>
               </div>
+
+              {openTrackGroupsFor.has(`song-${group.key}`) &&
+                group.trackGroups.length > 0 && (
+                  <div className="flex items-center gap-2 flex-wrap mt-1.5">
+                    {group.trackGroups.map((tg) => (
+                      <Link
+                        key={tg.id}
+                        href={`/track-group/${tg.id}`}
+                        className={`text-xs underline ${colors.song.toggle}`}
+                      >
+                        {tg.title}
+                      </Link>
+                    ))}
+                  </div>
+                )}
 
               {song && (
                 <div className="flex items-center gap-1.5 flex-wrap mt-2">
@@ -583,16 +611,20 @@ function BrowsePageInner() {
                         className={`px-3 py-2 group ${colors.track.box} ${colors.track.hover}`}
                       >
                         <div className="flex items-center gap-3 flex-wrap">
-                          <span
-                            className={`text-sm font-mono ${colors.track.name} truncate`}
+                          <button
+                            type="button"
+                            onClick={() =>
+                              trackActionsOpen
+                                ? closeTrackActions()
+                                : startEditTrack(entry)
+                            }
+                            title={
+                              trackActionsOpen ? "Close editor" : "Edit track"
+                            }
+                            className={`min-w-0 transition-transform hover:scale-105 ${trackActionsOpen ? "ring-2 ring-cyan-500 rounded" : ""}`}
                           >
-                            {filename}
-                          </span>
-                          <SongChip
-                            name={group.name}
-                            size="lg"
-                            title={`Owned by song: ${group.name}`}
-                          />
+                            <TrackChip name={filename} size="lg" />
+                          </button>
                           <span
                             title={
                               inherited.length > 0
@@ -603,38 +635,40 @@ function BrowsePageInner() {
                           >
                             {inherited[0] ?? entry.stage ?? "unknown"}
                           </span>
-                          {entryTags.length > 0 && (
-                            <div className="flex items-center gap-1.5">
-                              <span className={`text-xs ${colors.track.label}`}>
-                                Tags:
-                              </span>
-                              <TagChips
-                                tags={entryTags}
-                                entityType="track"
-                                suggestions={TRACK_TAG_SUGGESTIONS}
-                                listId={`track-tags-${entry.id}`}
-                                onAdd={(tag) =>
-                                  patchTrackTags(
-                                    entry,
-                                    Array.from(new Set([...entryTags, tag])),
-                                  )
-                                }
-                                onRemove={(tag) =>
-                                  patchTrackTags(
-                                    entry,
-                                    entryTags.filter((t) => t !== tag),
-                                  )
-                                }
-                              />
-                            </div>
-                          )}
-                          {memberOf.length > 0 && (
-                            <span
-                              className={`text-xs ${colors.track.label} shrink-0`}
-                              title={`In: ${memberOf.map((g) => g.title).join(", ")}`}
-                            >
-                              Track Groups: in {memberOf.length}
+                          <div className="flex items-center gap-1.5">
+                            <span className={`text-xs ${colors.track.label}`}>
+                              Tags:
                             </span>
+                            <TagChips
+                              tags={entryTags}
+                              entityType="track"
+                              suggestions={TRACK_TAG_SUGGESTIONS}
+                              listId={`track-tags-${entry.id}`}
+                              onAdd={(tag) =>
+                                patchTrackTags(
+                                  entry,
+                                  Array.from(new Set([...entryTags, tag])),
+                                )
+                              }
+                              onRemove={(tag) =>
+                                patchTrackTags(
+                                  entry,
+                                  entryTags.filter((t) => t !== tag),
+                                )
+                              }
+                            />
+                          </div>
+                          {memberOf.length > 0 && (
+                            <button
+                              type="button"
+                              onClick={() =>
+                                toggleTrackGroups(`track-${entry.id}`)
+                              }
+                              className={`text-xs ${colors.track.label} hover:underline shrink-0`}
+                            >
+                              In {memberOf.length} track group
+                              {memberOf.length !== 1 ? "s" : ""}
+                            </button>
                           )}
                           <div className="flex items-center gap-3 ml-auto shrink-0">
                             <a
@@ -654,22 +688,6 @@ function BrowsePageInner() {
                                 onSongCreated={handleSongCreated}
                               />
                             </div>
-                            {entryTags.length === 0 && (
-                              <span className="text-xs text-transparent select-none">
-                                Tags:
-                              </span>
-                            )}
-                            <button
-                              type="button"
-                              onClick={() =>
-                                trackActionsOpen
-                                  ? closeTrackActions()
-                                  : startEditTrack(entry)
-                              }
-                              className={`text-xs ${colors.track.actions} transition-colors`}
-                            >
-                              {trackActionsOpen ? "× close" : "+ Actions"}
-                            </button>
                             <span
                               className={`${colors.track.size} text-xs tabular-nums`}
                             >
@@ -677,6 +695,21 @@ function BrowsePageInner() {
                             </span>
                           </div>
                         </div>
+
+                        {openTrackGroupsFor.has(`track-${entry.id}`) &&
+                          memberOf.length > 0 && (
+                            <div className="flex items-center gap-2 flex-wrap mt-1.5">
+                              {memberOf.map((tg) => (
+                                <Link
+                                  key={tg.id}
+                                  href={`/track-group/${tg.id}`}
+                                  className={`text-xs underline ${colors.track.name}`}
+                                >
+                                  {tg.title}
+                                </Link>
+                              ))}
+                            </div>
+                          )}
 
                         <div className="flex items-center gap-1.5 flex-wrap mt-1.5">
                           {effectiveTrackAssets

@@ -35,7 +35,7 @@ export default function RootLayout({
               quality={75}
             />
           </div>
-          <main className="max-w-5xl mx-auto z-[10] px-6 pt-28 pb-24">
+          <main className="max-w-5xl mx-auto z-[10] px-6 pt-36 pb-24">
             {children}
           </main>
           <FooterPlayer />
