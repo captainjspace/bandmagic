@@ -178,7 +178,7 @@ export function AssetPicker({
     : unselected;
 
   return (
-    <div ref={containerRef} className="space-y-1.5">
+    <div ref={containerRef} className="space-y-1.5 w-full">
       {value.length > 0 && (
         <div className="flex flex-wrap gap-1.5">
           {value.map((id) => {
