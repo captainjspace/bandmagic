@@ -7,6 +7,7 @@ import { AssetPicker, type AssetsLoadKind } from "@/components/AssetPicker";
 import { SongChip } from "@/components/SongChip";
 import { SongPicker } from "@/components/SongPicker";
 import { TagChips } from "@/components/TagChips";
+import { TrackChip } from "@/components/TrackChip";
 import {
   assetLinkIds,
   effectiveAssets,
@@ -611,11 +612,7 @@ function BrowsePageInner() {
                         className={`px-3 py-2 group ${colors.track.box} ${colors.track.hover}`}
                       >
                         <div className="flex items-center gap-3 flex-wrap">
-                          <span
-                            className={`text-sm font-mono ${colors.track.name} truncate`}
-                          >
-                            {filename}
-                          </span>
+                          <TrackChip name={filename} size="lg" />
                           <span
                             title={
                               inherited.length > 0
