@@ -6,18 +6,18 @@ import { useState } from "react";
 /** element colors */
 const colors = {
   page: {
-    title: "text-neutral-100",
-    subtitle: "text-neutral-500",
+    title: "text-rbblue-500",
+    subtitle: "text-rbcyan-300",
   },
   hub: {
-    card: "border border-neutral-800 hover:border-neutral-600 hover:bg-neutral-900 rounded-lg p-4 transition-colors",
-    title: "text-neutral-100 font-semibold",
-    desc: "text-neutral-500 text-sm mt-1",
+    card: "border border-rbviolet-500 hover:border-rbviolet-300 hover:bg-rbviolet-700 rounded-lg p-4 transition-colors",
+    title: "text-orange-500 font-semibold",
+    desc: "text-gradient-yworange text-sm mt-1",
   },
   tools: {
-    panel: "border border-neutral-800 rounded bg-neutral-900/30 px-3 py-2",
-    label: "text-neutral-600",
-    item: "border border-neutral-700 hover:border-neutral-500 text-neutral-200 rounded px-2.5 py-1 transition-colors disabled:opacity-50",
+    panel: "border border-rbred-500 rounded bg-rbred-900/30 px-3 py-2",
+    label: "text-rbmist-500",
+    item: "border border-rbyellow-100 hover:border-rbyellow-500 text-rbpurple-500 rounded px-2.5 py-1 transition-colors disabled:opacity-50",
   },
 };
 

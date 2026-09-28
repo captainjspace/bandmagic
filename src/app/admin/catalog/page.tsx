@@ -12,22 +12,22 @@ const TRACK_TAG_SUGGESTIONS = Object.keys(tagsTaxonomy.track?.tags ?? {});
 /** element colors */
 const colors = {
   page: {
-    title: "text-neutral-100",
-    subtitle: "text-neutral-500",
-    navLink: "text-neutral-500 hover:text-neutral-300",
-    count: "text-neutral-600",
+    title: "test-rbblue-300",
+    subtitle: "test-gradient-mist",
+    navLink: "test-rbviolet-500 hover:test-rbviolet-300",
+    count: "test-rbviolet-600",
   },
   status: {
     error: "text-red-400",
   },
   row: {
-    label: "text-neutral-600",
-    value: "text-neutral-100",
-    mono: "text-neutral-400 font-mono",
-    id: "text-neutral-600 font-mono",
-    editBtn: "text-neutral-600 hover:text-green-400",
+    label: "test-rbviolet-500",
+    value: "test-rbviolet-100",
+    mono: "test-rbviolet-300 font-mono",
+    id: "test-rbviolet-700 font-mono",
+    editBtn: "test-rbblue-700 hover:text-green-400",
     saveBtn: "text-green-500 hover:text-green-400",
-    cancelBtn: "text-neutral-600 hover:text-neutral-400",
+    cancelBtn: "test-rbviolet-500 hover:test-rbviolet-300",
   },
 };
 

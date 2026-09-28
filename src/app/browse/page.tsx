@@ -13,7 +13,7 @@ import {
 } from "@/lib/asset";
 import { stageBgClass, stageClass } from "@/lib/stage";
 import type { Asset, CatalogEntry, Song, TrackGroup } from "@/types";
-import tagsTaxonomy from "../../../tags.json";
+import tagsTaxonomy from "../../../tags.json" with {type: "json"};
 
 const UNCLASSIFIED = "unclassified";
 

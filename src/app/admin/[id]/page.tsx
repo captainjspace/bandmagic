@@ -19,12 +19,12 @@ const TRACK_TAG_SUGGESTIONS = Object.keys(tagsTaxonomy.track?.tags ?? {});
 /** element colors */
 const colors = {
   page: {
-    title: "text-neutral-100",
-    trackGroupId: "text-neutral-500",
-    navLink: "text-neutral-500 hover:text-neutral-300",
-    fieldLabel: "text-neutral-500",
-    hint: "text-neutral-600",
-    count: "text-neutral-600",
+    title: "test-rborange-100",
+    trackGroupId: "test-rborange-500",
+    navLink: "test-rborange-500 hover:test-rborange-300",
+    fieldLabel: "test-rborange-500",
+    hint: "test-rborange-600",
+    count: "test-rborange-600",
   },
   status: {
     success: "text-green-400",
@@ -46,14 +46,14 @@ const colors = {
     removeBtn: "text-neutral-600 hover:text-red-400 transition-colors",
   },
   assets: {
-    label: "text-neutral-600",
+    label: "text-rbred-500",
     errorBanner: "text-amber-400",
     retryBtn: "text-amber-400 hover:text-amber-300 underline",
   },
   sweep: {
-    btn: "text-neutral-500 hover:text-green-400",
-    btnBusy: "text-neutral-400",
-    banner: "text-neutral-300",
+    btn: "text-cyan-500 hover:text-green-400",
+    btnBusy: "text-rbyellow-400",
+    banner: "text-rbcyan-300",
     counts: "text-green-400",
     errors: "text-amber-400",
   },

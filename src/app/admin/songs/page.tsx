@@ -11,24 +11,24 @@ const SONG_TAG_SUGGESTIONS = Object.keys(tagsTaxonomy.song?.tags ?? {});
 /** element colors */
 const colors = {
   page: {
-    title: "text-neutral-100",
-    subtitle: "text-neutral-500",
-    navLink: "text-neutral-500 hover:text-neutral-300",
-    fieldLabel: "text-neutral-500",
-    count: "text-neutral-600",
+    title: "text-rbblue-500",
+    subtitle: "text-rbcyan-300",
+    navLink: "text-rbyellow-500 hover:text-rbyellow-300",
+    fieldLabel: "text-rbyellow-500",
+    count: "text-rbyellow-600",
   },
   status: {
     error: "text-red-400",
   },
   row: {
-    label: "text-neutral-600",
-    value: "text-neutral-100",
-    mono: "text-neutral-400 font-mono",
-    id: "text-neutral-600 font-mono",
-    audit: "text-neutral-600",
-    editBtn: "text-neutral-600 hover:text-green-400",
+    label: "text-rbyellow-600",
+    value: "text-rbyellow-100",
+    mono: "text-rbyellow-400 font-mono",
+    id: "text-rbyellow-600 font-mono",
+    audit: "text-rbyellow-600",
+    editBtn: "text-rbyellow-600 hover:text-green-400",
     saveBtn: "text-green-500 hover:text-green-400",
-    cancelBtn: "text-neutral-600 hover:text-neutral-400",
+    cancelBtn: "text-rbyellow-600 hover:text-rbyellow-400",
   },
 };
 
@@ -184,7 +184,7 @@ export default function AdminSongsPage() {
         </div>
       )}
 
-      <div className="mb-8 border border-neutral-800 rounded p-4">
+      <div className="mb-8 border border-rbyellow-800 rounded p-4">
         <p
           className={`text-xs ${colors.page.fieldLabel} uppercase tracking-wider mb-3`}
         >
@@ -196,7 +196,7 @@ export default function AdminSongsPage() {
             onChange={(e) => setNewName(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && createSong()}
             placeholder="Song name"
-            className="flex-1 bg-neutral-900 border border-neutral-700 rounded px-2 py-1.5 text-sm text-neutral-100 focus:outline-none focus:border-green-600"
+            className="flex-1 bg-rbyellow-900 border border-rbyellow-700 rounded px-2 py-1.5 text-sm text-rbyellow-100 focus:outline-none focus:border-green-600"
           />
           <button
             type="button"
@@ -224,7 +224,7 @@ export default function AdminSongsPage() {
               return (
                 <div
                   key={s.id}
-                  className="border border-neutral-800 rounded p-3"
+                  className="border border-rbyellow-800 rounded p-3"
                 >
                   {isEditing ? (
                     <div className="space-y-2">
@@ -237,7 +237,7 @@ export default function AdminSongsPage() {
                               name: e.target.value,
                             }))
                           }
-                          className="w-full bg-neutral-900 border border-neutral-700 rounded px-2 py-1.5 text-sm text-neutral-100 focus:outline-none focus:border-green-600"
+                          className="w-full bg-rbyellow-900 border border-rbyellow-700 rounded px-2 py-1.5 text-sm text-rbyellow-100 focus:outline-none focus:border-green-600"
                         />
                       </Field>
                       <Field label="Aliases (comma-separated)">
@@ -249,7 +249,7 @@ export default function AdminSongsPage() {
                               aliases: e.target.value,
                             }))
                           }
-                          className="w-full bg-neutral-900 border border-neutral-700 rounded px-2 py-1.5 text-sm text-neutral-100 focus:outline-none focus:border-green-600"
+                          className="w-full bg-rbyellow-900 border border-rbyellow-700 rounded px-2 py-1.5 text-sm text-rbyellow-100 focus:outline-none focus:border-green-600"
                         />
                       </Field>
                       <Field label="Folder Prefix">
@@ -261,7 +261,7 @@ export default function AdminSongsPage() {
                               folderPrefix: e.target.value,
                             }))
                           }
-                          className="w-full bg-neutral-900 border border-neutral-700 rounded px-2 py-1.5 text-sm font-mono text-neutral-100 focus:outline-none focus:border-green-600"
+                          className="w-full bg-rbyellow-900 border border-rbyellow-700 rounded px-2 py-1.5 text-sm font-mono text-rbyellow-100 focus:outline-none focus:border-green-600"
                         />
                         <p className="text-xs text-amber-500/80 mt-1">
                           Changes where the app thinks this song's GCS folder is
@@ -277,7 +277,7 @@ export default function AdminSongsPage() {
                               latestPath: e.target.value,
                             }))
                           }
-                          className="w-full bg-neutral-900 border border-neutral-700 rounded px-2 py-1.5 text-sm font-mono text-neutral-100 focus:outline-none focus:border-green-600"
+                          className="w-full bg-rbyellow-900 border border-rbyellow-700 rounded px-2 py-1.5 text-sm font-mono text-rbyellow-100 focus:outline-none focus:border-green-600"
                         />
                       </Field>
                       <div className="flex gap-2">
