@@ -1,20 +1,23 @@
-/** Compact "which song owns this track" chip — used on the track-group detail
- *  page, where tracks from different songs sit side by side. */
+/** The one place "how a song reference looks" is defined — a bordered chip
+ *  with a gradient name, from the Browse page's song header (size "xl") down
+ *  to the small inline reference on the track-group detail page ("sm"). */
 export function SongChip({
   name,
   size = "md",
   title,
 }: {
   name: string;
-  size?: "sm" | "md" | "lg";
+  size?: "sm" | "md" | "lg" | "xl";
   title?: string;
 }) {
   const sizeClass =
-    size === "lg"
-      ? "text-sm px-2.5 py-1 gap-1.5"
-      : size === "sm"
-        ? "text-[10px] px-1 py-0.5 gap-0.5"
-        : "text-xs px-1.5 py-0.5 gap-1";
+    size === "xl"
+      ? "text-lg px-3 py-1.5 gap-2"
+      : size === "lg"
+        ? "text-sm px-2.5 py-1 gap-1.5"
+        : size === "sm"
+          ? "text-[10px] px-1 py-0.5 gap-0.5"
+          : "text-xs px-1.5 py-0.5 gap-1";
   return (
     <span
       title={title}

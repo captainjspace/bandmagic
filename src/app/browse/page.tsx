@@ -1,8 +1,10 @@
 "use client";
 
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useCallback, useEffect, useState } from "react";
 import { AssetPicker, type AssetsLoadKind } from "@/components/AssetPicker";
+import { SongChip } from "@/components/SongChip";
 import { SongPicker } from "@/components/SongPicker";
 import { TagChips } from "@/components/TagChips";
 import {
@@ -28,7 +30,6 @@ const colors = {
   },
   song: {
     box: "border border-rbyellow-800 rounded-lg hover:border-rbyellow-600 transition-colors",
-    name: "text-gradient-brand font-bold",
     toggle: "text-rbyellow-700 hover:text-rbyellow-500",
     count: "text-rbyellow-600",
     label: "text-neutral-600",
@@ -92,7 +93,7 @@ interface Group {
   key: string;
   name: string;
   entries: CatalogEntry[];
-  trackGroupCount: number;
+  trackGroups: TrackGroup[];
   songTags: string[];
 }
 
@@ -130,6 +131,9 @@ function BrowsePageInner() {
   const [trackGroups, setTrackGroups] = useState<TrackGroup[]>([]);
   const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
+  const [openTrackGroupsFor, setOpenTrackGroupsFor] = useState<Set<string>>(
+    new Set(),
+  );
 
   const [assets, setAssets] = useState<Asset[]>([]);
   const [assetsLoad, setAssetsLoad] = useState<AssetsLoadKind>("loading");
@@ -198,9 +202,10 @@ function BrowsePageInner() {
     const sortedEntries = [...entries].sort((a, b) =>
       a.title.localeCompare(b.title),
     );
-    const groupIds = new Set<string>();
+    const trackGroupsById = new Map<string, TrackGroup>();
     for (const e of sortedEntries) {
-      for (const tg of trackGroupsByPath.get(e.path) ?? []) groupIds.add(tg.id);
+      for (const tg of trackGroupsByPath.get(e.path) ?? [])
+        trackGroupsById.set(tg.id, tg);
     }
     return {
       key,
@@ -209,7 +214,7 @@ function BrowsePageInner() {
           ? "Unclassified"
           : (songsById.get(key)?.name ?? key),
       entries: sortedEntries,
-      trackGroupCount: groupIds.size,
+      trackGroups: Array.from(trackGroupsById.values()),
       songTags: key === UNCLASSIFIED ? [] : (songsById.get(key)?.tags ?? []),
     };
   }).sort((a, b) => {
@@ -220,6 +225,15 @@ function BrowsePageInner() {
 
   const toggle = (key: string) => {
     setExpanded((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  };
+
+  const toggleTrackGroups = (key: string) => {
+    setOpenTrackGroupsFor((prev) => {
       const next = new Set(prev);
       if (next.has(key)) next.delete(key);
       else next.add(key);
@@ -418,9 +432,7 @@ function BrowsePageInner() {
                   >
                     {isOpen ? "▾" : "▸"}
                   </span>
-                  <span className={`text-lg ${colors.song.name} truncate`}>
-                    {group.name}
-                  </span>
+                  <SongChip name={group.name} size="xl" />
                 </button>
                 {group.songTags.length > 0 && (
                   <div className="flex items-center gap-1.5">
@@ -459,13 +471,15 @@ function BrowsePageInner() {
                       {actionsOpen ? "× close" : "+ Actions"}
                     </button>
                   )}
-                  {group.trackGroupCount > 0 && (
-                    <span
-                      className={`text-xs ${colors.song.label}`}
-                      title={`Referenced in ${group.trackGroupCount} track group${group.trackGroupCount !== 1 ? "s" : ""}`}
+                  {group.trackGroups.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => toggleTrackGroups(`song-${group.key}`)}
+                      className={`text-xs ${colors.song.label} hover:underline`}
                     >
-                      Track Groups Count: {group.trackGroupCount}
-                    </span>
+                      In {group.trackGroups.length} track group
+                      {group.trackGroups.length !== 1 ? "s" : ""}
+                    </button>
                   )}
                   <span
                     className={`${colors.song.count} text-sm tabular-nums font-semibold`}
@@ -474,6 +488,21 @@ function BrowsePageInner() {
                   </span>
                 </div>
               </div>
+
+              {openTrackGroupsFor.has(`song-${group.key}`) &&
+                group.trackGroups.length > 0 && (
+                  <div className="flex items-center gap-2 flex-wrap mt-1.5">
+                    {group.trackGroups.map((tg) => (
+                      <Link
+                        key={tg.id}
+                        href={`/track-group/${tg.id}`}
+                        className={`text-xs underline ${colors.song.toggle}`}
+                      >
+                        {tg.title}
+                      </Link>
+                    ))}
+                  </div>
+                )}
 
               {song && (
                 <div className="flex items-center gap-1.5 flex-wrap mt-2">
@@ -623,12 +652,16 @@ function BrowsePageInner() {
                             </div>
                           )}
                           {memberOf.length > 0 && (
-                            <span
-                              className={`text-xs ${colors.track.label} shrink-0`}
-                              title={`In: ${memberOf.map((g) => g.title).join(", ")}`}
+                            <button
+                              type="button"
+                              onClick={() =>
+                                toggleTrackGroups(`track-${entry.id}`)
+                              }
+                              className={`text-xs ${colors.track.label} hover:underline shrink-0`}
                             >
-                              Track Groups: in {memberOf.length}
-                            </span>
+                              In {memberOf.length} track group
+                              {memberOf.length !== 1 ? "s" : ""}
+                            </button>
                           )}
                           <div className="flex items-center gap-3 ml-auto shrink-0">
                             <a
@@ -671,6 +704,21 @@ function BrowsePageInner() {
                             </span>
                           </div>
                         </div>
+
+                        {openTrackGroupsFor.has(`track-${entry.id}`) &&
+                          memberOf.length > 0 && (
+                            <div className="flex items-center gap-2 flex-wrap mt-1.5">
+                              {memberOf.map((tg) => (
+                                <Link
+                                  key={tg.id}
+                                  href={`/track-group/${tg.id}`}
+                                  className={`text-xs underline ${colors.track.name}`}
+                                >
+                                  {tg.title}
+                                </Link>
+                              ))}
+                            </div>
+                          )}
 
                         <div className="flex items-center gap-1.5 flex-wrap mt-1.5">
                           {effectiveTrackAssets
