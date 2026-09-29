@@ -69,12 +69,12 @@ export function TrackSearch({ value, onSelect, onClear }: Props) {
 
   if (value) {
     return (
-      <div className="flex items-center gap-2 bg-neutral-900 border border-neutral-700 rounded px-2 py-1.5">
+      <div className="flex items-center gap-2 bg-rbred-900/15 border border-neutral-700 rounded px-2 py-1.5">
         <span className="flex-1 text-xs font-mono truncate">{value}</span>
         <button
           type="button"
           onClick={onClear}
-          className="text-neutral-600 hover:text-red-400 text-xs shrink-0 transition-colors"
+          className="text-rbyellow-600 hover:text-red-400 text-xs shrink-0 transition-colors"
         >
           ✕
         </button>
@@ -91,7 +91,7 @@ export function TrackSearch({ value, onSelect, onClear }: Props) {
         placeholder={
           loading ? "Loading catalog..." : error ? error : "Search tracks…"
         }
-        className={`w-full bg-neutral-900 border rounded px-2 py-1.5 text-sm placeholder-neutral-600 focus:outline-none ${error ? "border-red-700 placeholder-red-500" : "border-neutral-700 focus:border-green-600"}`}
+        className={`w-full bg-rbviolet-900/20 border rounded px-2 py-1.5 text-sm placeholder-rbyellow-700 focus:outline-none ${error ? "border-red-700 placeholder-red-500" : "border-neutral-700 focus:border-green-600"}`}
       />
       {open && filtered.length > 0 && (
         <ul className="absolute z-50 bottom-full mb-1 w-full bg-neutral-900 border border-neutral-700 rounded shadow-xl max-h-64 overflow-y-auto">
