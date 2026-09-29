@@ -20,18 +20,18 @@ const TRACK_TAG_SUGGESTIONS = Object.keys(tagsTaxonomy.track?.tags ?? {});
 /** element colors */
 const colors = {
   page: {
-    title: "text-neutral-100",
-    subtitle: "text-neutral-500",
-    fieldLabel: "text-neutral-500",
-    hint: "text-neutral-600",
-    count: "text-neutral-600",
-    navLink: "text-neutral-500 hover:text-neutral-300",
+    title: "text-rbblue-500",
+    subtitle: "text-rbcyan-200",
+    fieldLabel: "text-rbcyan-500",
+    hint: "text-rbred-200",
+    count: "text-rbred-200",
+    navLink: "text-2xl text-cyan-200  hover:text-rborange-600 rbpuff",
   },
   actions: {
     cancel:
-      "border border-neutral-800 hover:border-red-700 text-neutral-400 hover:text-red-400 rounded px-3 py-1.5 transition-colors",
+      "border border-rbcyan-800 hover:border-red-700 text-rbyellow-400 hover:text-red-400 rounded px-3 py-1.5 transition-colors",
     draft:
-      "border border-neutral-700 hover:border-neutral-500 text-neutral-200 rounded px-3 py-1.5 disabled:opacity-40 transition-colors",
+      "border border-rbmist-700 hover:border-rbcyan-500 text-rborange-200 rounded px-3 py-1.5 disabled:opacity-40 transition-colors",
     release:
       "bg-green-600 hover:bg-green-500 text-black font-semibold rounded px-3 py-1.5 disabled:opacity-40 transition-colors",
   },
@@ -41,10 +41,10 @@ const colors = {
   },
   trackCard: {
     addBtn: "text-green-500 hover:text-green-400",
-    removeBtn: "text-neutral-600 hover:text-red-400",
+    removeBtn: "text-rbred-200 hover:text-red-400",
   },
   assets: {
-    label: "text-neutral-600",
+    label: "text-rbred-200",
     errorBanner: "text-amber-400",
     retryBtn: "text-amber-400 hover:text-amber-300 underline",
   },
@@ -269,7 +269,7 @@ export default function NewTrackGroupPage() {
         </div>
         <Link
           href="/admin"
-          className={`${colors.page.navLink} text-xs mt-1 transition-colors`}
+          className={`${colors.page.navLink} rbpuff rbdrop text-md mt-2 transition-colors`}
         >
           ← Admin
         </Link>
@@ -342,27 +342,27 @@ export default function NewTrackGroupPage() {
         <div className="space-y-4">
           <div>
             <label
-              className={`block text-xs ${colors.page.fieldLabel} uppercase tracking-wider mb-1.5`}
+              className={`block text-sm ${colors.page.fieldLabel} uppercase tracking-wider mb-2`}
             >
               <span>Title</span>
               <input
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 required
-                className="w-full bg-neutral-900 border border-neutral-700 rounded px-3 py-2 text-sm text-neutral-100 focus:outline-none focus:border-green-600"
-                placeholder="June 2026 Rough Cuts"
+                className="w-full bg-rbpurple-900/25 border border-rbmist-700 rounded px-3 py-2 text-sm text-rborange-100 focus:outline-none focus:border-green-600"
+                placeholder="The Future of Music"
               />
             </label>
           </div>
           <div>
             <label
-              className={`block text-xs ${colors.page.fieldLabel} uppercase tracking-wider mb-1.5`}
+              className={`block text-sm ${colors.page.fieldLabel} uppercase tracking-wider mb-2`}
             >
               <span>Description</span>
               <textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                className="w-full bg-neutral-900 border border-neutral-700 rounded px-3 py-2 text-sm text-neutral-100 focus:outline-none focus:border-green-600 resize-none h-20"
+                className="w-full bg-rbpurple-900/25 border border-rbmist-700 rounded px-3 py-2 text-sm text-rborange-100 focus:outline-none focus:border-green-600 resize-none h-20"
                 placeholder="What's in this trackGroup?"
               />
             </label>
@@ -407,7 +407,7 @@ export default function NewTrackGroupPage() {
             {tracks.map((track, idx) => (
               <div
                 key={track._id}
-                className={`border rounded p-3 space-y-2 ${track.path.trim() ? "border-neutral-800" : "border-neutral-800/50 opacity-60"}`}
+                className={`border rounded p-3 space-y-2 ${track.path.trim() ? "border-rbcyan-800" : "border-rbcyan-800/50 opacity-60"}`}
               >
                 <div className="flex gap-2">
                   <input
@@ -415,7 +415,7 @@ export default function NewTrackGroupPage() {
                     onChange={(e) =>
                       updateTrack(track._id, "title", e.target.value)
                     }
-                    className="flex-1 bg-neutral-900 border border-neutral-700 rounded px-2 py-1.5 text-sm text-neutral-100 focus:outline-none focus:border-green-600"
+                    className="flex-1 bg-rbpurple-900/25 border border-rbmist-700 rounded px-2 py-1.5 text-sm text-rborange-100 focus:outline-none focus:border-green-600"
                     placeholder="Track title"
                   />
                   <TagChips
@@ -471,7 +471,7 @@ export default function NewTrackGroupPage() {
                   onSelect={(entry) => selectTrack(track._id, entry)}
                   onClear={() => clearTrack(track._id)}
                 />
-                <div className="border-t border-neutral-800/50 pt-2">
+                <div className="border-t border-rbcyan-800/50 pt-2">
                   <p className={`text-xs ${colors.assets.label} mb-1.5`}>
                     Assets
                   </p>
