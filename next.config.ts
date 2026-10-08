@@ -5,7 +5,11 @@ const nextConfig: NextConfig = {
     allowedDevOrigins: process.env.allowed_dev_origins,
   },
   output: "standalone",
-  allowedDevOrigins: [process.env.allowedDevOrigins],
-};
+  allowedDevOrigins: [
+    "127.0.0.1",
+    "localhost",
+    `" ${process.env.allowedDevOrigins} "`,
+  ]
+}
 
 export default nextConfig;
