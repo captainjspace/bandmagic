@@ -113,7 +113,7 @@ function AssetChip({
       }
       className={`shrink-0 rounded border px-1.5 py-0.5 text-xs ${
         inherited
-          ? "border-neutral-700 border-dashed text-neutral-500"
+          ? "border-dashed border-neutral-700 text-neutral-500"
           : "border-violet-800 text-violet-400"
       }`}
     >
@@ -398,7 +398,7 @@ function BrowsePageInner() {
   return (
     <div className="mx-auto max-w-4xl">
       <div className="mb-8">
-        <h1 className={`font-bold text-2xl ${colors.page.title}`}>Songs</h1>
+        <h1 className={`text-2xl font-bold ${colors.page.title}`}>Songs</h1>
         <p className={`${colors.page.subtitle} mt-1 text-sm`}>
           Organized by folder
         </p>
@@ -436,7 +436,7 @@ function BrowsePageInner() {
                       actionsOpen ? closeSongActions() : startEditSong(song)
                     }
                     title={actionsOpen ? "Close editor" : "Edit song"}
-                    className={`min-w-0 transition-transform hover:scale-105 ${actionsOpen ? "rounded ring-2 ring-rbyellow-500" : ""}`}
+                    className={`min-w-0 transition-transform hover:scale-105 ${actionsOpen ? "ring-rbyellow-500 rounded ring-2" : ""}`}
                   >
                     <SongChip name={group.name} size="xl" />
                   </button>
@@ -482,7 +482,7 @@ function BrowsePageInner() {
                     </button>
                   )}
                   <span
-                    className={`${colors.song.count} font-semibold text-sm tabular-nums`}
+                    className={`${colors.song.count} text-sm font-semibold tabular-nums`}
                   >
                     {group.entries.length}
                   </span>
@@ -530,7 +530,7 @@ function BrowsePageInner() {
                   className={`mt-3 border-t pt-3 ${colors.panel.border} space-y-3`}
                 >
                   <div className="space-y-1.5">
-                    <p className="text-neutral-600 text-xs">Fields</p>
+                    <p className="text-xs text-neutral-600">Fields</p>
                     <input
                       value={songDraft.name}
                       onChange={(e) =>
@@ -735,7 +735,7 @@ function BrowsePageInner() {
                             className={`mt-2 border-t pt-2 ${colors.panel.border} space-y-3`}
                           >
                             <div className="space-y-1.5">
-                              <p className="text-neutral-600 text-xs">Fields</p>
+                              <p className="text-xs text-neutral-600">Fields</p>
                               <input
                                 value={trackDraft.title}
                                 onChange={(e) =>

@@ -69,12 +69,12 @@ export function TrackSearch({ value, onSelect, onClear }: Props) {
 
   if (value) {
     return (
-      <div className="flex items-center gap-2 rounded border border-rbviolet-500 bg-orange-500/15 px-2 py-1.5">
+      <div className="border-rbviolet-500 flex items-center gap-2 rounded border bg-orange-500/15 px-2 py-1.5">
         <span className="flex-1 truncate font-mono text-xs">{value}</span>
         <button
           type="button"
           onClick={onClear}
-          className="shrink-0 text-rbyellow-600 text-xs transition-colors hover:text-red-400"
+          className="text-rbyellow-600 shrink-0 text-xs transition-colors hover:text-red-400"
         >
           ✕
         </button>
@@ -91,7 +91,7 @@ export function TrackSearch({ value, onSelect, onClear }: Props) {
         placeholder={
           loading ? "Loading catalog..." : error ? error : "Search tracks…"
         }
-        className={`w-full rounded border bg-rbviolet-900/20 px-2 py-1.5 text-sm placeholder-rbyellow-700 focus:outline-none ${error ? "border-red-700 placeholder-red-500" : "border-neutral-700 focus:border-green-600"}`}
+        className={`bg-rbviolet-900/20 placeholder-rbyellow-700 w-full rounded border px-2 py-1.5 text-sm focus:outline-none ${error ? "border-red-700 placeholder-red-500" : "border-neutral-700 focus:border-green-600"}`}
       />
       {open && filtered.length > 0 && (
         <ul className="absolute bottom-full z-50 mb-1 max-h-64 w-full overflow-y-auto rounded border border-neutral-700 bg-neutral-900 shadow-xl">
@@ -113,10 +113,10 @@ export function TrackSearch({ value, onSelect, onClear }: Props) {
                   className="flex w-full items-center gap-3 px-3 py-2 text-left transition-colors hover:bg-neutral-800"
                 >
                   <div className="min-w-0 flex-1">
-                    <div className="truncate text-neutral-100 text-sm">
+                    <div className="truncate text-sm text-neutral-100">
                       {entry.title}
                     </div>
-                    <div className="truncate font-mono text-neutral-500 text-xs">
+                    <div className="truncate font-mono text-xs text-neutral-500">
                       {entry.path}
                     </div>
                   </div>
@@ -134,7 +134,7 @@ export function TrackSearch({ value, onSelect, onClear }: Props) {
                   {legacyStage && (
                     <span
                       title="Stage Chips (legacy — not yet migrated to a tag)"
-                      className="shrink-0 rounded border border-rborange-400 border-dashed px-1.5 py-0.5 text-gradient-yworange text-xs"
+                      className="border-rborange-400 text-gradient-yworange shrink-0 rounded border border-dashed px-1.5 py-0.5 text-xs"
                     >
                       {legacyStage}
                     </span>
@@ -146,7 +146,7 @@ export function TrackSearch({ value, onSelect, onClear }: Props) {
         </ul>
       )}
       {open && !loading && catalog.length > 0 && filtered.length === 0 && (
-        <div className="absolute bottom-full z-50 mb-1 w-full rounded border border-neutral-700 bg-neutral-900 px-3 py-2 text-neutral-600 text-sm">
+        <div className="absolute bottom-full z-50 mb-1 w-full rounded border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm text-neutral-600">
           No matches
         </div>
       )}

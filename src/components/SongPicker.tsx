@@ -127,7 +127,7 @@ export function SongPicker({
         <div className="absolute top-full right-0 z-50 mt-1 w-64 rounded border border-neutral-700 bg-neutral-900 shadow-xl">
           {mode === "search" && (
             <>
-              <div className="flex items-stretch border-neutral-700 border-b">
+              <div className="flex items-stretch border-b border-neutral-700">
                 <input
                   autoFocus
                   value={query}
@@ -144,7 +144,7 @@ export function SongPicker({
                 <button
                   type="button"
                   onClick={startCreate}
-                  className={`px-3 text-xs ${colors.modeToggle} border-neutral-700 border-l transition-colors`}
+                  className={`px-3 text-xs ${colors.modeToggle} border-l border-neutral-700 transition-colors`}
                 >
                   + New
                 </button>
@@ -192,7 +192,7 @@ export function SongPicker({
               }}
             >
               <p
-                className={`text-xs ${colors.create.label} uppercase tracking-wider`}
+                className={`text-xs ${colors.create.label} tracking-wider uppercase`}
               >
                 New song
               </p>

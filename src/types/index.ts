@@ -10,11 +10,7 @@ export type TrackStage =
   | "released";
 
 export type TrackStatus =
-  | "active"
-  | "inactive"
-  | "queued"
-  | "tabled"
-  | "dropped";
+  "active" | "inactive" | "queued" | "tabled" | "dropped";
 
 export type NextTrackAction =
   | "Finish Music"

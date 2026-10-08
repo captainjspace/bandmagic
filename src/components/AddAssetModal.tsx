@@ -14,12 +14,12 @@ export function AddAssetModal({ onClose }: Props) {
 
   return (
     <Modal title="Add asset" onClose={onClose}>
-      <p className="mb-3 text-neutral-500 text-xs">
+      <p className="mb-3 text-xs text-neutral-500">
         Document or web link (Drive doc, review, post). For audio, use{" "}
         <span className="text-neutral-300">+ Track</span> instead.
       </p>
       {lastCreated && (
-        <div className="mb-3 rounded border border-green-800 bg-green-950/30 p-2 text-green-400 text-xs">
+        <div className="mb-3 rounded border border-green-800 bg-green-950/30 p-2 text-xs text-green-400">
           Created "{lastCreated.title}".
         </div>
       )}

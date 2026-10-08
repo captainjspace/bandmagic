@@ -59,7 +59,7 @@ export function FooterPlayer() {
         <button
           onClick={toggle}
           aria-label={isPlaying ? "Pause" : "Play"}
-          className={`flex h-8 w-8 items-center justify-center rounded-full ${colors.playBtn} shrink-0 font-bold text-xs transition-colors`}
+          className={`flex h-8 w-8 items-center justify-center rounded-full ${colors.playBtn} shrink-0 text-xs font-bold transition-colors`}
         >
           {isPlaying ? "❚❚" : "▶"}
         </button>

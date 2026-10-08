@@ -63,14 +63,14 @@ export function TagChips({
           }}
           onBlur={commit}
           placeholder="tag"
-          className="w-20 rounded border border-rbred-100 bg-rbblue-700 px-1.5 py-0.5 text-rbyellow-300 text-xs focus:border-rbblue-500 focus:outline-none"
+          className="border-rbred-100 bg-rbblue-700 text-rbyellow-300 focus:border-rbblue-500 w-20 rounded border px-1.5 py-0.5 text-xs focus:outline-none"
         />
       ) : (
         <button
           type="button"
           onClick={() => setAdding(true)}
           aria-label="Add tag"
-          className="text-rbpurple-500 text-xs hover:text-rbyellow-700"
+          className="text-rbpurple-500 hover:text-rbyellow-700 text-xs"
         >
           + tag
         </button>

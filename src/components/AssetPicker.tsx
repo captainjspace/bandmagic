@@ -225,7 +225,7 @@ export function AssetPicker({
                 key={asset.id}
                 className={`inline-flex items-center gap-1.5 rounded border px-1.5 py-0.5 text-xs ${assetClass(asset.subtype)}`}
               >
-                <span className="text-[10px] uppercase tracking-wider">
+                <span className="text-[10px] tracking-wider uppercase">
                   {asset.subtype}
                 </span>
                 <span className={colors.chip.title}>{asset.title}</span>
@@ -261,10 +261,10 @@ export function AssetPicker({
         </div>
 
         {open && (
-          <div className="absolute top-full z-50 mt-1 w-full rounded border border-rbpurple-500 bg-rbpurple-700/75 shadow-xl">
+          <div className="border-rbpurple-500 bg-rbpurple-700/75 absolute top-full z-50 mt-1 w-full rounded border shadow-xl">
             {mode === "search" && (
               <>
-                <div className="flex items-stretch border-rbpurple-500 border-b">
+                <div className="border-rbpurple-500 flex items-stretch border-b">
                   <input
                     autoFocus
                     value={query}
@@ -276,7 +276,7 @@ export function AssetPicker({
                           ? "Asset list unavailable — Create new still works"
                           : "Search title, subtype, or URL…"
                     }
-                    className={`flex-1 rounded-tl bg-rbpurple-700/75 px-3 py-2 text-sm ${colors.searchText} focus:outline-none`}
+                    className={`bg-rbpurple-700/75 flex-1 rounded-tl px-3 py-2 text-sm ${colors.searchText} focus:outline-none`}
                   />
                   <button
                     type="button"
@@ -302,10 +302,10 @@ export function AssetPicker({
                           <button
                             type="button"
                             onMouseDown={() => attach(asset.id)}
-                            className="flex w-full items-center gap-3 px-3 py-2 text-left transition-colors hover:bg-rbpurple-900/60"
+                            className="hover:bg-rbpurple-900/60 flex w-full items-center gap-3 px-3 py-2 text-left transition-colors"
                           >
                             <span
-                              className={`shrink-0 rounded border px-1.5 py-0.5 text-xs uppercase tracking-wider ${assetClass(asset.subtype)}`}
+                              className={`shrink-0 rounded border px-1.5 py-0.5 text-xs tracking-wider uppercase ${assetClass(asset.subtype)}`}
                             >
                               {asset.subtype}
                             </span>
@@ -354,7 +354,7 @@ export function AssetPicker({
               >
                 <div className="flex items-center justify-between">
                   <p
-                    className={`text-xs ${colors.create.label} uppercase tracking-wider`}
+                    className={`text-xs ${colors.create.label} tracking-wider uppercase`}
                   >
                     New asset
                   </p>
@@ -388,7 +388,7 @@ export function AssetPicker({
                     value={draftUrl}
                     onChange={(e) => setDraftUrl(e.target.value)}
                     placeholder="https://docs.google.com/document/... or https://blog.example.com/..."
-                    className={`w-full rounded border border-rbpurple-500 bg-rbpurple-700/75 px-2 py-1.5 text-xs ${colors.create.input} font-mono focus:border-rbpurple-300 focus:outline-none`}
+                    className={`border-rbpurple-500 bg-rbpurple-700/75 w-full rounded border px-2 py-1.5 text-xs ${colors.create.input} focus:border-rbpurple-300 font-mono focus:outline-none`}
                   />
                 )}
 
@@ -397,14 +397,14 @@ export function AssetPicker({
                     value={draftTitle}
                     onChange={(e) => setDraftTitle(e.target.value)}
                     placeholder="Display title"
-                    className={`flex-1 rounded border border-rbpurple-500 bg-rbpurple-700/75 px-2 py-1.5 text-sm ${colors.create.input} focus:border-rbpurple-300 focus:outline-none`}
+                    className={`border-rbpurple-500 bg-rbpurple-700/75 flex-1 rounded border px-2 py-1.5 text-sm ${colors.create.input} focus:border-rbpurple-300 focus:outline-none`}
                   />
                   <select
                     value={draftSubtype}
                     onChange={(e) =>
                       setDraftSubtype(e.target.value as AssetSubtype)
                     }
-                    className={`rounded border border-rbpurple-500 bg-rbpurple-700/75 px-1.5 py-1.5 text-xs ${colors.create.input} focus:border-rbpurple-300 focus:outline-none`}
+                    className={`border-rbpurple-500 bg-rbpurple-700/75 rounded border px-1.5 py-1.5 text-xs ${colors.create.input} focus:border-rbpurple-300 focus:outline-none`}
                   >
                     {SUBTYPES.map((s) => (
                       <option key={s} value={s}>

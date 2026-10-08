@@ -21,7 +21,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={mono.variable}>
-      <body className="min-inline-screen relative isolate bg-neutral-950 font-mono text-neutral-100 antialiased">
+      <body className="relative isolate bg-neutral-950 font-mono text-neutral-100 antialiased min-inline-screen">
         <PlayerProvider>
           <AppHeader />
           <div className="pointer-events-none fixed inset-0 z-[-10]">

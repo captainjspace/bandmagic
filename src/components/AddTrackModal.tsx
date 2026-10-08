@@ -190,13 +190,13 @@ export function AddTrackModal({ onClose }: Props) {
       <div className="space-y-3">
         <div>
           <p
-            className={`text-xs ${colors.label} mb-1.5 uppercase tracking-wider`}
+            className={`text-xs ${colors.label} mb-1.5 tracking-wider uppercase`}
           >
             Song
           </p>
           {song ? (
             <div className="flex items-center gap-2 rounded border border-neutral-700 bg-neutral-950 px-3 py-2">
-              <span className="flex-1 truncate text-rbcyan-100 text-sm">
+              <span className="text-rbcyan-100 flex-1 truncate text-sm">
                 {song.name}
               </span>
               <button
@@ -219,7 +219,7 @@ export function AddTrackModal({ onClose }: Props) {
 
         {song && (
           <>
-            <div className="flex gap-1 border-neutral-800 border-b text-xs">
+            <div className="flex gap-1 border-b border-neutral-800 text-xs">
               <button
                 type="button"
                 onClick={() => switchMode("upload")}
@@ -240,7 +240,7 @@ export function AddTrackModal({ onClose }: Props) {
               <>
                 <div>
                   <p
-                    className={`text-xs ${colors.label} mb-1.5 uppercase tracking-wider`}
+                    className={`text-xs ${colors.label} mb-1.5 tracking-wider uppercase`}
                   >
                     File
                   </p>
@@ -248,13 +248,13 @@ export function AddTrackModal({ onClose }: Props) {
                     type="file"
                     accept={AUDIO_ACCEPT}
                     onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-                    className="w-full text-rbcyan-300 text-sm file:mr-3 file:rounded file:border-0 file:bg-neutral-800 file:px-3 file:py-1.5 file:text-rbcyan-200 file:text-xs hover:file:bg-neutral-700"
+                    className="text-rbcyan-300 file:text-rbcyan-200 w-full text-sm file:mr-3 file:rounded file:border-0 file:bg-neutral-800 file:px-3 file:py-1.5 file:text-xs hover:file:bg-neutral-700"
                   />
                 </div>
                 <div className="flex gap-2">
                   <div className="flex-1">
                     <p
-                      className={`text-xs ${colors.label} mb-1.5 uppercase tracking-wider`}
+                      className={`text-xs ${colors.label} mb-1.5 tracking-wider uppercase`}
                     >
                       Title
                     </p>
@@ -267,7 +267,7 @@ export function AddTrackModal({ onClose }: Props) {
                   </div>
                   <div>
                     <p
-                      className={`text-xs ${colors.label} mb-1.5 uppercase tracking-wider`}
+                      className={`text-xs ${colors.label} mb-1.5 tracking-wider uppercase`}
                     >
                       Stage
                     </p>
@@ -276,7 +276,7 @@ export function AddTrackModal({ onClose }: Props) {
                       onChange={(e) =>
                         setStage(e.target.value as (typeof STAGES)[number])
                       }
-                      className="rounded border border-neutral-700 bg-neutral-950 px-2 py-1.5 text-rbcyan-100 text-sm focus:border-green-600 focus:outline-none"
+                      className="text-rbcyan-100 rounded border border-neutral-700 bg-neutral-950 px-2 py-1.5 text-sm focus:border-green-600 focus:outline-none"
                     >
                       {STAGES.map((s) => (
                         <option key={s} value={s}>
@@ -291,7 +291,7 @@ export function AddTrackModal({ onClose }: Props) {
                   type="button"
                   onClick={submitUpload}
                   disabled={!file || submitting}
-                  className={`w-full px-4 py-2 ${colors.submit} rounded font-semibold text-sm transition-colors disabled:opacity-40`}
+                  className={`w-full px-4 py-2 ${colors.submit} rounded text-sm font-semibold transition-colors disabled:opacity-40`}
                 >
                   {submitting ? "Uploading..." : "Upload & add track"}
                 </button>
@@ -334,10 +334,10 @@ export function AddTrackModal({ onClose }: Props) {
                             onChange={() => toggleSelected(entry.id)}
                             className="shrink-0"
                           />
-                          <span className="flex-1 truncate text-rbcyan-100">
+                          <span className="text-rbcyan-100 flex-1 truncate">
                             {entry.title}
                           </span>
-                          <span className="shrink-0 text-rbcyan-600 text-xs">
+                          <span className="text-rbcyan-600 shrink-0 text-xs">
                             {entry.stage}
                           </span>
                         </label>
@@ -350,7 +350,7 @@ export function AddTrackModal({ onClose }: Props) {
                   type="button"
                   onClick={submitExisting}
                   disabled={selected.size === 0 || submitting}
-                  className={`w-full px-4 py-2 ${colors.submit} rounded font-semibold text-sm transition-colors disabled:opacity-40`}
+                  className={`w-full px-4 py-2 ${colors.submit} rounded text-sm font-semibold transition-colors disabled:opacity-40`}
                 >
                   {submitting
                     ? "Assigning..."

@@ -454,7 +454,7 @@ export default function EditTrackGroupPage({
     <div className="max-w-2xl">
       <div className="mb-8 flex items-start justify-between">
         <div>
-          <h1 className={`font-bold text-2xl ${colors.page.title}`}>
+          <h1 className={`text-2xl font-bold ${colors.page.title}`}>
             Edit TrackGroup
           </h1>
           <p className={`${colors.page.trackGroupId} mt-1 font-mono text-xs`}>
@@ -542,7 +542,7 @@ export default function EditTrackGroupPage({
         <div className="space-y-4">
           <div>
             <label
-              className={`block text-xs ${colors.page.fieldLabel} mb-1.5 uppercase tracking-wider`}
+              className={`block text-xs ${colors.page.fieldLabel} mb-1.5 tracking-wider uppercase`}
             >
               Title
             </label>
@@ -550,19 +550,19 @@ export default function EditTrackGroupPage({
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               required
-              className="w-full rounded border border-neutral-700 bg-neutral-900 px-3 py-2 text-neutral-100 text-sm focus:border-green-600 focus:outline-none"
+              className="w-full rounded border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm text-neutral-100 focus:border-green-600 focus:outline-none"
             />
           </div>
           <div>
             <label
-              className={`block text-xs ${colors.page.fieldLabel} mb-1.5 uppercase tracking-wider`}
+              className={`block text-xs ${colors.page.fieldLabel} mb-1.5 tracking-wider uppercase`}
             >
               Description
             </label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="h-20 w-full resize-none rounded border border-neutral-700 bg-neutral-900 px-3 py-2 text-neutral-100 text-sm focus:border-green-600 focus:outline-none"
+              className="h-20 w-full resize-none rounded border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm text-neutral-100 focus:border-green-600 focus:outline-none"
             />
           </div>
           <div>
@@ -583,7 +583,7 @@ export default function EditTrackGroupPage({
         <div>
           <div className="mb-3 flex items-center justify-between gap-3">
             <label
-              className={`text-xs ${colors.page.fieldLabel} uppercase tracking-wider`}
+              className={`text-xs ${colors.page.fieldLabel} tracking-wider uppercase`}
             >
               Tracks
               {tracks.some((t) => !t.path.trim()) && (
@@ -630,11 +630,11 @@ export default function EditTrackGroupPage({
                       onChange={(e) =>
                         updateTrack(track._id, "title", e.target.value)
                       }
-                      className="flex-1 rounded border border-neutral-700 bg-neutral-900 px-2 py-1.5 text-neutral-100 text-sm focus:border-green-600 focus:outline-none"
+                      className="flex-1 rounded border border-neutral-700 bg-neutral-900 px-2 py-1.5 text-sm text-neutral-100 focus:border-green-600 focus:outline-none"
                       placeholder="Track title"
                     />
                     {track.tags.length > 0 && (
-                      <span className="text-neutral-600 text-xs">
+                      <span className="text-xs text-neutral-600">
                         Tag Chips:
                       </span>
                     )}
@@ -660,12 +660,12 @@ export default function EditTrackGroupPage({
                       track.stage &&
                       track.stage !== "unknown" && (
                         <>
-                          <span className="text-neutral-600 text-xs">
+                          <span className="text-xs text-neutral-600">
                             Stage Chips:
                           </span>
                           <span
                             title="Legacy stage value from before tagging existed — not yet migrated to a tag."
-                            className="rounded border border-neutral-700 border-dashed px-2 py-0.5 text-neutral-500 text-xs"
+                            className="rounded border border-dashed border-neutral-700 px-2 py-0.5 text-xs text-neutral-500"
                           >
                             {track.stage}
                           </span>
@@ -717,7 +717,7 @@ export default function EditTrackGroupPage({
                     onSelect={(entry) => selectTrack(track._id, entry)}
                     onClear={() => clearTrack(track._id)}
                   />
-                  <div className="border-neutral-800/50 border-t pt-2">
+                  <div className="border-t border-neutral-800/50 pt-2">
                     <p className={`text-xs ${colors.assets.label} mb-1.5`}>
                       Assets
                     </p>
@@ -745,7 +745,7 @@ export default function EditTrackGroupPage({
         <button
           type="submit"
           disabled={isBusy || !title.trim() || validTracks.length === 0}
-          className="w-full rounded bg-green-600 py-2.5 font-semibold text-black text-sm transition-colors hover:bg-green-500 disabled:opacity-40"
+          className="w-full rounded bg-green-600 py-2.5 text-sm font-semibold text-black transition-colors hover:bg-green-500 disabled:opacity-40"
         >
           {status === "sending" ? "Saving..." : "Save Changes"}
         </button>

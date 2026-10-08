@@ -39,11 +39,11 @@ export default async function HomePage() {
       <div className="mb-10 flex items-start justify-between">
         <div>
           <h1
-            className={`rbdrop font-bold text-3xl ${colors.page.title} tracking-tight`}
+            className={`rbdrop text-3xl font-bold ${colors.page.title} tracking-tight`}
           >
             TrackGroups
           </h1>
-          <p className={`${colors.page.count} mt-1 text-md`}>
+          <p className={`${colors.page.count} text-md mt-1`}>
             {trackGroups.length} trackGroup{trackGroups.length !== 1 ? "s" : ""}
           </p>
         </div>
@@ -94,7 +94,7 @@ export default async function HomePage() {
         {trackGroups.map((trackGroup) => (
           <div
             key={trackGroup.id}
-            className="group rounded-lg border border-rborange-600 transition-all hover:border-rbred-600 hover:bg-rbblue-900/30"
+            className="group border-rborange-600 hover:border-rbred-600 hover:bg-rbblue-900/30 rounded-lg border transition-all"
           >
             <div className="flex items-start gap-4">
               <Link
@@ -149,7 +149,7 @@ export default async function HomePage() {
                       <>
                         {tagChips.length > 0 && (
                           <div className="ml-1 flex items-center gap-1.5">
-                            <span className="text-neutral-600 text-xs">
+                            <span className="text-xs text-neutral-600">
                               Tag Chips:
                             </span>
                             {tagChips.map((tag) => (
@@ -164,14 +164,14 @@ export default async function HomePage() {
                         )}
                         {stageChips.length > 0 && (
                           <div className="ml-1 flex items-center gap-1.5">
-                            <span className="text-neutral-600 text-xs">
+                            <span className="text-xs text-neutral-600">
                               Stage Chips:
                             </span>
                             {stageChips.map((stage) => (
                               <span
                                 key={stage}
                                 title="Legacy stage value — not yet migrated to a tag"
-                                className="rounded border border-neutral-700 border-dashed px-1.5 py-0.5 text-neutral-500 text-xs"
+                                className="rounded border border-dashed border-neutral-700 px-1.5 py-0.5 text-xs text-neutral-500"
                               >
                                 {stage}
                               </span>
@@ -185,7 +185,7 @@ export default async function HomePage() {
               </Link>
               <Link
                 href={`/admin/${trackGroup.id}`}
-                className={`${colors.trackGroupCard.editLink} shrink-0 rounded-r-lg px-3 py-5 text-sm transition-colors hover:bg-rborange-500`}
+                className={`${colors.trackGroupCard.editLink} hover:bg-rborange-500 shrink-0 rounded-r-lg px-3 py-5 text-sm transition-colors`}
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"

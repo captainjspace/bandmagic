@@ -71,10 +71,10 @@ function AssetLinksSection({
 }) {
   if (links.length === 0) return null;
   return (
-    <div className="border-neutral-800 border-t pt-4">
+    <div className="border-t border-neutral-800 pt-4">
       <div className="mb-2 flex items-center justify-between">
         <p
-          className={`${colors.assets.label} text-xs uppercase tracking-wider`}
+          className={`${colors.assets.label} text-xs tracking-wider uppercase`}
         >
           {label}
         </p>
@@ -131,7 +131,7 @@ function AssetLinksSection({
               className="group flex items-center gap-2"
             >
               <span
-                className={`shrink-0 rounded border px-1.5 py-0.5 text-xs uppercase tracking-wider ${assetClass(asset.subtype)}`}
+                className={`shrink-0 rounded border px-1.5 py-0.5 text-xs tracking-wider uppercase ${assetClass(asset.subtype)}`}
               >
                 {asset.subtype}
               </span>
@@ -170,7 +170,7 @@ function LabeledTags({
 
   return (
     <div className={`flex flex-wrap items-center gap-1 ${className ?? ""}`}>
-      <span className="text-neutral-600 text-xs">
+      <span className="text-xs text-neutral-600">
         {hasTags ? "Tag Chips:" : "Stage Chips:"}
       </span>
       {hasTags
@@ -185,7 +185,7 @@ function LabeledTags({
         : legacyStage && (
             <span
               title="Legacy stage value — not yet migrated to a tag"
-              className="inline-block rounded border border-neutral-700 border-dashed px-1 py-0 text-neutral-500 text-xs"
+              className="inline-block rounded border border-dashed border-neutral-700 px-1 py-0 text-xs text-neutral-500"
             >
               {legacyStage}
             </span>
@@ -232,7 +232,7 @@ function TrackPlayer({
       <div className="flex items-center gap-3">
         <button
           onClick={onPlayClick}
-          className={`flex h-8 w-8 items-center justify-center rounded-full ${colors.trackPlayer.playButton} shrink-0 font-bold text-xs transition-colors`}
+          className={`flex h-8 w-8 items-center justify-center rounded-full ${colors.trackPlayer.playButton} shrink-0 text-xs font-bold transition-colors`}
         >
           {playing ? "❚❚" : "▶"}
         </button>
@@ -410,7 +410,7 @@ export default function TrackGroupPage({
             Edit
           </Link>
         </div>
-        <h1 className={`font-bold text-2xl ${colors.page.title} mt-2`}>
+        <h1 className={`text-2xl font-bold ${colors.page.title} mt-2`}>
           {trackGroup.title}
         </h1>
         {trackGroup.description && (
@@ -427,7 +427,7 @@ export default function TrackGroupPage({
         {/* Tracklist */}
         <div className="space-y-1">
           <p
-            className={`${colors.page.sectionLabel} mb-3 text-xs uppercase tracking-wider`}
+            className={`${colors.page.sectionLabel} mb-3 text-xs tracking-wider uppercase`}
           >
             Tracks
           </p>
@@ -467,7 +467,7 @@ export default function TrackGroupPage({
           {active && (
             <div className="space-y-5 rounded-lg border border-neutral-800 p-5">
               <div>
-                <h2 className={`font-semibold text-lg ${colors.page.title}`}>
+                <h2 className={`text-lg font-semibold ${colors.page.title}`}>
                   {active.title}
                 </h2>
                 <LabeledTags
@@ -487,9 +487,9 @@ export default function TrackGroupPage({
                   (t) => t.path === active.path,
                 )}
               />
-              <div className="border-neutral-800 border-t pt-4">
+              <div className="border-t border-neutral-800 pt-4">
                 <p
-                  className={`${colors.page.sectionLabel} mb-3 text-xs uppercase tracking-wider`}
+                  className={`${colors.page.sectionLabel} mb-3 text-xs tracking-wider uppercase`}
                 >
                   Notes
                 </p>

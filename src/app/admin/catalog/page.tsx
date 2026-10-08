@@ -47,7 +47,7 @@ function Field({
 }) {
   return (
     <div>
-      <p className={`text-xs ${colors.row.label} uppercase tracking-wider`}>
+      <p className={`text-xs ${colors.row.label} tracking-wider uppercase`}>
         {label}
       </p>
       <div className="mt-0.5 text-sm">{children}</div>
@@ -161,7 +161,7 @@ export default function AdminCatalogPage() {
     <div className="max-w-3xl">
       <div className="mb-8 flex items-start justify-between">
         <div>
-          <h1 className={`font-bold text-2xl ${colors.page.title}`}>Catalog</h1>
+          <h1 className={`text-2xl font-bold ${colors.page.title}`}>Catalog</h1>
           <p className={`${colors.page.subtitle} mt-1 text-sm`}>
             Edit the CatalogEntry (track) Firestore documents directly.
           </p>
@@ -184,7 +184,7 @@ export default function AdminCatalogPage() {
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         placeholder="Search title, path, or song…"
-        className="mb-4 w-full rounded border border-neutral-700 bg-neutral-900 px-3 py-2 text-neutral-100 text-sm placeholder-neutral-600 focus:border-green-600 focus:outline-none"
+        className="mb-4 w-full rounded border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm text-neutral-100 placeholder-neutral-600 focus:border-green-600 focus:outline-none"
       />
 
       {loading ? (
@@ -192,7 +192,7 @@ export default function AdminCatalogPage() {
       ) : (
         <>
           <p
-            className={`text-xs ${colors.page.count} mb-3 uppercase tracking-wider`}
+            className={`text-xs ${colors.page.count} mb-3 tracking-wider uppercase`}
           >
             {filtered.length} of {catalog.length} entries
           </p>
@@ -216,7 +216,7 @@ export default function AdminCatalogPage() {
                                 title: e.target.value,
                               }))
                             }
-                            className="w-full rounded border border-neutral-700 bg-neutral-900 px-2 py-1.5 text-neutral-100 text-sm focus:border-green-600 focus:outline-none"
+                            className="w-full rounded border border-neutral-700 bg-neutral-900 px-2 py-1.5 text-sm text-neutral-100 focus:border-green-600 focus:outline-none"
                           />
                         </Field>
                         <Field label="Mix">
@@ -228,7 +228,7 @@ export default function AdminCatalogPage() {
                                 mix: e.target.value,
                               }))
                             }
-                            className="w-full rounded border border-neutral-700 bg-neutral-900 px-2 py-1.5 text-neutral-100 text-sm focus:border-green-600 focus:outline-none"
+                            className="w-full rounded border border-neutral-700 bg-neutral-900 px-2 py-1.5 text-sm text-neutral-100 focus:border-green-600 focus:outline-none"
                           />
                         </Field>
                         <div className="flex gap-2">

@@ -55,7 +55,7 @@ function Field({
 }) {
   return (
     <div>
-      <p className={`text-xs ${colors.row.label} uppercase tracking-wider`}>
+      <p className={`text-xs ${colors.row.label} tracking-wider uppercase`}>
         {label}
       </p>
       <div className="mt-0.5 text-sm">{children}</div>
@@ -165,7 +165,7 @@ export default function AdminSongsPage() {
     <div className="max-w-3xl">
       <div className="mb-8 flex items-start justify-between">
         <div>
-          <h1 className={`font-bold text-2xl ${colors.page.title}`}>Songs</h1>
+          <h1 className={`text-2xl font-bold ${colors.page.title}`}>Songs</h1>
           <p className={`${colors.page.subtitle} mt-1 text-sm`}>
             Edit the Song Firestore documents directly.
           </p>
@@ -184,9 +184,9 @@ export default function AdminSongsPage() {
         </div>
       )}
 
-      <div className="mb-8 rounded border border-rbyellow-800 p-4">
+      <div className="border-rbyellow-800 mb-8 rounded border p-4">
         <p
-          className={`text-xs ${colors.page.fieldLabel} mb-3 uppercase tracking-wider`}
+          className={`text-xs ${colors.page.fieldLabel} mb-3 tracking-wider uppercase`}
         >
           New song
         </p>
@@ -196,13 +196,13 @@ export default function AdminSongsPage() {
             onChange={(e) => setNewName(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && createSong()}
             placeholder="Song name"
-            className="flex-1 rounded border border-rbyellow-700 bg-rbyellow-900 px-2 py-1.5 text-rbyellow-100 text-sm focus:border-green-600 focus:outline-none"
+            className="border-rbyellow-700 bg-rbyellow-900 text-rbyellow-100 flex-1 rounded border px-2 py-1.5 text-sm focus:border-green-600 focus:outline-none"
           />
           <button
             type="button"
             onClick={createSong}
             disabled={!newName.trim() || creating}
-            className="rounded bg-green-600 px-3 py-1.5 font-semibold text-black text-sm transition-colors hover:bg-green-500 disabled:opacity-40"
+            className="rounded bg-green-600 px-3 py-1.5 text-sm font-semibold text-black transition-colors hover:bg-green-500 disabled:opacity-40"
           >
             {creating ? "Creating…" : "Create"}
           </button>
@@ -214,7 +214,7 @@ export default function AdminSongsPage() {
       ) : (
         <>
           <p
-            className={`text-xs ${colors.page.count} mb-3 uppercase tracking-wider`}
+            className={`text-xs ${colors.page.count} mb-3 tracking-wider uppercase`}
           >
             {songs.length} song{songs.length !== 1 ? "s" : ""}
           </p>
@@ -224,7 +224,7 @@ export default function AdminSongsPage() {
               return (
                 <div
                   key={s.id}
-                  className="rounded border border-rbyellow-800 p-3"
+                  className="border-rbyellow-800 rounded border p-3"
                 >
                   {isEditing ? (
                     <div className="space-y-2">
@@ -237,7 +237,7 @@ export default function AdminSongsPage() {
                               name: e.target.value,
                             }))
                           }
-                          className="w-full rounded border border-rbyellow-700 bg-rbyellow-900 px-2 py-1.5 text-rbyellow-100 text-sm focus:border-green-600 focus:outline-none"
+                          className="border-rbyellow-700 bg-rbyellow-900 text-rbyellow-100 w-full rounded border px-2 py-1.5 text-sm focus:border-green-600 focus:outline-none"
                         />
                       </Field>
                       <Field label="Aliases (comma-separated)">
@@ -249,7 +249,7 @@ export default function AdminSongsPage() {
                               aliases: e.target.value,
                             }))
                           }
-                          className="w-full rounded border border-rbyellow-700 bg-rbyellow-900 px-2 py-1.5 text-rbyellow-100 text-sm focus:border-green-600 focus:outline-none"
+                          className="border-rbyellow-700 bg-rbyellow-900 text-rbyellow-100 w-full rounded border px-2 py-1.5 text-sm focus:border-green-600 focus:outline-none"
                         />
                       </Field>
                       <Field label="Folder Prefix">
@@ -261,9 +261,9 @@ export default function AdminSongsPage() {
                               folderPrefix: e.target.value,
                             }))
                           }
-                          className="w-full rounded border border-rbyellow-700 bg-rbyellow-900 px-2 py-1.5 font-mono text-rbyellow-100 text-sm focus:border-green-600 focus:outline-none"
+                          className="border-rbyellow-700 bg-rbyellow-900 text-rbyellow-100 w-full rounded border px-2 py-1.5 font-mono text-sm focus:border-green-600 focus:outline-none"
                         />
-                        <p className="mt-1 text-amber-500/80 text-xs">
+                        <p className="mt-1 text-xs text-amber-500/80">
                           Changes where the app thinks this song's GCS folder is
                           — doesn't move anything in storage.
                         </p>
@@ -277,7 +277,7 @@ export default function AdminSongsPage() {
                               latestPath: e.target.value,
                             }))
                           }
-                          className="w-full rounded border border-rbyellow-700 bg-rbyellow-900 px-2 py-1.5 font-mono text-rbyellow-100 text-sm focus:border-green-600 focus:outline-none"
+                          className="border-rbyellow-700 bg-rbyellow-900 text-rbyellow-100 w-full rounded border px-2 py-1.5 font-mono text-sm focus:border-green-600 focus:outline-none"
                         />
                       </Field>
                       <div className="flex gap-2">

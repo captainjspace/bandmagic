@@ -115,7 +115,7 @@ export function DriveSearch({
                   className="flex w-full items-center gap-2 px-2 py-1.5 text-left transition-colors hover:bg-neutral-800"
                 >
                   <span
-                    className={`shrink-0 rounded border px-1 py-0 text-[10px] uppercase tracking-wider ${assetClass(subtype)}`}
+                    className={`shrink-0 rounded border px-1 py-0 text-[10px] tracking-wider uppercase ${assetClass(subtype)}`}
                   >
                     {subtype}
                   </span>

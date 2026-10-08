@@ -132,7 +132,7 @@ export default function AdminAssetsPage() {
     <div className="max-w-3xl">
       <div className="mb-8 flex items-start justify-between">
         <div>
-          <h1 className={`font-bold text-2xl ${colors.page.title}`}>Assets</h1>
+          <h1 className={`text-2xl font-bold ${colors.page.title}`}>Assets</h1>
           <p className={`${colors.page.subtitle} mt-1 text-sm`}>
             Documents and links the band attaches to tracks.
           </p>
@@ -153,7 +153,7 @@ export default function AdminAssetsPage() {
 
       <div className="mb-8 rounded border border-neutral-800 p-4">
         <p
-          className={`text-xs ${colors.page.fieldLabel} mb-3 uppercase tracking-wider`}
+          className={`text-xs ${colors.page.fieldLabel} mb-3 tracking-wider uppercase`}
         >
           New asset
         </p>
@@ -165,7 +165,7 @@ export default function AdminAssetsPage() {
       ) : (
         <>
           <p
-            className={`text-xs ${colors.page.count} mb-3 uppercase tracking-wider`}
+            className={`text-xs ${colors.page.count} mb-3 tracking-wider uppercase`}
           >
             {assets.length} asset{assets.length !== 1 ? "s" : ""}
           </p>
@@ -184,7 +184,7 @@ export default function AdminAssetsPage() {
                         onChange={(e) =>
                           setEditDraft((d) => ({ ...d, url: e.target.value }))
                         }
-                        className="w-full rounded border border-neutral-700 bg-neutral-900 px-2 py-1.5 font-mono text-neutral-100 text-xs focus:border-green-600 focus:outline-none"
+                        className="w-full rounded border border-neutral-700 bg-neutral-900 px-2 py-1.5 font-mono text-xs text-neutral-100 focus:border-green-600 focus:outline-none"
                       />
                       <div className="flex gap-2">
                         <input
@@ -195,7 +195,7 @@ export default function AdminAssetsPage() {
                               title: e.target.value,
                             }))
                           }
-                          className="flex-1 rounded border border-neutral-700 bg-neutral-900 px-2 py-1.5 text-neutral-100 text-sm focus:border-green-600 focus:outline-none"
+                          className="flex-1 rounded border border-neutral-700 bg-neutral-900 px-2 py-1.5 text-sm text-neutral-100 focus:border-green-600 focus:outline-none"
                         />
                         <select
                           value={editDraft.subtype}
@@ -205,7 +205,7 @@ export default function AdminAssetsPage() {
                               subtype: e.target.value as AssetSubtype,
                             }))
                           }
-                          className="rounded border border-neutral-700 bg-neutral-900 px-2 py-1.5 text-neutral-100 text-sm focus:border-green-600 focus:outline-none"
+                          className="rounded border border-neutral-700 bg-neutral-900 px-2 py-1.5 text-sm text-neutral-100 focus:border-green-600 focus:outline-none"
                         >
                           {SUBTYPES.map((s) => (
                             <option key={s} value={s}>
@@ -232,7 +232,7 @@ export default function AdminAssetsPage() {
                   ) : (
                     <div className="flex items-center gap-3">
                       <span
-                        className={`shrink-0 rounded border px-1.5 py-0.5 text-xs uppercase tracking-wider ${assetClass(a.subtype)}`}
+                        className={`shrink-0 rounded border px-1.5 py-0.5 text-xs tracking-wider uppercase ${assetClass(a.subtype)}`}
                       >
                         {a.subtype}
                       </span>

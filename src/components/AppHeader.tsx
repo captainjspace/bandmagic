@@ -42,9 +42,9 @@ export function AppHeader() {
             <NavMenu />
           </div>
 
-          <div className="flex items-center gap-4 font-agincourt">
-            <div className="rounded-md border-2 border-rbcyan-300 outline-rbmist-300 outline-offset-4">
-              <div className="py-2 text-center font-mono text-md text-rbcyan-500 text-shadow-md text-shadow-rbyellow-300 tracking-widest">
+          <div className="font-agincourt flex items-center gap-4">
+            <div className="border-rbcyan-300 outline-rbmist-300 rounded-md border-2 outline-offset-4">
+              <div className="text-md text-rbcyan-500 text-shadow-rbyellow-300 py-2 text-center font-mono tracking-widest text-shadow-md">
                 Actions
               </div>
 

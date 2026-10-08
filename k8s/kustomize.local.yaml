@@ -6,9 +6,9 @@ metadata:
   name: band-magic
 spec:
   ports:
-  - nodePort: 30090
-    port: 8080
-    targetPort: 8080
+    - nodePort: 30090
+      port: 8080
+      targetPort: 8080
   selector:
     app: band-magic
   type: NodePort
@@ -30,15 +30,15 @@ spec:
         app: band-magic
     spec:
       containers:
-      - image: band-magic:latest
-        imagePullPolicy: Never
-        name: band-magic
-        ports:
-        - containerPort: 80
-        resources:
-          limits:
-            cpu: 250m
-            memory: 128Mi
-          requests:
-            cpu: 100m
-            memory: 64Mi
+        - image: band-magic:latest
+          imagePullPolicy: Never
+          name: band-magic
+          ports:
+            - containerPort: 80
+          resources:
+            limits:
+              cpu: 250m
+              memory: 128Mi
+            requests:
+              cpu: 100m
+              memory: 64Mi

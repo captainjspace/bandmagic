@@ -25,12 +25,12 @@ export function Modal({ title, onClose, children }: Props) {
       }}
     >
       <div className="w-full max-w-md rounded-lg border border-neutral-700 bg-neutral-900 shadow-xl">
-        <div className="flex items-center justify-between border-neutral-800 border-b px-4 py-3">
-          <h2 className="font-semibold text-neutral-100 text-sm">{title}</h2>
+        <div className="flex items-center justify-between border-b border-neutral-800 px-4 py-3">
+          <h2 className="text-sm font-semibold text-neutral-100">{title}</h2>
           <button
             type="button"
             onClick={onClose}
-            className="text-neutral-600 text-sm transition-colors hover:text-red-400"
+            className="text-sm text-neutral-600 transition-colors hover:text-red-400"
           >
             ✕
           </button>

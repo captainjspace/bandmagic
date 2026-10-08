@@ -78,14 +78,14 @@
   }
 
   .text-gradient-brand {
-    @apply inline-block text-transparent bg-clip-text bg-gradient-to-r from-rbcyan-500 via-rbpurple-500 to-rbred-500;
+    @apply from-rbcyan-500 via-rbpurple-500 to-rbred-500 inline-block bg-gradient-to-r bg-clip-text text-transparent;
   }
 
   .text-gradient-yworange {
-    @apply inline-block text-transparent bg-clip-text bg-gradient-to-r from-rbred-300 via-rborange-500 to-rbyellow-500;
+    @apply from-rbred-300 via-rborange-500 to-rbyellow-500 inline-block bg-gradient-to-r bg-clip-text text-transparent;
   }
 
- /** .text-gradient-mistpurple {    @apply inline-block text-transparent bg-clip-text bg-gradient-to-r from-rbmist-300 via-rbviolet-300 to-rbpurple-700; } */
+  /** .text-gradient-mistpurple {    @apply inline-block text-transparent bg-clip-text bg-gradient-to-r from-rbmist-300 via-rbviolet-300 to-rbpurple-700; } */
 
   .stage-writing {
     @apply text-rbblue-300 border-rbblue-700;
@@ -122,19 +122,19 @@
     @apply bg-red-950/30;
   }
   .stage-morphing {
-    @apply text-purple-400 border-purple-800;
+    @apply border-purple-800 text-purple-400;
   }
   .stage-morphing-bg {
     @apply bg-purple-950/30;
   }
   .stage-overdubbing {
-    @apply text-mist-400 border-mist-800;
+    @apply border-mist-800 text-mist-400;
   }
   .stage-overdubbing-bg {
     @apply bg-mist-950/30;
   }
   .stage-scheduled {
-    @apply text-cyan-400 border-cyan-800;
+    @apply border-cyan-800 text-cyan-400;
   }
   .stage-scheduled-bg {
     @apply bg-cyan-950/30;
@@ -169,7 +169,7 @@
     @apply bg-rbviolet-700/30;
   }
   .tag-emerald {
-    @apply text-emerald-400 border-emerald-800;
+    @apply border-emerald-800 text-emerald-400;
   }
   .tag-emerald-bg {
     @apply bg-emerald-950/30;
@@ -206,7 +206,7 @@
     @apply bg-rbpurple-700/30;
   }
   .asset-post {
-    @apply text-indigo-400 border-indigo-800;
+    @apply border-indigo-800 text-indigo-400;
   }
   .asset-post-bg {
     @apply bg-indigo-950/30;

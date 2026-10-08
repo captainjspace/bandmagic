@@ -34,6 +34,8 @@
     "blessed": "^0.1.81",
     "ls": "^1.0.0",
     "node-html-parser": "^9.0.4",
+    "prettier": "^3.9.9",
+    "prettier-plugin-tailwindcss": "^0.8.1",
     "tailwindcss": "^4.3.3",
     "typescript": "^7.0.2",
     "vercel": "^62.0.0",

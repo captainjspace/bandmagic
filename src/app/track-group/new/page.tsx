@@ -260,7 +260,7 @@ export default function NewTrackGroupPage() {
     <div className="max-w-2xl">
       <div className="mb-6 flex items-start justify-between">
         <div>
-          <h1 className={`font-bold text-2xl ${colors.page.title}`}>
+          <h1 className={`text-2xl font-bold ${colors.page.title}`}>
             New TrackGroup
           </h1>
           <p className={`${colors.page.subtitle} mt-1 text-sm`}>
@@ -269,7 +269,7 @@ export default function NewTrackGroupPage() {
         </div>
         <Link
           href="/admin"
-          className={`${colors.page.navLink} rbpuff rbdrop mt-2 text-md transition-colors`}
+          className={`${colors.page.navLink} rbpuff rbdrop text-md mt-2 transition-colors`}
         >
           ← Admin
         </Link>
@@ -342,27 +342,27 @@ export default function NewTrackGroupPage() {
         <div className="space-y-4">
           <div>
             <label
-              className={`block text-sm ${colors.page.fieldLabel} mb-2 uppercase tracking-wider`}
+              className={`block text-sm ${colors.page.fieldLabel} mb-2 tracking-wider uppercase`}
             >
               <span>Title</span>
               <input
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 required
-                className="w-full rounded border border-rbmist-700 bg-rbpurple-900/25 px-3 py-2 text-rborange-100 text-sm focus:border-green-600 focus:outline-none"
+                className="border-rbmist-700 bg-rbpurple-900/25 text-rborange-100 w-full rounded border px-3 py-2 text-sm focus:border-green-600 focus:outline-none"
                 placeholder="The Future of Music"
               />
             </label>
           </div>
           <div>
             <label
-              className={`block text-sm ${colors.page.fieldLabel} mb-2 uppercase tracking-wider`}
+              className={`block text-sm ${colors.page.fieldLabel} mb-2 tracking-wider uppercase`}
             >
               <span>Description</span>
               <textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                className="h-20 w-full resize-none rounded border border-rbmist-700 bg-rbpurple-900/25 px-3 py-2 text-rborange-100 text-sm focus:border-green-600 focus:outline-none"
+                className="border-rbmist-700 bg-rbpurple-900/25 text-rborange-100 h-20 w-full resize-none rounded border px-3 py-2 text-sm focus:border-green-600 focus:outline-none"
                 placeholder="What's in this trackGroup?"
               />
             </label>
@@ -386,7 +386,7 @@ export default function NewTrackGroupPage() {
         <div>
           <div className="mb-3 flex items-center justify-between">
             <label
-              className={`text-xs ${colors.page.fieldLabel} uppercase tracking-wider`}
+              className={`text-xs ${colors.page.fieldLabel} tracking-wider uppercase`}
             >
               Tracks
               {tracks.some((t) => !t.path.trim()) && (
@@ -415,7 +415,7 @@ export default function NewTrackGroupPage() {
                     onChange={(e) =>
                       updateTrack(track._id, "title", e.target.value)
                     }
-                    className="flex-1 rounded border border-rbmist-700 bg-rbpurple-900/25 px-2 py-1.5 text-rborange-100 text-sm focus:border-green-600 focus:outline-none"
+                    className="border-rbmist-700 bg-rbpurple-900/25 text-rborange-100 flex-1 rounded border px-2 py-1.5 text-sm focus:border-green-600 focus:outline-none"
                     placeholder="Track title"
                   />
                   <TagChips
