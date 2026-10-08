@@ -55,10 +55,10 @@ function Field({
 }) {
   return (
     <div>
-      <p className={`text-xs ${colors.row.label} uppercase tracking-wider`}>
+      <p className={`text-xs ${colors.row.label} tracking-wider uppercase`}>
         {label}
       </p>
-      <div className="text-sm mt-0.5">{children}</div>
+      <div className="mt-0.5 text-sm">{children}</div>
     </div>
   );
 }
@@ -166,27 +166,27 @@ export default function AdminSongsPage() {
       <div className="mb-8 flex items-start justify-between">
         <div>
           <h1 className={`text-2xl font-bold ${colors.page.title}`}>Songs</h1>
-          <p className={`${colors.page.subtitle} text-sm mt-1`}>
+          <p className={`${colors.page.subtitle} mt-1 text-sm`}>
             Edit the Song Firestore documents directly.
           </p>
         </div>
         <Link
           href="/admin"
-          className={`${colors.page.navLink} text-xs transition-colors mt-1`}
+          className={`${colors.page.navLink} mt-1 text-xs transition-colors`}
         >
           ← Admin
         </Link>
       </div>
 
       {error && (
-        <div className="mb-6 p-3 border border-red-800 bg-red-950/30 rounded text-sm">
+        <div className="mb-6 rounded border border-red-800 bg-red-950/30 p-3 text-sm">
           <span className={colors.status.error}>{error}</span>
         </div>
       )}
 
-      <div className="mb-8 border border-rbyellow-800 rounded p-4">
+      <div className="border-rbyellow-800 mb-8 rounded border p-4">
         <p
-          className={`text-xs ${colors.page.fieldLabel} uppercase tracking-wider mb-3`}
+          className={`text-xs ${colors.page.fieldLabel} mb-3 tracking-wider uppercase`}
         >
           New song
         </p>
@@ -196,13 +196,13 @@ export default function AdminSongsPage() {
             onChange={(e) => setNewName(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && createSong()}
             placeholder="Song name"
-            className="flex-1 bg-rbyellow-900 border border-rbyellow-700 rounded px-2 py-1.5 text-sm text-rbyellow-100 focus:outline-none focus:border-green-600"
+            className="border-rbyellow-700 bg-rbyellow-900 text-rbyellow-100 flex-1 rounded border px-2 py-1.5 text-sm focus:border-green-600 focus:outline-none"
           />
           <button
             type="button"
             onClick={createSong}
             disabled={!newName.trim() || creating}
-            className="px-3 py-1.5 bg-green-600 hover:bg-green-500 disabled:opacity-40 text-black text-sm font-semibold rounded transition-colors"
+            className="rounded bg-green-600 px-3 py-1.5 text-sm font-semibold text-black transition-colors hover:bg-green-500 disabled:opacity-40"
           >
             {creating ? "Creating…" : "Create"}
           </button>
@@ -214,7 +214,7 @@ export default function AdminSongsPage() {
       ) : (
         <>
           <p
-            className={`text-xs ${colors.page.count} uppercase tracking-wider mb-3`}
+            className={`text-xs ${colors.page.count} mb-3 tracking-wider uppercase`}
           >
             {songs.length} song{songs.length !== 1 ? "s" : ""}
           </p>
@@ -224,7 +224,7 @@ export default function AdminSongsPage() {
               return (
                 <div
                   key={s.id}
-                  className="border border-rbyellow-800 rounded p-3"
+                  className="border-rbyellow-800 rounded border p-3"
                 >
                   {isEditing ? (
                     <div className="space-y-2">
@@ -237,7 +237,7 @@ export default function AdminSongsPage() {
                               name: e.target.value,
                             }))
                           }
-                          className="w-full bg-rbyellow-900 border border-rbyellow-700 rounded px-2 py-1.5 text-sm text-rbyellow-100 focus:outline-none focus:border-green-600"
+                          className="border-rbyellow-700 bg-rbyellow-900 text-rbyellow-100 w-full rounded border px-2 py-1.5 text-sm focus:border-green-600 focus:outline-none"
                         />
                       </Field>
                       <Field label="Aliases (comma-separated)">
@@ -249,7 +249,7 @@ export default function AdminSongsPage() {
                               aliases: e.target.value,
                             }))
                           }
-                          className="w-full bg-rbyellow-900 border border-rbyellow-700 rounded px-2 py-1.5 text-sm text-rbyellow-100 focus:outline-none focus:border-green-600"
+                          className="border-rbyellow-700 bg-rbyellow-900 text-rbyellow-100 w-full rounded border px-2 py-1.5 text-sm focus:border-green-600 focus:outline-none"
                         />
                       </Field>
                       <Field label="Folder Prefix">
@@ -261,9 +261,9 @@ export default function AdminSongsPage() {
                               folderPrefix: e.target.value,
                             }))
                           }
-                          className="w-full bg-rbyellow-900 border border-rbyellow-700 rounded px-2 py-1.5 text-sm font-mono text-rbyellow-100 focus:outline-none focus:border-green-600"
+                          className="border-rbyellow-700 bg-rbyellow-900 text-rbyellow-100 w-full rounded border px-2 py-1.5 font-mono text-sm focus:border-green-600 focus:outline-none"
                         />
-                        <p className="text-xs text-amber-500/80 mt-1">
+                        <p className="mt-1 text-xs text-amber-500/80">
                           Changes where the app thinks this song's GCS folder is
                           — doesn't move anything in storage.
                         </p>
@@ -277,21 +277,21 @@ export default function AdminSongsPage() {
                               latestPath: e.target.value,
                             }))
                           }
-                          className="w-full bg-rbyellow-900 border border-rbyellow-700 rounded px-2 py-1.5 text-sm font-mono text-rbyellow-100 focus:outline-none focus:border-green-600"
+                          className="border-rbyellow-700 bg-rbyellow-900 text-rbyellow-100 w-full rounded border px-2 py-1.5 font-mono text-sm focus:border-green-600 focus:outline-none"
                         />
                       </Field>
                       <div className="flex gap-2">
                         <button
                           type="button"
                           onClick={() => saveEdit(s.id)}
-                          className={`text-xs px-2 ${colors.row.saveBtn} transition-colors`}
+                          className={`px-2 text-xs ${colors.row.saveBtn} transition-colors`}
                         >
                           save
                         </button>
                         <button
                           type="button"
                           onClick={cancelEdit}
-                          className={`text-xs px-2 ${colors.row.cancelBtn} transition-colors`}
+                          className={`px-2 text-xs ${colors.row.cancelBtn} transition-colors`}
                         >
                           cancel
                         </button>
@@ -311,7 +311,7 @@ export default function AdminSongsPage() {
                         <button
                           type="button"
                           onClick={() => startEdit(s)}
-                          className={`text-xs shrink-0 ${colors.row.editBtn} transition-colors`}
+                          className={`shrink-0 text-xs ${colors.row.editBtn} transition-colors`}
                         >
                           edit
                         </button>

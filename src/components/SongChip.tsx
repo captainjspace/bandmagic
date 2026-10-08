@@ -21,12 +21,12 @@ export function SongChip({
   return (
     <span
       title={title}
-      className={`inline-flex items-center rounded border border-rbyellow-800 bg-rbyellow-950/20 shrink-0 max-w-full ${sizeClass}`}
+      className={`border-rbyellow-800 bg-rbyellow-950/20 inline-flex max-w-full shrink-0 items-center rounded border ${sizeClass}`}
     >
       <span aria-hidden className="text-rbyellow-500">
         ♪
       </span>
-      <span className="text-gradient-brand font-semibold truncate">{name}</span>
+      <span className="text-gradient-brand truncate font-semibold">{name}</span>
     </span>
   );
 }

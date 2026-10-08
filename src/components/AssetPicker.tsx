@@ -178,7 +178,7 @@ export function AssetPicker({
     : unselected;
 
   return (
-    <div ref={containerRef} className="space-y-1.5 w-full">
+    <div ref={containerRef} className="w-full space-y-1.5">
       {value.length > 0 && (
         <div className="flex flex-wrap gap-1.5">
           {value.map((id) => {
@@ -186,7 +186,7 @@ export function AssetPicker({
               return (
                 <span
                   key={id}
-                  className={`text-xs border rounded px-1.5 py-0.5 ${colors.chip.loading}`}
+                  className={`rounded border px-1.5 py-0.5 text-xs ${colors.chip.loading}`}
                 >
                   loading…
                 </span>
@@ -196,7 +196,7 @@ export function AssetPicker({
               return (
                 <span
                   key={id}
-                  className={`text-xs border rounded px-1.5 py-0.5 ${colors.chip.error}`}
+                  className={`rounded border px-1.5 py-0.5 text-xs ${colors.chip.error}`}
                 >
                   load failed
                 </span>
@@ -207,7 +207,7 @@ export function AssetPicker({
               return (
                 <span
                   key={id}
-                  className={`text-xs border rounded px-1.5 py-0.5 ${colors.chip.missing}`}
+                  className={`rounded border px-1.5 py-0.5 text-xs ${colors.chip.missing}`}
                 >
                   missing: {id}
                   <button
@@ -223,9 +223,9 @@ export function AssetPicker({
             return (
               <span
                 key={asset.id}
-                className={`text-xs border rounded px-1.5 py-0.5 inline-flex items-center gap-1.5 ${assetClass(asset.subtype)}`}
+                className={`inline-flex items-center gap-1.5 rounded border px-1.5 py-0.5 text-xs ${assetClass(asset.subtype)}`}
               >
-                <span className="uppercase tracking-wider text-[10px]">
+                <span className="text-[10px] tracking-wider uppercase">
                   {asset.subtype}
                 </span>
                 <span className={colors.chip.title}>{asset.title}</span>
@@ -261,10 +261,10 @@ export function AssetPicker({
         </div>
 
         {open && (
-          <div className="absolute z-50 top-full mt-1 w-full bg-rbpurple-700/75 border border-rbpurple-500 rounded shadow-xl">
+          <div className="border-rbpurple-500 bg-rbpurple-700/75 absolute top-full z-50 mt-1 w-full rounded border shadow-xl">
             {mode === "search" && (
               <>
-                <div className="flex items-stretch border-b border-rbpurple-500">
+                <div className="border-rbpurple-500 flex items-stretch border-b">
                   <input
                     autoFocus
                     value={query}
@@ -276,12 +276,12 @@ export function AssetPicker({
                           ? "Asset list unavailable — Create new still works"
                           : "Search title, subtype, or URL…"
                     }
-                    className={`flex-1 bg-rbpurple-700/75 rounded-tl px-3 py-2 text-sm ${colors.searchText} focus:outline-none`}
+                    className={`bg-rbpurple-700/75 flex-1 rounded-tl px-3 py-2 text-sm ${colors.searchText} focus:outline-none`}
                   />
                   <button
                     type="button"
                     onClick={startCreate}
-                    className={`text-xs px-3 ${colors.modeToggle} border-l border-rbpurple-500 transition-colors`}
+                    className={`px-3 text-xs ${colors.modeToggle} border-rbpurple-500 border-l transition-colors`}
                   >
                     + Create new
                   </button>
@@ -302,21 +302,21 @@ export function AssetPicker({
                           <button
                             type="button"
                             onMouseDown={() => attach(asset.id)}
-                            className="w-full text-left px-3 py-2 hover:bg-rbpurple-900/60 transition-colors flex items-center gap-3"
+                            className="hover:bg-rbpurple-900/60 flex w-full items-center gap-3 px-3 py-2 text-left transition-colors"
                           >
                             <span
-                              className={`text-xs border px-1.5 py-0.5 rounded shrink-0 uppercase tracking-wider ${assetClass(asset.subtype)}`}
+                              className={`shrink-0 rounded border px-1.5 py-0.5 text-xs tracking-wider uppercase ${assetClass(asset.subtype)}`}
                             >
                               {asset.subtype}
                             </span>
-                            <div className="flex-1 min-w-0">
+                            <div className="min-w-0 flex-1">
                               <div
-                                className={`text-sm truncate ${colors.rowTitle}`}
+                                className={`truncate text-sm ${colors.rowTitle}`}
                               >
                                 {asset.title}
                               </div>
                               <div
-                                className={`text-xs font-mono truncate ${colors.rowUrl}`}
+                                className={`truncate font-mono text-xs ${colors.rowUrl}`}
                               >
                                 {asset.url}
                               </div>
@@ -337,7 +337,7 @@ export function AssetPicker({
 
             {mode === "create" && (
               <div
-                className="p-3 space-y-2"
+                className="space-y-2 p-3"
                 onKeyDown={(e) => {
                   if (
                     e.key === "Enter" &&
@@ -354,7 +354,7 @@ export function AssetPicker({
               >
                 <div className="flex items-center justify-between">
                   <p
-                    className={`text-xs ${colors.create.label} uppercase tracking-wider`}
+                    className={`text-xs ${colors.create.label} tracking-wider uppercase`}
                   >
                     New asset
                   </p>
@@ -362,14 +362,14 @@ export function AssetPicker({
                     <button
                       type="button"
                       onClick={() => setCreateSource("drive")}
-                      className={`px-2 py-0.5 rounded transition-colors ${createSource === "drive" ? colors.create.tabOn : colors.create.tabIdle}`}
+                      className={`rounded px-2 py-0.5 transition-colors ${createSource === "drive" ? colors.create.tabOn : colors.create.tabIdle}`}
                     >
                       Search Drive
                     </button>
                     <button
                       type="button"
                       onClick={() => setCreateSource("url")}
-                      className={`px-2 py-0.5 rounded transition-colors ${createSource === "url" ? colors.create.tabOn : colors.create.tabIdle}`}
+                      className={`rounded px-2 py-0.5 transition-colors ${createSource === "url" ? colors.create.tabOn : colors.create.tabIdle}`}
                     >
                       Paste URL
                     </button>
@@ -388,7 +388,7 @@ export function AssetPicker({
                     value={draftUrl}
                     onChange={(e) => setDraftUrl(e.target.value)}
                     placeholder="https://docs.google.com/document/... or https://blog.example.com/..."
-                    className={`w-full bg-rbpurple-700/75 border border-rbpurple-500 rounded px-2 py-1.5 text-xs ${colors.create.input} focus:outline-none focus:border-rbpurple-300 font-mono`}
+                    className={`border-rbpurple-500 bg-rbpurple-700/75 w-full rounded border px-2 py-1.5 text-xs ${colors.create.input} focus:border-rbpurple-300 font-mono focus:outline-none`}
                   />
                 )}
 
@@ -397,14 +397,14 @@ export function AssetPicker({
                     value={draftTitle}
                     onChange={(e) => setDraftTitle(e.target.value)}
                     placeholder="Display title"
-                    className={`flex-1 bg-rbpurple-700/75 border border-rbpurple-500 rounded px-2 py-1.5 text-sm ${colors.create.input} focus:outline-none focus:border-rbpurple-300`}
+                    className={`border-rbpurple-500 bg-rbpurple-700/75 flex-1 rounded border px-2 py-1.5 text-sm ${colors.create.input} focus:border-rbpurple-300 focus:outline-none`}
                   />
                   <select
                     value={draftSubtype}
                     onChange={(e) =>
                       setDraftSubtype(e.target.value as AssetSubtype)
                     }
-                    className={`bg-rbpurple-700/75 border border-rbpurple-500 rounded px-1.5 py-1.5 text-xs ${colors.create.input} focus:outline-none focus:border-rbpurple-300`}
+                    className={`border-rbpurple-500 bg-rbpurple-700/75 rounded border px-1.5 py-1.5 text-xs ${colors.create.input} focus:border-rbpurple-300 focus:outline-none`}
                   >
                     {SUBTYPES.map((s) => (
                       <option key={s} value={s}>
@@ -440,7 +440,7 @@ export function AssetPicker({
                     disabled={
                       submitting || !draftUrl.trim() || !draftTitle.trim()
                     }
-                    className={`text-xs px-3 py-1 ${colors.create.submit} disabled:opacity-40 rounded font-semibold transition-colors`}
+                    className={`px-3 py-1 text-xs ${colors.create.submit} rounded font-semibold transition-colors disabled:opacity-40`}
                   >
                     {submitting ? "Creating..." : "Create & attach"}
                   </button>

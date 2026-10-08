@@ -172,7 +172,7 @@ pnpm test         # vitest run
 pnpm test:watch   # vitest
 ```
 
-The app is deployed as a Docker container on port 8080 (`next.config.ts` sets `output: 'standalone'`). Dev origins include `192.168.99.239` and `192.168.3.13` (local network hosts).
+The app is deployed as a Docker container on port 8080 (`next.config.ts` sets `output: 'standalone'`). 
 
 ## Architecture
 

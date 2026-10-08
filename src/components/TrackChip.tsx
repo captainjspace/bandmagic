@@ -21,7 +21,7 @@ export function TrackChip({
   return (
     <span
       title={title}
-      className={`inline-flex items-center rounded border border-cyan-800 bg-cyan-950/20 text-cyan-400 font-mono shrink-0 max-w-full ${sizeClass}`}
+      className={`inline-flex max-w-full shrink-0 items-center rounded border border-cyan-800 bg-cyan-950/20 font-mono text-cyan-400 ${sizeClass}`}
     >
       <span className="truncate">{name}</span>
     </span>

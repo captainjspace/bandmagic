@@ -68,7 +68,7 @@ export function AssetCreateForm({ onCreated }: Props) {
         onChange={(e) => setDraft((d) => ({ ...d, url: e.target.value }))}
         required
         placeholder="https://docs.google.com/document/... or https://blog.example.com/..."
-        className="w-full bg-neutral-950 border border-neutral-700 rounded px-3 py-2 text-sm text-neutral-100 placeholder-neutral-600 focus:outline-none focus:border-green-600 font-mono"
+        className="w-full rounded border border-neutral-700 bg-neutral-950 px-3 py-2 font-mono text-sm text-neutral-100 placeholder-neutral-600 focus:border-green-600 focus:outline-none"
       />
       <div className="flex gap-2">
         <input
@@ -76,14 +76,14 @@ export function AssetCreateForm({ onCreated }: Props) {
           onChange={(e) => setDraft((d) => ({ ...d, title: e.target.value }))}
           required
           placeholder="Display title"
-          className="flex-1 bg-neutral-950 border border-neutral-700 rounded px-3 py-2 text-sm text-neutral-100 placeholder-neutral-600 focus:outline-none focus:border-green-600"
+          className="flex-1 rounded border border-neutral-700 bg-neutral-950 px-3 py-2 text-sm text-neutral-100 placeholder-neutral-600 focus:border-green-600 focus:outline-none"
         />
         <select
           value={draft.subtype}
           onChange={(e) =>
             setDraft((d) => ({ ...d, subtype: e.target.value as AssetSubtype }))
           }
-          className="bg-neutral-950 border border-neutral-700 rounded px-2 py-2 text-sm text-neutral-100 focus:outline-none focus:border-green-600"
+          className="rounded border border-neutral-700 bg-neutral-950 px-2 py-2 text-sm text-neutral-100 focus:border-green-600 focus:outline-none"
         >
           {SUBTYPES.map((s) => (
             <option key={s} value={s}>
@@ -110,7 +110,7 @@ export function AssetCreateForm({ onCreated }: Props) {
       <button
         type="submit"
         disabled={creating || !draft.url.trim() || !draft.title.trim()}
-        className={`w-full px-4 py-2 ${colors.submit} disabled:opacity-40 font-semibold text-sm rounded transition-colors`}
+        className={`w-full px-4 py-2 ${colors.submit} rounded text-sm font-semibold transition-colors disabled:opacity-40`}
       >
         {creating ? "Saving..." : "Create"}
       </button>

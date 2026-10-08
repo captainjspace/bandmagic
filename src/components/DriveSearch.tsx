@@ -94,7 +94,7 @@ export function DriveSearch({
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         placeholder={placeholder ?? "Search your Drive…"}
-        className={`w-full bg-neutral-950 border border-neutral-700 rounded px-2 py-1.5 text-sm ${colors.input} focus:outline-none focus:border-green-600`}
+        className={`w-full rounded border border-neutral-700 bg-neutral-950 px-2 py-1.5 text-sm ${colors.input} focus:border-green-600 focus:outline-none`}
       />
       {loading && <p className={`text-xs ${colors.loading}`}>Searching…</p>}
       {error && <p className={`text-xs ${colors.error}`}>{error}</p>}
@@ -104,7 +104,7 @@ export function DriveSearch({
         </p>
       )}
       {displayResults.length > 0 && (
-        <ul className="max-h-56 overflow-y-auto border border-neutral-800 rounded">
+        <ul className="max-h-56 overflow-y-auto rounded border border-neutral-800">
           {displayResults.map((file) => {
             const subtype = inferSubtype(file.name);
             return (
@@ -112,15 +112,15 @@ export function DriveSearch({
                 <button
                   type="button"
                   onClick={() => pick(file)}
-                  className="w-full text-left px-2 py-1.5 hover:bg-neutral-800 transition-colors flex items-center gap-2"
+                  className="flex w-full items-center gap-2 px-2 py-1.5 text-left transition-colors hover:bg-neutral-800"
                 >
                   <span
-                    className={`text-[10px] border px-1 py-0 rounded shrink-0 uppercase tracking-wider ${assetClass(subtype)}`}
+                    className={`shrink-0 rounded border px-1 py-0 text-[10px] tracking-wider uppercase ${assetClass(subtype)}`}
                   >
                     {subtype}
                   </span>
-                  <div className="flex-1 min-w-0">
-                    <div className={`text-sm truncate ${colors.rowName}`}>
+                  <div className="min-w-0 flex-1">
+                    <div className={`truncate text-sm ${colors.rowName}`}>
                       {file.name}
                     </div>
                     <div className={`text-xs ${colors.rowMeta} truncate`}>

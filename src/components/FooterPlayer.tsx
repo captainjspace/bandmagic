@@ -44,14 +44,14 @@ export function FooterPlayer() {
   };
 
   return (
-    <div className={`fixed bottom-0 left-0 right-0 z-40 ${colors.bar}`}>
-      <div className="max-w-5xl mx-auto px-6 py-2.5 flex items-center gap-3">
+    <div className={`fixed right-0 bottom-0 left-0 z-40 ${colors.bar}`}>
+      <div className="mx-auto flex max-w-5xl items-center gap-3 px-6 py-2.5">
         {showSteps && (
           <button
             onClick={prev}
             disabled={!hasPrev}
             aria-label="Previous track"
-            className={`text-sm shrink-0 transition-colors ${colors.stepBtn}`}
+            className={`shrink-0 text-sm transition-colors ${colors.stepBtn}`}
           >
             ⏮
           </button>
@@ -59,7 +59,7 @@ export function FooterPlayer() {
         <button
           onClick={toggle}
           aria-label={isPlaying ? "Pause" : "Play"}
-          className={`w-8 h-8 flex items-center justify-center rounded-full ${colors.playBtn} text-xs font-bold shrink-0 transition-colors`}
+          className={`flex h-8 w-8 items-center justify-center rounded-full ${colors.playBtn} shrink-0 text-xs font-bold transition-colors`}
         >
           {isPlaying ? "❚❚" : "▶"}
         </button>
@@ -68,24 +68,24 @@ export function FooterPlayer() {
             onClick={next}
             disabled={!hasNext}
             aria-label="Next track"
-            className={`text-sm shrink-0 transition-colors ${colors.stepBtn}`}
+            className={`shrink-0 text-sm transition-colors ${colors.stepBtn}`}
           >
             ⏭
           </button>
         )}
         <div className="min-w-0 flex-1">
           <div className="flex items-baseline gap-2">
-            <span className={`text-sm truncate ${colors.title}`}>
+            <span className={`truncate text-sm ${colors.title}`}>
               {track.title}
             </span>
             {track.subtitle && (
-              <span className={`text-xs truncate ${colors.subtitle}`}>
+              <span className={`truncate text-xs ${colors.subtitle}`}>
                 {track.subtitle}
               </span>
             )}
           </div>
           <div
-            className={`mt-1 h-1 rounded-full cursor-pointer ${colors.progressBg}`}
+            className={`mt-1 h-1 cursor-pointer rounded-full ${colors.progressBg}`}
             onClick={onSeekClick}
           >
             <div
@@ -96,7 +96,7 @@ export function FooterPlayer() {
             />
           </div>
         </div>
-        <span className={`text-xs ${colors.timestamp} tabular-nums shrink-0`}>
+        <span className={`text-xs ${colors.timestamp} shrink-0 tabular-nums`}>
           {fmt(currentTime)} / {fmt(duration)}
         </span>
         <button

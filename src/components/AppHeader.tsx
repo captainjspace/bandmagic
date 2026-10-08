@@ -5,17 +5,17 @@ import { AddAssetModal } from "@/components/AddAssetModal";
 import { AddTrackModal } from "@/components/AddTrackModal";
 import { NavMenu } from "@/components/NavMenu";
 
-const textDecoration={
-  bigWave: "underline overline decoration-wavy decoration-6 decoration-rbcyan-300",
-}
+const textDecoration = {
+  bigWave:
+    "underline overline decoration-wavy decoration-6 decoration-rbcyan-300",
+};
 
 /** element colors */
 const colors = {
   bar: "bg-rbcyan-300/10 backdrop-blur border-b border-rbred-800",
-  brand:
-  `"${textDecoration.bigWave} font-agincourt text-rborange-100 text-2xl sm:text-xl md:text-feature-title leading-none tracking-wide"`,
+  brand: `"${textDecoration.bigWave} font-agincourt text-rborange-100 text-2xl sm:text-xl md:text-feature-title leading-none tracking-wide"`,
   action:
-  "border-2 rounded-md border-rbpurple-700 hover:border-rbred-500 hover:text-rborange-300 text-rbcyan-500 rounded px-4 py-2 transition-colors disabled:opacity-50",
+    "border-2 rounded-md border-rbpurple-700 hover:border-rbred-500 hover:text-rborange-300 text-rbcyan-500 rounded px-4 py-2 transition-colors disabled:opacity-50",
 };
 
 type ActiveModal = "track" | "asset" | null;
@@ -37,18 +37,14 @@ export function AppHeader() {
   return (
     <>
       <header className={`sticky top-0 z-40 px-6 py-4 ${colors.bar}`}>
-
-        <div className="max-w-5xl mx-auto flex items-center justify-between gap-4">
+        <div className="mx-auto flex max-w-5xl items-center justify-between gap-4">
           <div className={colors.brand}>
             <NavMenu />
           </div>
-      
+
           <div className="font-agincourt flex items-center gap-4">
-            
-            <div className="outline-rbmist-300 outline-offset-4 border-2 border-rbcyan-300 rounded-md">
-         
-              <div className="text-center text-md font-mono text-shadow-md text-rbcyan-500 
-                              text-shadow-rbyellow-300 tracking-widest py-2">
+            <div className="border-rbcyan-300 outline-rbmist-300 rounded-md border-2 outline-offset-4">
+              <div className="text-md text-rbcyan-500 text-shadow-rbyellow-300 py-2 text-center font-mono tracking-widest text-shadow-md">
                 Actions
               </div>
 

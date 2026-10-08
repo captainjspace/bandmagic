@@ -31,18 +31,18 @@ export function TagChips({
   };
 
   return (
-    <div className="flex items-center gap-1 flex-wrap">
+    <div className="flex flex-wrap items-center gap-1">
       {tags.map((tag) => (
         <span
           key={tag}
-          className={`text-xs border rounded px-1.5 py-0.5 flex items-center gap-1 ${tagClass(tag, entityType)} ${tagBgClass(tag, entityType)}`}
+          className={`flex items-center gap-1 rounded border px-1.5 py-0.5 text-xs ${tagClass(tag, entityType)} ${tagBgClass(tag, entityType)}`}
         >
           {tag}
           <button
             type="button"
             onClick={() => onRemove(tag)}
             aria-label={`Remove tag ${tag}`}
-            className="text-neutral-600 hover:text-red-400"
+            className="text-rbcyan-300 hover:text-red-400"
           >
             ×
           </button>
@@ -63,14 +63,14 @@ export function TagChips({
           }}
           onBlur={commit}
           placeholder="tag"
-          className="text-xs bg-neutral-900 border border-neutral-700 rounded px-1.5 py-0.5 w-20 text-neutral-100 focus:outline-none focus:border-green-600"
+          className="border-rbred-100 bg-rbblue-700 text-rbyellow-300 focus:border-rbblue-500 w-20 rounded border px-1.5 py-0.5 text-xs focus:outline-none"
         />
       ) : (
         <button
           type="button"
           onClick={() => setAdding(true)}
           aria-label="Add tag"
-          className="text-xs text-neutral-600 hover:text-neutral-300"
+          className="text-rbpurple-500 hover:text-rbyellow-700 text-xs"
         >
           + tag
         </button>

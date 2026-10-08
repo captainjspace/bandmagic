@@ -1,14 +1,15 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  env: {
+    allowedDevOrigins: process.env.allowed_dev_origins,
+  },
   output: "standalone",
   allowedDevOrigins: [
     "127.0.0.1",
     "localhost",
-    "192.168.99.239",
-    "192.168.3.13",
-    "192.168.3.12",
-  ],
-};
+    `" ${process.env.allowedDevOrigins} "`,
+  ]
+}
 
 export default nextConfig;

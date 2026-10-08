@@ -124,7 +124,7 @@ export function SongPicker({
       </button>
 
       {open && (
-        <div className="absolute z-50 top-full mt-1 right-0 w-64 bg-neutral-900 border border-neutral-700 rounded shadow-xl">
+        <div className="absolute top-full right-0 z-50 mt-1 w-64 rounded border border-neutral-700 bg-neutral-900 shadow-xl">
           {mode === "search" && (
             <>
               <div className="flex items-stretch border-b border-neutral-700">
@@ -139,12 +139,12 @@ export function SongPicker({
                         ? "Song list unavailable — Create new still works"
                         : "Search songs…"
                   }
-                  className={`flex-1 bg-neutral-900 rounded-tl px-3 py-2 text-sm ${colors.searchText} focus:outline-none`}
+                  className={`flex-1 rounded-tl bg-neutral-900 px-3 py-2 text-sm ${colors.searchText} focus:outline-none`}
                 />
                 <button
                   type="button"
                   onClick={startCreate}
-                  className={`text-xs px-3 ${colors.modeToggle} border-l border-neutral-700 transition-colors`}
+                  className={`px-3 text-xs ${colors.modeToggle} border-l border-neutral-700 transition-colors`}
                 >
                   + New
                 </button>
@@ -163,7 +163,7 @@ export function SongPicker({
                       <button
                         type="button"
                         onMouseDown={() => pick(song)}
-                        className={`w-full text-left px-3 py-2 hover:bg-neutral-800 transition-colors text-sm truncate ${colors.rowTitle}`}
+                        className={`w-full truncate px-3 py-2 text-left text-sm transition-colors hover:bg-neutral-800 ${colors.rowTitle}`}
                       >
                         {song.name}
                       </button>
@@ -176,7 +176,7 @@ export function SongPicker({
 
           {mode === "create" && (
             <div
-              className="p-3 space-y-2"
+              className="space-y-2 p-3"
               onKeyDown={(e) => {
                 if (
                   e.key === "Enter" &&
@@ -192,7 +192,7 @@ export function SongPicker({
               }}
             >
               <p
-                className={`text-xs ${colors.create.label} uppercase tracking-wider`}
+                className={`text-xs ${colors.create.label} tracking-wider uppercase`}
               >
                 New song
               </p>
@@ -201,7 +201,7 @@ export function SongPicker({
                 value={draftName}
                 onChange={(e) => setDraftName(e.target.value)}
                 placeholder="Song name"
-                className={`w-full bg-neutral-950 border border-neutral-700 rounded px-2 py-1.5 text-sm ${colors.create.input} focus:outline-none focus:border-green-600`}
+                className={`w-full rounded border border-neutral-700 bg-neutral-950 px-2 py-1.5 text-sm ${colors.create.input} focus:border-green-600 focus:outline-none`}
               />
               {createError && (
                 <p className={`text-xs ${colors.create.error}`}>
@@ -220,7 +220,7 @@ export function SongPicker({
                   type="button"
                   onClick={submitCreate}
                   disabled={submitting || !draftName.trim()}
-                  className={`text-xs px-3 py-1 ${colors.create.submit} disabled:opacity-40 rounded font-semibold transition-colors`}
+                  className={`px-3 py-1 text-xs ${colors.create.submit} rounded font-semibold transition-colors disabled:opacity-40`}
                 >
                   {submitting ? "Creating..." : "Create & assign"}
                 </button>

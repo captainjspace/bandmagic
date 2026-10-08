@@ -19,18 +19,18 @@ export function Modal({ title, onClose, children }: Props) {
 
   return (
     <div
-      className="fixed inset-0 z-50 bg-black/60 flex items-start justify-center pt-24 px-4"
+      className="fixed inset-0 z-50 flex items-start justify-center bg-black/60 px-4 pt-24"
       onMouseDown={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div className="w-full max-w-md bg-neutral-900 border border-neutral-700 rounded-lg shadow-xl">
-        <div className="flex items-center justify-between px-4 py-3 border-b border-neutral-800">
+      <div className="w-full max-w-md rounded-lg border border-neutral-700 bg-neutral-900 shadow-xl">
+        <div className="flex items-center justify-between border-b border-neutral-800 px-4 py-3">
           <h2 className="text-sm font-semibold text-neutral-100">{title}</h2>
           <button
             type="button"
             onClick={onClose}
-            className="text-neutral-600 hover:text-red-400 text-sm transition-colors"
+            className="text-sm text-neutral-600 transition-colors hover:text-red-400"
           >
             ✕
           </button>

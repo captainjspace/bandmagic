@@ -263,7 +263,7 @@ export default function NewTrackGroupPage() {
           <h1 className={`text-2xl font-bold ${colors.page.title}`}>
             New TrackGroup
           </h1>
-          <p className={`${colors.page.subtitle} text-sm mt-1`}>
+          <p className={`${colors.page.subtitle} mt-1 text-sm`}>
             Curate tracks and notify the band.
           </p>
         </div>
@@ -276,21 +276,21 @@ export default function NewTrackGroupPage() {
       </div>
 
       {status === "done" && (
-        <div className="mb-6 p-3 border border-green-800 bg-green-950/30 rounded text-sm">
+        <div className="mb-6 rounded border border-green-800 bg-green-950/30 p-3 text-sm">
           <span className={colors.status.success}>
             TrackGroup created and band notified.
           </span>
         </div>
       )}
       {status === "error" && (
-        <div className="mb-6 p-3 border border-red-800 bg-red-950/30 rounded text-sm">
+        <div className="mb-6 rounded border border-red-800 bg-red-950/30 p-3 text-sm">
           <span className={colors.status.error}>
             {errorMsg || "Something went wrong. Check the console."}
           </span>
         </div>
       )}
       {assetsLoad === "error" && (
-        <div className="mb-6 p-3 border border-amber-800 bg-amber-950/30 rounded text-sm flex items-center justify-between">
+        <div className="mb-6 flex items-center justify-between rounded border border-amber-800 bg-amber-950/30 p-3 text-sm">
           <span className={colors.assets.errorBanner}>
             Asset list unavailable — {assetsError}
           </span>
@@ -342,27 +342,27 @@ export default function NewTrackGroupPage() {
         <div className="space-y-4">
           <div>
             <label
-              className={`block text-sm ${colors.page.fieldLabel} uppercase tracking-wider mb-2`}
+              className={`block text-sm ${colors.page.fieldLabel} mb-2 tracking-wider uppercase`}
             >
               <span>Title</span>
               <input
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 required
-                className="w-full bg-rbpurple-900/25 border border-rbmist-700 rounded px-3 py-2 text-sm text-rborange-100 focus:outline-none focus:border-green-600"
+                className="border-rbmist-700 bg-rbpurple-900/25 text-rborange-100 w-full rounded border px-3 py-2 text-sm focus:border-green-600 focus:outline-none"
                 placeholder="The Future of Music"
               />
             </label>
           </div>
           <div>
             <label
-              className={`block text-sm ${colors.page.fieldLabel} uppercase tracking-wider mb-2`}
+              className={`block text-sm ${colors.page.fieldLabel} mb-2 tracking-wider uppercase`}
             >
               <span>Description</span>
               <textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                className="w-full bg-rbpurple-900/25 border border-rbmist-700 rounded px-3 py-2 text-sm text-rborange-100 focus:outline-none focus:border-green-600 resize-none h-20"
+                className="border-rbmist-700 bg-rbpurple-900/25 text-rborange-100 h-20 w-full resize-none rounded border px-3 py-2 text-sm focus:border-green-600 focus:outline-none"
                 placeholder="What's in this trackGroup?"
               />
             </label>
@@ -384,9 +384,9 @@ export default function NewTrackGroupPage() {
         </div>
 
         <div>
-          <div className="flex items-center justify-between mb-3">
+          <div className="mb-3 flex items-center justify-between">
             <label
-              className={`text-xs ${colors.page.fieldLabel} uppercase tracking-wider`}
+              className={`text-xs ${colors.page.fieldLabel} tracking-wider uppercase`}
             >
               Tracks
               {tracks.some((t) => !t.path.trim()) && (
@@ -407,7 +407,7 @@ export default function NewTrackGroupPage() {
             {tracks.map((track, idx) => (
               <div
                 key={track._id}
-                className={`border rounded p-3 space-y-2 ${track.path.trim() ? "border-rbcyan-800" : "border-rbcyan-800/50 opacity-60"}`}
+                className={`space-y-2 rounded border p-3 ${track.path.trim() ? "border-rbcyan-800" : "border-rbcyan-800/50 opacity-60"}`}
               >
                 <div className="flex gap-2">
                   <input
@@ -415,7 +415,7 @@ export default function NewTrackGroupPage() {
                     onChange={(e) =>
                       updateTrack(track._id, "title", e.target.value)
                     }
-                    className="flex-1 bg-rbpurple-900/25 border border-rbmist-700 rounded px-2 py-1.5 text-sm text-rborange-100 focus:outline-none focus:border-green-600"
+                    className="border-rbmist-700 bg-rbpurple-900/25 text-rborange-100 flex-1 rounded border px-2 py-1.5 text-sm focus:border-green-600 focus:outline-none"
                     placeholder="Track title"
                   />
                   <TagChips
@@ -442,7 +442,7 @@ export default function NewTrackGroupPage() {
                     disabled={idx === 0}
                     aria-label="Move track up"
                     title="Move up"
-                    className={`text-xs px-1 ${colors.trackCard.addBtn} disabled:opacity-30 transition-colors`}
+                    className={`px-1 text-xs ${colors.trackCard.addBtn} transition-colors disabled:opacity-30`}
                   >
                     ▲
                   </button>
@@ -452,7 +452,7 @@ export default function NewTrackGroupPage() {
                     disabled={idx === tracks.length - 1}
                     aria-label="Move track down"
                     title="Move down"
-                    className={`text-xs px-1 ${colors.trackCard.addBtn} disabled:opacity-30 transition-colors`}
+                    className={`px-1 text-xs ${colors.trackCard.addBtn} transition-colors disabled:opacity-30`}
                   >
                     ▼
                   </button>
@@ -460,7 +460,7 @@ export default function NewTrackGroupPage() {
                     <button
                       type="button"
                       onClick={() => removeTrack(track._id)}
-                      className={`text-xs px-1 ${colors.trackCard.removeBtn} transition-colors`}
+                      className={`px-1 text-xs ${colors.trackCard.removeBtn} transition-colors`}
                     >
                       ✕
                     </button>
@@ -471,7 +471,7 @@ export default function NewTrackGroupPage() {
                   onSelect={(entry) => selectTrack(track._id, entry)}
                   onClear={() => clearTrack(track._id)}
                 />
-                <div className="border-t border-rbcyan-800/50 pt-2">
+                <div className="border-rbcyan-800/50 border-t pt-2">
                   <p className={`text-xs ${colors.assets.label} mb-1.5`}>
                     Assets
                   </p>
@@ -488,7 +488,7 @@ export default function NewTrackGroupPage() {
             ))}
           </div>
           {validTracks.length > 0 && (
-            <p className={`${colors.page.count} text-xs mt-2`}>
+            <p className={`${colors.page.count} mt-2 text-xs`}>
               {validTracks.length} track{validTracks.length !== 1 ? "s" : ""}{" "}
               will be included
             </p>

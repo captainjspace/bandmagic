@@ -71,14 +71,14 @@ export default function AdminHubPage() {
     <div className="max-w-2xl">
       <div className="mb-6">
         <h1 className={`text-2xl font-bold ${colors.page.title}`}>Admin</h1>
-        <p className={`${colors.page.subtitle} text-sm mt-1`}>
+        <p className={`${colors.page.subtitle} mt-1 text-sm`}>
           Link hub for managing track groups, tracks, and assets.
         </p>
       </div>
 
       <div className={`mb-6 ${colors.tools.panel} flex items-center gap-3`}>
         <span
-          className={`text-xs uppercase tracking-wider ${colors.tools.label}`}
+          className={`text-xs tracking-wider uppercase ${colors.tools.label}`}
         >
           Admin tools
         </span>
