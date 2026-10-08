@@ -71,7 +71,7 @@
   }
 
   .rbdrop {
-    @apply fill-indigo-500 drop-shadow-lg drop-shadow-indigo-500/50;
+    @apply fill-indigo-500 drop-shadow-lg drop-shadow-indigo-500/20;
   }
   .rbpuff {
     @apply bg-blue-500 transition delay-150 duration-300 ease-in-out hover:-translate-y-1 hover:scale-110 hover:bg-indigo-500;
@@ -81,14 +81,11 @@
     @apply inline-block text-transparent bg-clip-text bg-gradient-to-r from-rbcyan-500 via-rbpurple-500 to-rbred-500;
   }
 
-
   .text-gradient-yworange {
     @apply inline-block text-transparent bg-clip-text bg-gradient-to-r from-rbred-300 via-rborange-500 to-rbyellow-500;
   }
 
-  .text-gradient-mistpurple {
-    @apply inline-block text-transparent bg-clip-text bg-gradient-to-r from-rbmist-300 via-rbviolet-300 to-rbpurple-700;
-  }
+ /** .text-gradient-mistpurple {    @apply inline-block text-transparent bg-clip-text bg-gradient-to-r from-rbmist-300 via-rbviolet-300 to-rbpurple-700; } */
 
   .stage-writing {
     @apply text-rbblue-300 border-rbblue-700;
@@ -97,32 +94,32 @@
     @apply bg-rbblue-900/30;
   }
   .stage-tracking {
-    @apply text-yellow-400 border-yellow-800;
+    @apply text-rbyellow-400 border-rbyellow-800;
   }
   .stage-tracking-bg {
-    @apply bg-yellow-950/30;
+    @apply bg-rbyellow-950/30;
   }
   .stage-mixing {
-    @apply text-orange-400 border-orange-800;
+    @apply text-rborange-400 border-rborange-800;
   }
   .stage-mixing-bg {
-    @apply bg-orange-950/30;
+    @apply bg-rborange-950/30;
   }
   .stage-mastering {
-    @apply text-green-400 border-green-800;
+    @apply text-rbpurple-400 border-rbpurple-800;
   }
   .stage-mastering-bg {
-    @apply bg-green-950/30;
+    @apply bg-cyan-950/30;
   }
   .stage-unknown {
-    @apply text-neutral-400 border-neutral-700;
+    @apply text-rborange-700 border-rbyellow-200;
   }
 
   .stage-ideation {
-    @apply text-slate-400 border-slate-700;
+    @apply text-rbblue-300 border-rbblue-700;
   }
   .stage-ideation-bg {
-    @apply bg-slate-950/30;
+    @apply bg-red-950/30;
   }
   .stage-morphing {
     @apply text-purple-400 border-purple-800;
@@ -131,10 +128,10 @@
     @apply bg-purple-950/30;
   }
   .stage-overdubbing {
-    @apply text-amber-400 border-amber-800;
+    @apply text-mist-400 border-mist-800;
   }
   .stage-overdubbing-bg {
-    @apply bg-amber-950/30;
+    @apply bg-mist-950/30;
   }
   .stage-scheduled {
     @apply text-cyan-400 border-cyan-800;
@@ -143,10 +140,10 @@
     @apply bg-cyan-950/30;
   }
   .stage-released {
-    @apply text-emerald-400 border-emerald-800;
+    @apply text-gradient-mistpurple border-orange-800;
   }
   .stage-released-bg {
-    @apply bg-emerald-950/30;
+    @apply bg-red-950/30;
   }
 
   /*
@@ -200,7 +197,7 @@
     @apply text-rbmist-500 border-rbred-500;
   }
   .asset-press-release-bg {
-    @apply bg-neutral-950/30;
+    @apply bg-yellow-950/30;
   }
   .asset-review {
     @apply text-rbcyan-300 border-rbblue-700;
@@ -220,7 +217,6 @@
   .asset-other-bg {
     @apply bg-rbblue-500/40;
   }
-
 }
 
 @theme inline {
@@ -229,7 +225,7 @@
 
   --text-feature-title: var(--feature-title-typeface-size-number);
 
-  --drop-shadow-3xl: 0 35px 35px rgba(0, 0, 0, 0.25); 
+  --drop-shadow-3xl: 0 35px 35px rgba(0, 0, 0, 0.25);
 
   /* rbyellow scale — 500 is the brand anchor oklch(0.91 0.185 98.9) */
   --color-rbyellow-100: oklch(0.96 0.05 100);
@@ -246,8 +242,10 @@
   /* rbpurple scale — 500 is oklch(0.42 0.19 290.86) */
   --color-rbpurple-100: oklch(0.95 0.07 291);
   --color-rbpurple-300: oklch(0.78 0.17 291);
+  --color-rbpurple-400: oklch(0.7 0.17 291);
   --color-rbpurple-500: var(--rb-purple);
   --color-rbpurple-700: oklch(0.42 0.25 291);
+  --color-rbpurple-800: oklch(0.38 0.28 291);
   --color-rbpurple-900: oklch(0.28 0.18 291);
 
   /* rbred scale — 500 is oklch(0.54 0.22 28.76) */
@@ -281,6 +279,7 @@
   --color-rborange-700: oklch(0.4 0.88 100);
   --color-rborange-800: oklch(0.35 0.88 100);
   --color-rborange-900: oklch(0.25 0.88 100);
+  --color-rborange-950: oklch(0.2 0.88 100);
 
   /* rbviolet scale - 500 is  oklch(0.4 0.4 310) */
   --color-rbviolet-100: oklch(0.4 0.46 310);

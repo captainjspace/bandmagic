@@ -111,9 +111,9 @@ function AssetChip({
           ? "Inherited from this track's song — remove it on the song, not here."
           : undefined
       }
-      className={`text-xs border rounded px-1.5 py-0.5 shrink-0 ${
+      className={`shrink-0 rounded border px-1.5 py-0.5 text-xs ${
         inherited
-          ? "border-dashed border-neutral-700 text-neutral-500"
+          ? "border-neutral-700 border-dashed text-neutral-500"
           : "border-violet-800 text-violet-400"
       }`}
     >
@@ -396,10 +396,10 @@ function BrowsePageInner() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto">
+    <div className="mx-auto max-w-4xl">
       <div className="mb-8">
-        <h1 className={`text-2xl font-bold ${colors.page.title}`}>Songs</h1>
-        <p className={`${colors.page.subtitle} text-sm mt-1`}>
+        <h1 className={`font-bold text-2xl ${colors.page.title}`}>Songs</h1>
+        <p className={`${colors.page.subtitle} mt-1 text-sm`}>
           Organized by folder
         </p>
       </div>
@@ -420,12 +420,12 @@ function BrowsePageInner() {
               id={`song-${group.key}`}
               className={`p-3 ${colors.song.box}`}
             >
-              <div className="flex items-center gap-2 flex-wrap">
+              <div className="flex flex-wrap items-center gap-2">
                 <button
                   type="button"
                   onClick={() => toggle(group.key)}
                   title={isOpen ? "Collapse" : "Expand"}
-                  className={`${colors.song.toggle} text-xs w-3 shrink-0 p-1 -m-1`}
+                  className={`${colors.song.toggle} -m-1 w-3 shrink-0 p-1 text-xs`}
                 >
                   {isOpen ? "▾" : "▸"}
                 </button>
@@ -436,7 +436,7 @@ function BrowsePageInner() {
                       actionsOpen ? closeSongActions() : startEditSong(song)
                     }
                     title={actionsOpen ? "Close editor" : "Edit song"}
-                    className={`min-w-0 transition-transform hover:scale-105 ${actionsOpen ? "ring-2 ring-rbyellow-500 rounded" : ""}`}
+                    className={`min-w-0 transition-transform hover:scale-105 ${actionsOpen ? "rounded ring-2 ring-rbyellow-500" : ""}`}
                   >
                     <SongChip name={group.name} size="xl" />
                   </button>
@@ -470,7 +470,7 @@ function BrowsePageInner() {
                     />
                   </div>
                 )}
-                <div className="flex items-center gap-3 ml-auto shrink-0">
+                <div className="ml-auto flex shrink-0 items-center gap-3">
                   {group.trackGroups.length > 0 && (
                     <button
                       type="button"
@@ -482,7 +482,7 @@ function BrowsePageInner() {
                     </button>
                   )}
                   <span
-                    className={`${colors.song.count} text-sm tabular-nums font-semibold`}
+                    className={`${colors.song.count} font-semibold text-sm tabular-nums`}
                   >
                     {group.entries.length}
                   </span>
@@ -491,7 +491,7 @@ function BrowsePageInner() {
 
               {openTrackGroupsFor.has(`song-${group.key}`) &&
                 group.trackGroups.length > 0 && (
-                  <div className="flex items-center gap-2 flex-wrap mt-1.5">
+                  <div className="mt-1.5 flex flex-wrap items-center gap-2">
                     {group.trackGroups.map((tg) => (
                       <Link
                         key={tg.id}
@@ -505,7 +505,7 @@ function BrowsePageInner() {
                 )}
 
               {song && (
-                <div className="flex items-center gap-1.5 flex-wrap mt-2">
+                <div className="mt-2 flex flex-wrap items-center gap-1.5">
                   {effectiveAssets(song.assets, undefined)
                     .filter((l) => l.inherited)
                     .map((l) => (
@@ -527,17 +527,17 @@ function BrowsePageInner() {
 
               {song && actionsOpen && (
                 <div
-                  className={`mt-3 pt-3 border-t ${colors.panel.border} space-y-3`}
+                  className={`mt-3 border-t pt-3 ${colors.panel.border} space-y-3`}
                 >
                   <div className="space-y-1.5">
-                    <p className="text-xs text-neutral-600">Fields</p>
+                    <p className="text-neutral-600 text-xs">Fields</p>
                     <input
                       value={songDraft.name}
                       onChange={(e) =>
                         setSongDraft((d) => ({ ...d, name: e.target.value }))
                       }
                       placeholder="Name"
-                      className={`w-full border rounded px-2 py-1 text-sm focus:outline-none ${colors.panel.inputBg}`}
+                      className={`w-full rounded border px-2 py-1 text-sm focus:outline-none ${colors.panel.inputBg}`}
                     />
                     <input
                       value={songDraft.aliases}
@@ -548,7 +548,7 @@ function BrowsePageInner() {
                         }))
                       }
                       placeholder="Aliases (comma-separated)"
-                      className={`w-full border rounded px-2 py-1 text-sm focus:outline-none ${colors.panel.inputBg}`}
+                      className={`w-full rounded border px-2 py-1 text-sm focus:outline-none ${colors.panel.inputBg}`}
                     />
                     <input
                       value={songDraft.folderPrefix}
@@ -559,7 +559,7 @@ function BrowsePageInner() {
                         }))
                       }
                       placeholder="Folder Prefix"
-                      className={`w-full border rounded px-2 py-1 text-sm font-mono focus:outline-none ${colors.panel.inputBg}`}
+                      className={`w-full rounded border px-2 py-1 font-mono text-sm focus:outline-none ${colors.panel.inputBg}`}
                     />
                     <input
                       value={songDraft.latestPath}
@@ -570,20 +570,20 @@ function BrowsePageInner() {
                         }))
                       }
                       placeholder="Latest Path"
-                      className={`w-full border rounded px-2 py-1 text-sm font-mono focus:outline-none ${colors.panel.inputBg}`}
+                      className={`w-full rounded border px-2 py-1 font-mono text-sm focus:outline-none ${colors.panel.inputBg}`}
                     />
                     <div className="flex gap-2">
                       <button
                         type="button"
                         onClick={() => saveEditSong(song.id)}
-                        className={`text-xs px-2 ${colors.panel.saveBtn} transition-colors`}
+                        className={`px-2 text-xs ${colors.panel.saveBtn} transition-colors`}
                       >
                         save
                       </button>
                       <button
                         type="button"
                         onClick={closeSongActions}
-                        className={`text-xs px-2 ${colors.panel.cancelBtn} transition-colors`}
+                        className={`px-2 text-xs ${colors.panel.cancelBtn} transition-colors`}
                       >
                         cancel
                       </button>
@@ -608,9 +608,9 @@ function BrowsePageInner() {
                       <div
                         key={entry.id}
                         id={`track-${entry.id}`}
-                        className={`px-3 py-2 group ${colors.track.box} ${colors.track.hover}`}
+                        className={`group px-3 py-2 ${colors.track.box} ${colors.track.hover}`}
                       >
-                        <div className="flex items-center gap-3 flex-wrap">
+                        <div className="flex flex-wrap items-center gap-3">
                           <button
                             type="button"
                             onClick={() =>
@@ -621,7 +621,7 @@ function BrowsePageInner() {
                             title={
                               trackActionsOpen ? "Close editor" : "Edit track"
                             }
-                            className={`min-w-0 transition-transform hover:scale-105 ${trackActionsOpen ? "ring-2 ring-cyan-500 rounded" : ""}`}
+                            className={`min-w-0 transition-transform hover:scale-105 ${trackActionsOpen ? "rounded ring-2 ring-cyan-500" : ""}`}
                           >
                             <TrackChip name={filename} size="lg" />
                           </button>
@@ -631,7 +631,7 @@ function BrowsePageInner() {
                                 ? `Track group stage: ${inherited.join(", ")}`
                                 : undefined
                             }
-                            className={`text-xs border px-1.5 py-0.5 rounded shrink-0 ${stageClass(inherited[0] ?? entry.stage)} ${stageBgClass(inherited[0] ?? entry.stage)}`}
+                            className={`shrink-0 rounded border px-1.5 py-0.5 text-xs ${stageClass(inherited[0] ?? entry.stage)} ${stageBgClass(inherited[0] ?? entry.stage)}`}
                           >
                             {inherited[0] ?? entry.stage ?? "unknown"}
                           </span>
@@ -664,22 +664,22 @@ function BrowsePageInner() {
                               onClick={() =>
                                 toggleTrackGroups(`track-${entry.id}`)
                               }
-                              className={`text-xs ${colors.track.label} hover:underline shrink-0`}
+                              className={`text-xs ${colors.track.label} shrink-0 hover:underline`}
                             >
                               In {memberOf.length} track group
                               {memberOf.length !== 1 ? "s" : ""}
                             </button>
                           )}
-                          <div className="flex items-center gap-3 ml-auto shrink-0">
+                          <div className="ml-auto flex shrink-0 items-center gap-3">
                             <a
                               href={`/api/audio?path=${encodeURIComponent(entry.path)}`}
-                              className={`text-xs ${colors.track.playLink} opacity-0 group-hover:opacity-100 transition-opacity`}
+                              className={`text-xs ${colors.track.playLink} opacity-0 transition-opacity group-hover:opacity-100`}
                               target="_blank"
                               rel="noreferrer"
                             >
                               play
                             </a>
-                            <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+                            <div className="opacity-0 transition-opacity group-hover:opacity-100">
                               <SongPicker
                                 songs={songs}
                                 loadState={loading ? "loading" : "loaded"}
@@ -698,7 +698,7 @@ function BrowsePageInner() {
 
                         {openTrackGroupsFor.has(`track-${entry.id}`) &&
                           memberOf.length > 0 && (
-                            <div className="flex items-center gap-2 flex-wrap mt-1.5">
+                            <div className="mt-1.5 flex flex-wrap items-center gap-2">
                               {memberOf.map((tg) => (
                                 <Link
                                   key={tg.id}
@@ -711,7 +711,7 @@ function BrowsePageInner() {
                             </div>
                           )}
 
-                        <div className="flex items-center gap-1.5 flex-wrap mt-1.5">
+                        <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
                           {effectiveTrackAssets
                             .filter((l) => l.inherited)
                             .map((l) => (
@@ -732,10 +732,10 @@ function BrowsePageInner() {
 
                         {trackActionsOpen && (
                           <div
-                            className={`mt-2 pt-2 border-t ${colors.panel.border} space-y-3`}
+                            className={`mt-2 border-t pt-2 ${colors.panel.border} space-y-3`}
                           >
                             <div className="space-y-1.5">
-                              <p className="text-xs text-neutral-600">Fields</p>
+                              <p className="text-neutral-600 text-xs">Fields</p>
                               <input
                                 value={trackDraft.title}
                                 onChange={(e) =>
@@ -745,7 +745,7 @@ function BrowsePageInner() {
                                   }))
                                 }
                                 placeholder="Title"
-                                className={`w-full border rounded px-2 py-1 text-sm focus:outline-none ${colors.panel.inputBg}`}
+                                className={`w-full rounded border px-2 py-1 text-sm focus:outline-none ${colors.panel.inputBg}`}
                               />
                               <input
                                 value={trackDraft.mix}
@@ -756,20 +756,20 @@ function BrowsePageInner() {
                                   }))
                                 }
                                 placeholder="Mix"
-                                className={`w-full border rounded px-2 py-1 text-sm font-mono focus:outline-none ${colors.panel.inputBg}`}
+                                className={`w-full rounded border px-2 py-1 font-mono text-sm focus:outline-none ${colors.panel.inputBg}`}
                               />
                               <div className="flex gap-2">
                                 <button
                                   type="button"
                                   onClick={() => saveEditTrack(entry.id)}
-                                  className={`text-xs px-2 ${colors.panel.saveBtn} transition-colors`}
+                                  className={`px-2 text-xs ${colors.panel.saveBtn} transition-colors`}
                                 >
                                   save
                                 </button>
                                 <button
                                   type="button"
                                   onClick={closeTrackActions}
-                                  className={`text-xs px-2 ${colors.panel.cancelBtn} transition-colors`}
+                                  className={`px-2 text-xs ${colors.panel.cancelBtn} transition-colors`}
                                 >
                                   cancel
                                 </button>
@@ -799,7 +799,7 @@ function BrowsePageInner() {
 export default function BrowsePage() {
   return (
     <Suspense
-      fallback={<div className="text-sm text-rbpurple-500">Loading...</div>}
+      fallback={<div className="text-rbpurple-500 text-sm">Loading...</div>}
     >
       <BrowsePageInner />
     </Suspense>

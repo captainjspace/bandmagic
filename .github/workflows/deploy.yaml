@@ -57,6 +57,7 @@ jobs:
           env_vars: |
             service_group=${{ env.ARTIFACT_REPO }}
             description=Band Magic!
+            notification=projects/${{ env.PROJECT_ID }}/topics/${{ env.SERVICE }}-chat-notifications
 
       - name: 'Show output'
         run: echo "Deployed to ${{ steps.deploy.outputs.url }}"

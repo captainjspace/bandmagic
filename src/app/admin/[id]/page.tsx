@@ -454,19 +454,19 @@ export default function EditTrackGroupPage({
     <div className="max-w-2xl">
       <div className="mb-8 flex items-start justify-between">
         <div>
-          <h1 className={`text-2xl font-bold ${colors.page.title}`}>
+          <h1 className={`font-bold text-2xl ${colors.page.title}`}>
             Edit TrackGroup
           </h1>
-          <p className={`${colors.page.trackGroupId} font-mono text-xs mt-1`}>
+          <p className={`${colors.page.trackGroupId} mt-1 font-mono text-xs`}>
             {trackGroupId}
           </p>
         </div>
-        <div className="flex items-center gap-3 mt-1">
+        <div className="mt-1 flex items-center gap-3">
           <button
             type="button"
             onClick={runSweep}
             disabled={isBusy}
-            className={`text-xs ${sweeping ? colors.sweep.btnBusy : colors.sweep.btn} disabled:opacity-60 transition-colors`}
+            className={`text-xs ${sweeping ? colors.sweep.btnBusy : colors.sweep.btn} transition-colors disabled:opacity-60`}
           >
             {sweeping ? "Sweeping…" : "↻ Sweep Drive"}
           </button>
@@ -486,7 +486,7 @@ export default function EditTrackGroupPage({
       </div>
 
       {status === "done" && (
-        <div className="mb-6 p-3 border border-green-800 bg-green-950/30 rounded text-sm">
+        <div className="mb-6 rounded border border-green-800 bg-green-950/30 p-3 text-sm">
           <span className={colors.status.success}>Saved. </span>
           <Link
             href={`/track-group/${trackGroupId}`}
@@ -497,12 +497,12 @@ export default function EditTrackGroupPage({
         </div>
       )}
       {status === "error" && (
-        <div className="mb-6 p-3 border border-red-800 bg-red-950/30 rounded text-sm">
+        <div className="mb-6 rounded border border-red-800 bg-red-950/30 p-3 text-sm">
           <span className={colors.status.error}>{errorMsg}</span>
         </div>
       )}
       {assetsLoad === "error" && (
-        <div className="mb-6 p-3 border border-amber-800 bg-amber-950/30 rounded text-sm flex items-center justify-between">
+        <div className="mb-6 flex items-center justify-between rounded border border-amber-800 bg-amber-950/30 p-3 text-sm">
           <span className={colors.assets.errorBanner}>
             Asset list unavailable — {assetsError}
           </span>
@@ -516,7 +516,7 @@ export default function EditTrackGroupPage({
         </div>
       )}
       {sweepResult && (
-        <div className="mb-6 p-3 border border-neutral-800 bg-neutral-900/50 rounded text-sm space-y-1">
+        <div className="mb-6 space-y-1 rounded border border-neutral-800 bg-neutral-900/50 p-3 text-sm">
           <p className={colors.sweep.banner}>
             Drive sweep —{" "}
             <span className={colors.sweep.counts}>
@@ -526,7 +526,7 @@ export default function EditTrackGroupPage({
           </p>
           {sweepResult.errors.length > 0 && (
             <ul
-              className={`text-xs ${colors.sweep.errors} list-disc list-inside`}
+              className={`text-xs ${colors.sweep.errors} list-inside list-disc`}
             >
               {sweepResult.errors.map((e) => (
                 <li key={`${e.trackTitle || "(trackGroup)"}-${e.reason}`}>
@@ -542,7 +542,7 @@ export default function EditTrackGroupPage({
         <div className="space-y-4">
           <div>
             <label
-              className={`block text-xs ${colors.page.fieldLabel} uppercase tracking-wider mb-1.5`}
+              className={`block text-xs ${colors.page.fieldLabel} mb-1.5 uppercase tracking-wider`}
             >
               Title
             </label>
@@ -550,19 +550,19 @@ export default function EditTrackGroupPage({
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               required
-              className="w-full bg-neutral-900 border border-neutral-700 rounded px-3 py-2 text-sm text-neutral-100 focus:outline-none focus:border-green-600"
+              className="w-full rounded border border-neutral-700 bg-neutral-900 px-3 py-2 text-neutral-100 text-sm focus:border-green-600 focus:outline-none"
             />
           </div>
           <div>
             <label
-              className={`block text-xs ${colors.page.fieldLabel} uppercase tracking-wider mb-1.5`}
+              className={`block text-xs ${colors.page.fieldLabel} mb-1.5 uppercase tracking-wider`}
             >
               Description
             </label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="w-full bg-neutral-900 border border-neutral-700 rounded px-3 py-2 text-sm text-neutral-100 focus:outline-none focus:border-green-600 resize-none h-20"
+              className="h-20 w-full resize-none rounded border border-neutral-700 bg-neutral-900 px-3 py-2 text-neutral-100 text-sm focus:border-green-600 focus:outline-none"
             />
           </div>
           <div>
@@ -581,7 +581,7 @@ export default function EditTrackGroupPage({
         </div>
 
         <div>
-          <div className="flex items-center justify-between mb-3 gap-3">
+          <div className="mb-3 flex items-center justify-between gap-3">
             <label
               className={`text-xs ${colors.page.fieldLabel} uppercase tracking-wider`}
             >
@@ -622,19 +622,19 @@ export default function EditTrackGroupPage({
               return (
                 <div
                   key={track._id}
-                  className={`${cardBorder} rounded p-3 space-y-2 transition-colors duration-500`}
+                  className={`${cardBorder} space-y-2 rounded p-3 transition-colors duration-500`}
                 >
-                  <div className="flex gap-2 items-center flex-wrap">
+                  <div className="flex flex-wrap items-center gap-2">
                     <input
                       value={track.title}
                       onChange={(e) =>
                         updateTrack(track._id, "title", e.target.value)
                       }
-                      className="flex-1 bg-neutral-900 border border-neutral-700 rounded px-2 py-1.5 text-sm text-neutral-100 focus:outline-none focus:border-green-600"
+                      className="flex-1 rounded border border-neutral-700 bg-neutral-900 px-2 py-1.5 text-neutral-100 text-sm focus:border-green-600 focus:outline-none"
                       placeholder="Track title"
                     />
                     {track.tags.length > 0 && (
-                      <span className="text-xs text-neutral-600">
+                      <span className="text-neutral-600 text-xs">
                         Tag Chips:
                       </span>
                     )}
@@ -660,12 +660,12 @@ export default function EditTrackGroupPage({
                       track.stage &&
                       track.stage !== "unknown" && (
                         <>
-                          <span className="text-xs text-neutral-600">
+                          <span className="text-neutral-600 text-xs">
                             Stage Chips:
                           </span>
                           <span
                             title="Legacy stage value from before tagging existed — not yet migrated to a tag."
-                            className="text-xs px-2 py-0.5 rounded border border-dashed border-neutral-700 text-neutral-500"
+                            className="rounded border border-neutral-700 border-dashed px-2 py-0.5 text-neutral-500 text-xs"
                           >
                             {track.stage}
                           </span>
@@ -677,7 +677,7 @@ export default function EditTrackGroupPage({
                       disabled={idx === 0 || isBusy}
                       aria-label="Move track up"
                       title="Move up"
-                      className={`text-base px-1 ${colors.trackCard.saveBtn} disabled:opacity-30`}
+                      className={`px-1 text-base ${colors.trackCard.saveBtn} disabled:opacity-30`}
                     >
                       ▲
                     </button>
@@ -687,7 +687,7 @@ export default function EditTrackGroupPage({
                       disabled={idx === tracks.length - 1 || isBusy}
                       aria-label="Move track down"
                       title="Move down"
-                      className={`text-base px-1 ${colors.trackCard.saveBtn} disabled:opacity-30`}
+                      className={`px-1 text-base ${colors.trackCard.saveBtn} disabled:opacity-30`}
                     >
                       ▼
                     </button>
@@ -697,7 +697,7 @@ export default function EditTrackGroupPage({
                       disabled={!track.path.trim() || isBusy}
                       aria-label="Save this track"
                       title="Save this track only"
-                      className={`text-base px-1 ${colors.trackCard.saveBtn}`}
+                      className={`px-1 text-base ${colors.trackCard.saveBtn}`}
                     >
                       {rowBusy ? "…" : "✓"}
                     </button>
@@ -707,7 +707,7 @@ export default function EditTrackGroupPage({
                       disabled={isBusy}
                       aria-label="Delete this track"
                       title="Delete this track"
-                      className={`text-base px-1 ${colors.trackCard.removeBtn} disabled:opacity-30`}
+                      className={`px-1 text-base ${colors.trackCard.removeBtn} disabled:opacity-30`}
                     >
                       ✕
                     </button>
@@ -717,7 +717,7 @@ export default function EditTrackGroupPage({
                     onSelect={(entry) => selectTrack(track._id, entry)}
                     onClear={() => clearTrack(track._id)}
                   />
-                  <div className="border-t border-neutral-800/50 pt-2">
+                  <div className="border-neutral-800/50 border-t pt-2">
                     <p className={`text-xs ${colors.assets.label} mb-1.5`}>
                       Assets
                     </p>
@@ -735,7 +735,7 @@ export default function EditTrackGroupPage({
             })}
           </div>
           {validTracks.length > 0 && (
-            <p className={`${colors.page.count} text-xs mt-2`}>
+            <p className={`${colors.page.count} mt-2 text-xs`}>
               {validTracks.length} track{validTracks.length !== 1 ? "s" : ""}{" "}
               will be saved
             </p>
@@ -745,7 +745,7 @@ export default function EditTrackGroupPage({
         <button
           type="submit"
           disabled={isBusy || !title.trim() || validTracks.length === 0}
-          className="w-full py-2.5 bg-green-600 hover:bg-green-500 disabled:opacity-40 text-black font-semibold text-sm rounded transition-colors"
+          className="w-full rounded bg-green-600 py-2.5 font-semibold text-black text-sm transition-colors hover:bg-green-500 disabled:opacity-40"
         >
           {status === "sending" ? "Saving..." : "Save Changes"}
         </button>

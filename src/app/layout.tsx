@@ -21,10 +21,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={mono.variable}>
-      <body className="isolate relative bg-neutral-950 text-neutral-100 min-inline-screen font-mono antialiased">
+      <body className="min-inline-screen relative isolate bg-neutral-950 font-mono text-neutral-100 antialiased">
         <PlayerProvider>
           <AppHeader />
-          <div className="fixed inset-0 z-[-10] pointer-events-none">
+          <div className="pointer-events-none fixed inset-0 z-[-10]">
             <Image
               src={backgroundImage}
               alt=""
@@ -35,7 +35,7 @@ export default function RootLayout({
               quality={75}
             />
           </div>
-          <main className="max-w-5xl mx-auto z-[10] px-6 pt-6 pb-24">
+          <main className="z-[10] mx-auto max-w-5xl px-6 pt-6 pb-24">
             {children}
           </main>
           <FooterPlayer />

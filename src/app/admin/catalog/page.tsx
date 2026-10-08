@@ -50,7 +50,7 @@ function Field({
       <p className={`text-xs ${colors.row.label} uppercase tracking-wider`}>
         {label}
       </p>
-      <div className="text-sm mt-0.5">{children}</div>
+      <div className="mt-0.5 text-sm">{children}</div>
     </div>
   );
 }
@@ -161,21 +161,21 @@ export default function AdminCatalogPage() {
     <div className="max-w-3xl">
       <div className="mb-8 flex items-start justify-between">
         <div>
-          <h1 className={`text-2xl font-bold ${colors.page.title}`}>Catalog</h1>
-          <p className={`${colors.page.subtitle} text-sm mt-1`}>
+          <h1 className={`font-bold text-2xl ${colors.page.title}`}>Catalog</h1>
+          <p className={`${colors.page.subtitle} mt-1 text-sm`}>
             Edit the CatalogEntry (track) Firestore documents directly.
           </p>
         </div>
         <Link
           href="/admin"
-          className={`${colors.page.navLink} text-xs transition-colors mt-1`}
+          className={`${colors.page.navLink} mt-1 text-xs transition-colors`}
         >
           ← Admin
         </Link>
       </div>
 
       {error && (
-        <div className="mb-6 p-3 border border-red-800 bg-red-950/30 rounded text-sm">
+        <div className="mb-6 rounded border border-red-800 bg-red-950/30 p-3 text-sm">
           <span className={colors.status.error}>{error}</span>
         </div>
       )}
@@ -184,7 +184,7 @@ export default function AdminCatalogPage() {
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         placeholder="Search title, path, or song…"
-        className="w-full mb-4 bg-neutral-900 border border-neutral-700 rounded px-3 py-2 text-sm text-neutral-100 placeholder-neutral-600 focus:outline-none focus:border-green-600"
+        className="mb-4 w-full rounded border border-neutral-700 bg-neutral-900 px-3 py-2 text-neutral-100 text-sm placeholder-neutral-600 focus:border-green-600 focus:outline-none"
       />
 
       {loading ? (
@@ -192,7 +192,7 @@ export default function AdminCatalogPage() {
       ) : (
         <>
           <p
-            className={`text-xs ${colors.page.count} uppercase tracking-wider mb-3`}
+            className={`text-xs ${colors.page.count} mb-3 uppercase tracking-wider`}
           >
             {filtered.length} of {catalog.length} entries
           </p>
@@ -202,7 +202,7 @@ export default function AdminCatalogPage() {
               return (
                 <div
                   key={entry.id}
-                  className="border border-neutral-800 rounded p-3 space-y-2"
+                  className="space-y-2 rounded border border-neutral-800 p-3"
                 >
                   <div className="flex items-start justify-between gap-3">
                     {isEditing ? (
@@ -216,7 +216,7 @@ export default function AdminCatalogPage() {
                                 title: e.target.value,
                               }))
                             }
-                            className="w-full bg-neutral-900 border border-neutral-700 rounded px-2 py-1.5 text-sm text-neutral-100 focus:outline-none focus:border-green-600"
+                            className="w-full rounded border border-neutral-700 bg-neutral-900 px-2 py-1.5 text-neutral-100 text-sm focus:border-green-600 focus:outline-none"
                           />
                         </Field>
                         <Field label="Mix">
@@ -228,21 +228,21 @@ export default function AdminCatalogPage() {
                                 mix: e.target.value,
                               }))
                             }
-                            className="w-full bg-neutral-900 border border-neutral-700 rounded px-2 py-1.5 text-sm text-neutral-100 focus:outline-none focus:border-green-600"
+                            className="w-full rounded border border-neutral-700 bg-neutral-900 px-2 py-1.5 text-neutral-100 text-sm focus:border-green-600 focus:outline-none"
                           />
                         </Field>
                         <div className="flex gap-2">
                           <button
                             type="button"
                             onClick={() => saveEdit(entry.id)}
-                            className={`text-xs px-2 ${colors.row.saveBtn} transition-colors`}
+                            className={`px-2 text-xs ${colors.row.saveBtn} transition-colors`}
                           >
                             save
                           </button>
                           <button
                             type="button"
                             onClick={cancelEdit}
-                            className={`text-xs px-2 ${colors.row.cancelBtn} transition-colors`}
+                            className={`px-2 text-xs ${colors.row.cancelBtn} transition-colors`}
                           >
                             cancel
                           </button>
@@ -262,7 +262,7 @@ export default function AdminCatalogPage() {
                       <button
                         type="button"
                         onClick={() => startEdit(entry)}
-                        className={`text-xs shrink-0 ${colors.row.editBtn} transition-colors`}
+                        className={`shrink-0 text-xs ${colors.row.editBtn} transition-colors`}
                       >
                         edit
                       </button>

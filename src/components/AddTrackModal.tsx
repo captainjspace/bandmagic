@@ -190,13 +190,13 @@ export function AddTrackModal({ onClose }: Props) {
       <div className="space-y-3">
         <div>
           <p
-            className={`text-xs ${colors.label} uppercase tracking-wider mb-1.5`}
+            className={`text-xs ${colors.label} mb-1.5 uppercase tracking-wider`}
           >
             Song
           </p>
           {song ? (
-            <div className="flex items-center gap-2 bg-neutral-950 border border-neutral-700 rounded px-3 py-2">
-              <span className="flex-1 text-sm text-rbcyan-100 truncate">
+            <div className="flex items-center gap-2 rounded border border-neutral-700 bg-neutral-950 px-3 py-2">
+              <span className="flex-1 truncate text-rbcyan-100 text-sm">
                 {song.name}
               </span>
               <button
@@ -219,18 +219,18 @@ export function AddTrackModal({ onClose }: Props) {
 
         {song && (
           <>
-            <div className="flex gap-1 border-b border-neutral-800 text-xs">
+            <div className="flex gap-1 border-neutral-800 border-b text-xs">
               <button
                 type="button"
                 onClick={() => switchMode("upload")}
-                className={`px-3 py-1.5 rounded-t transition-colors ${mode === "upload" ? colors.tabOn : colors.tabIdle}`}
+                className={`rounded-t px-3 py-1.5 transition-colors ${mode === "upload" ? colors.tabOn : colors.tabIdle}`}
               >
                 Upload new
               </button>
               <button
                 type="button"
                 onClick={() => switchMode("existing")}
-                className={`px-3 py-1.5 rounded-t transition-colors ${mode === "existing" ? colors.tabOn : colors.tabIdle}`}
+                className={`rounded-t px-3 py-1.5 transition-colors ${mode === "existing" ? colors.tabOn : colors.tabIdle}`}
               >
                 Pick existing
               </button>
@@ -240,7 +240,7 @@ export function AddTrackModal({ onClose }: Props) {
               <>
                 <div>
                   <p
-                    className={`text-xs ${colors.label} uppercase tracking-wider mb-1.5`}
+                    className={`text-xs ${colors.label} mb-1.5 uppercase tracking-wider`}
                   >
                     File
                   </p>
@@ -248,13 +248,13 @@ export function AddTrackModal({ onClose }: Props) {
                     type="file"
                     accept={AUDIO_ACCEPT}
                     onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-                    className="w-full text-sm text-rbcyan-300 file:mr-3 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-xs file:bg-neutral-800 file:text-rbcyan-200 hover:file:bg-neutral-700"
+                    className="w-full text-rbcyan-300 text-sm file:mr-3 file:rounded file:border-0 file:bg-neutral-800 file:px-3 file:py-1.5 file:text-rbcyan-200 file:text-xs hover:file:bg-neutral-700"
                   />
                 </div>
                 <div className="flex gap-2">
                   <div className="flex-1">
                     <p
-                      className={`text-xs ${colors.label} uppercase tracking-wider mb-1.5`}
+                      className={`text-xs ${colors.label} mb-1.5 uppercase tracking-wider`}
                     >
                       Title
                     </p>
@@ -262,12 +262,12 @@ export function AddTrackModal({ onClose }: Props) {
                       value={title}
                       onChange={(e) => setTitle(e.target.value)}
                       placeholder={file?.name ?? "Track title"}
-                      className={`w-full bg-neutral-950 border border-neutral-700 rounded px-2 py-1.5 text-sm ${colors.input} focus:outline-none focus:border-green-600`}
+                      className={`w-full rounded border border-neutral-700 bg-neutral-950 px-2 py-1.5 text-sm ${colors.input} focus:border-green-600 focus:outline-none`}
                     />
                   </div>
                   <div>
                     <p
-                      className={`text-xs ${colors.label} uppercase tracking-wider mb-1.5`}
+                      className={`text-xs ${colors.label} mb-1.5 uppercase tracking-wider`}
                     >
                       Stage
                     </p>
@@ -276,7 +276,7 @@ export function AddTrackModal({ onClose }: Props) {
                       onChange={(e) =>
                         setStage(e.target.value as (typeof STAGES)[number])
                       }
-                      className="bg-neutral-950 border border-neutral-700 rounded px-2 py-1.5 text-sm text-rbcyan-100 focus:outline-none focus:border-green-600"
+                      className="rounded border border-neutral-700 bg-neutral-950 px-2 py-1.5 text-rbcyan-100 text-sm focus:border-green-600 focus:outline-none"
                     >
                       {STAGES.map((s) => (
                         <option key={s} value={s}>
@@ -291,7 +291,7 @@ export function AddTrackModal({ onClose }: Props) {
                   type="button"
                   onClick={submitUpload}
                   disabled={!file || submitting}
-                  className={`w-full px-4 py-2 ${colors.submit} disabled:opacity-40 font-semibold text-sm rounded transition-colors`}
+                  className={`w-full px-4 py-2 ${colors.submit} rounded font-semibold text-sm transition-colors disabled:opacity-40`}
                 >
                   {submitting ? "Uploading..." : "Upload & add track"}
                 </button>
@@ -308,7 +308,7 @@ export function AddTrackModal({ onClose }: Props) {
                       ? "Loading unclassified tracks…"
                       : "Search unclassified tracks…"
                   }
-                  className={`w-full bg-neutral-950 border border-neutral-700 rounded px-2 py-1.5 text-sm ${colors.input} focus:outline-none focus:border-green-600`}
+                  className={`w-full rounded border border-neutral-700 bg-neutral-950 px-2 py-1.5 text-sm ${colors.input} focus:border-green-600 focus:outline-none`}
                 />
                 {unassignedLoad === "error" && (
                   <p className={`text-xs ${colors.error}`}>
@@ -324,10 +324,10 @@ export function AddTrackModal({ onClose }: Props) {
                     </p>
                   )}
                 {filteredUnassigned.length > 0 && (
-                  <ul className="max-h-48 overflow-y-auto border border-neutral-800 rounded divide-y divide-neutral-800">
+                  <ul className="max-h-48 divide-y divide-neutral-800 overflow-y-auto rounded border border-neutral-800">
                     {filteredUnassigned.map((entry) => (
                       <li key={entry.id}>
-                        <label className="flex items-center gap-2 px-3 py-2 hover:bg-neutral-800 cursor-pointer text-sm">
+                        <label className="flex cursor-pointer items-center gap-2 px-3 py-2 text-sm hover:bg-neutral-800">
                           <input
                             type="checkbox"
                             checked={selected.has(entry.id)}
@@ -337,7 +337,7 @@ export function AddTrackModal({ onClose }: Props) {
                           <span className="flex-1 truncate text-rbcyan-100">
                             {entry.title}
                           </span>
-                          <span className="text-xs text-rbcyan-600 shrink-0">
+                          <span className="shrink-0 text-rbcyan-600 text-xs">
                             {entry.stage}
                           </span>
                         </label>
@@ -350,7 +350,7 @@ export function AddTrackModal({ onClose }: Props) {
                   type="button"
                   onClick={submitExisting}
                   disabled={selected.size === 0 || submitting}
-                  className={`w-full px-4 py-2 ${colors.submit} disabled:opacity-40 font-semibold text-sm rounded transition-colors`}
+                  className={`w-full px-4 py-2 ${colors.submit} rounded font-semibold text-sm transition-colors disabled:opacity-40`}
                 >
                   {submitting
                     ? "Assigning..."

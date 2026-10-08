@@ -13,13 +13,13 @@ interface MenuLink {
 }
 
 const menuLinks: MenuLink[] = [
-//  {
-//    index: 0,
-//    name: "rollingblackout",
-//    displayName: "Rolling Blackout",
-//    href: "/",
-//  },
-//
+  //  {
+  //    index: 0,
+  //    name: "rollingblackout",
+  //    displayName: "Rolling Blackout",
+  //    href: "/",
+  //  },
+  //
   {
     index: 1,
     name: "trackgroups",
@@ -41,7 +41,7 @@ export function NavMenu() {
     <MenuItem key={mLink.index}>
       <Link
         href={mLink.href}
-        className="block px-4 py-2 font-mono text-sm text-rbyellow-300 data-[focus]:bg-cyan-300"
+        className="block px-4 py-2 font-mono text-rbyellow-300 text-sm data-[focus]:bg-cyan-300"
       >
         {mLink.displayName}
       </Link>
@@ -51,15 +51,13 @@ export function NavMenu() {
   return (
     <nav className="flex items-center gap-6 p-4">
       <Menu as="div" className="relative">
-        <MenuButton className="hover:underline text-gradient-yworange text-6xl hover:text-rborange-500">Rolling Blackout</MenuButton>
-        <MenuItems className="absolute left-0 mt-2 w-80 rounded-md 
-          bg-rbpurple-700/75 text-bold text-shadow-md text-shadow-rbred-500 
-          shadow-lg ring-1 ring-black/5 border-2  
-          border-rborange-500 rbdrop rbpuff">
+        <MenuButton className="text-6xl text-gradient-yworange hover:text-rborange-500 hover:underline">
+          Rolling Blackout
+        </MenuButton>
+        <MenuItems className="rbdrop rbpuff absolute left-0 mt-2 w-80 rounded-md border-2 border-rborange-500 bg-rbpurple-700/75 text-bold text-shadow-md text-shadow-rbred-500 shadow-lg ring-1 ring-black/5">
           {menuItems}
         </MenuItems>
       </Menu>
     </nav>
   );
 }
-

@@ -132,28 +132,28 @@ export default function AdminAssetsPage() {
     <div className="max-w-3xl">
       <div className="mb-8 flex items-start justify-between">
         <div>
-          <h1 className={`text-2xl font-bold ${colors.page.title}`}>Assets</h1>
-          <p className={`${colors.page.subtitle} text-sm mt-1`}>
+          <h1 className={`font-bold text-2xl ${colors.page.title}`}>Assets</h1>
+          <p className={`${colors.page.subtitle} mt-1 text-sm`}>
             Documents and links the band attaches to tracks.
           </p>
         </div>
         <Link
           href="/admin"
-          className={`${colors.page.navLink} text-xs transition-colors mt-1`}
+          className={`${colors.page.navLink} mt-1 text-xs transition-colors`}
         >
           ← Admin
         </Link>
       </div>
 
       {error && (
-        <div className="mb-6 p-3 border border-red-800 bg-red-950/30 rounded text-sm">
+        <div className="mb-6 rounded border border-red-800 bg-red-950/30 p-3 text-sm">
           <span className={colors.status.error}>{error}</span>
         </div>
       )}
 
-      <div className="mb-8 border border-neutral-800 rounded p-4">
+      <div className="mb-8 rounded border border-neutral-800 p-4">
         <p
-          className={`text-xs ${colors.page.fieldLabel} uppercase tracking-wider mb-3`}
+          className={`text-xs ${colors.page.fieldLabel} mb-3 uppercase tracking-wider`}
         >
           New asset
         </p>
@@ -165,7 +165,7 @@ export default function AdminAssetsPage() {
       ) : (
         <>
           <p
-            className={`text-xs ${colors.page.count} uppercase tracking-wider mb-3`}
+            className={`text-xs ${colors.page.count} mb-3 uppercase tracking-wider`}
           >
             {assets.length} asset{assets.length !== 1 ? "s" : ""}
           </p>
@@ -175,7 +175,7 @@ export default function AdminAssetsPage() {
               return (
                 <div
                   key={a.id}
-                  className="border border-neutral-800 rounded p-3"
+                  className="rounded border border-neutral-800 p-3"
                 >
                   {isEditing ? (
                     <div className="space-y-2">
@@ -184,7 +184,7 @@ export default function AdminAssetsPage() {
                         onChange={(e) =>
                           setEditDraft((d) => ({ ...d, url: e.target.value }))
                         }
-                        className="w-full bg-neutral-900 border border-neutral-700 rounded px-2 py-1.5 text-xs text-neutral-100 focus:outline-none focus:border-green-600 font-mono"
+                        className="w-full rounded border border-neutral-700 bg-neutral-900 px-2 py-1.5 font-mono text-neutral-100 text-xs focus:border-green-600 focus:outline-none"
                       />
                       <div className="flex gap-2">
                         <input
@@ -195,7 +195,7 @@ export default function AdminAssetsPage() {
                               title: e.target.value,
                             }))
                           }
-                          className="flex-1 bg-neutral-900 border border-neutral-700 rounded px-2 py-1.5 text-sm text-neutral-100 focus:outline-none focus:border-green-600"
+                          className="flex-1 rounded border border-neutral-700 bg-neutral-900 px-2 py-1.5 text-neutral-100 text-sm focus:border-green-600 focus:outline-none"
                         />
                         <select
                           value={editDraft.subtype}
@@ -205,7 +205,7 @@ export default function AdminAssetsPage() {
                               subtype: e.target.value as AssetSubtype,
                             }))
                           }
-                          className="bg-neutral-900 border border-neutral-700 rounded px-2 py-1.5 text-sm text-neutral-100 focus:outline-none focus:border-green-600"
+                          className="rounded border border-neutral-700 bg-neutral-900 px-2 py-1.5 text-neutral-100 text-sm focus:border-green-600 focus:outline-none"
                         >
                           {SUBTYPES.map((s) => (
                             <option key={s} value={s}>
@@ -216,14 +216,14 @@ export default function AdminAssetsPage() {
                         <button
                           type="button"
                           onClick={() => saveEdit(a.id)}
-                          className={`text-xs px-2 ${colors.row.saveBtn} transition-colors`}
+                          className={`px-2 text-xs ${colors.row.saveBtn} transition-colors`}
                         >
                           save
                         </button>
                         <button
                           type="button"
                           onClick={cancelEdit}
-                          className={`text-xs px-2 ${colors.row.cancelBtn} transition-colors`}
+                          className={`px-2 text-xs ${colors.row.cancelBtn} transition-colors`}
                         >
                           cancel
                         </button>
@@ -232,21 +232,21 @@ export default function AdminAssetsPage() {
                   ) : (
                     <div className="flex items-center gap-3">
                       <span
-                        className={`text-xs border px-1.5 py-0.5 rounded shrink-0 uppercase tracking-wider ${assetClass(a.subtype)}`}
+                        className={`shrink-0 rounded border px-1.5 py-0.5 text-xs uppercase tracking-wider ${assetClass(a.subtype)}`}
                       >
                         {a.subtype}
                       </span>
-                      <div className="flex-1 min-w-0">
+                      <div className="min-w-0 flex-1">
                         <a
                           href={a.url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className={`text-sm block truncate ${colors.row.title} hover:underline`}
+                          className={`block truncate text-sm ${colors.row.title} hover:underline`}
                         >
                           {a.title}
                         </a>
                         <div
-                          className={`text-xs font-mono truncate ${colors.row.url}`}
+                          className={`truncate font-mono text-xs ${colors.row.url}`}
                         >
                           {a.url}
                         </div>
@@ -258,7 +258,7 @@ export default function AdminAssetsPage() {
                         {driveDocKind(a.url) ? `·${driveDocKind(a.url)}` : ""}
                       </span>
                       <span
-                        className={`text-xs ${colors.row.usage} tabular-nums shrink-0`}
+                        className={`text-xs ${colors.row.usage} shrink-0 tabular-nums`}
                       >
                         used ×{a.usageCount}
                       </span>

@@ -19,39 +19,40 @@ import type {
 /** element colors */
 const colors = {
   page: {
-    title: "text-neutral-100",
-    description: "text-neutral-500",
-    date: "text-neutral-600",
-    navLink: "text-neutral-500 hover:text-neutral-300",
-    sectionLabel: "text-neutral-600",
+    title: "text-rbpurple-700",
+    description:
+      "inline-block text-transparent bg-clip-text bg-gradient-to-r from-rbmist-300 via-rbviolet-300 to-rbpurple-700",
+    date: "text-rbpurple-300",
+    navLink: "text-rbyellow-500 hover:text-rborange-500",
+    sectionLabel: "text-rbblue-700",
   },
   tracklist: {
-    number: "text-neutral-600",
-    idle: "text-neutral-400 hover:text-neutral-200",
-    active: "text-neutral-100",
+    number: "text-rbred-200",
+    idle: "text-rb-yellow-200 hover:text-rb-rborange-200",
+    active: "text-rborange-100",
   },
   trackPlayer: {
     playButton: "bg-green-500 hover:bg-green-400 text-black",
-    progressFill: "bg-green-500",
-    timestamp: "text-neutral-500",
+    progressFill: "fill-gradient-brand",
+    timestamp: "text-rbblue-400",
   },
   noteThread: {
-    author: "text-green-500",
-    timestamp: "text-neutral-600",
-    body: "text-neutral-300",
-    inputText: "text-neutral-100",
-    placeholder: "placeholder-neutral-600",
-    focusBorder: "focus:border-green-600",
-    postBtn: "text-neutral-300",
+    author: "text-rbcyan-700",
+    timestamp: "text-rbcyan-600",
+    body: "text-cyan-500",
+    inputText: "text-rbcyan-400",
+    placeholder: "placeholder-rbviolet-700",
+    focusBorder: "focus:border-rborange-600",
+    postBtn: "text-rbyellow-400",
   },
   assets: {
-    label: "text-neutral-600",
+    label: "text-rbblue-400",
     linkText: "text-green-400 group-hover:text-green-300",
-    kindBadge: "text-neutral-600",
-    loadingRow: "text-neutral-500",
-    errorRow: "text-amber-400",
-    retryBtn: "text-amber-400 hover:text-amber-300 underline",
-    missingRow: "text-red-400",
+    kindBadge: "text-rbred-600",
+    loadingRow: "text-rbred-500",
+    errorRow: "text-mist-400",
+    retryBtn: "text-rbmist-600 hover:text-rborange-300 underline",
+    missingRow: "text-rbred-300",
   },
 };
 
@@ -70,8 +71,8 @@ function AssetLinksSection({
 }) {
   if (links.length === 0) return null;
   return (
-    <div className="border-t border-neutral-800 pt-4">
-      <div className="flex items-center justify-between mb-2">
+    <div className="border-neutral-800 border-t pt-4">
+      <div className="mb-2 flex items-center justify-between">
         <p
           className={`${colors.assets.label} text-xs uppercase tracking-wider`}
         >
@@ -127,15 +128,15 @@ function AssetLinksSection({
               href={asset.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-2 group"
+              className="group flex items-center gap-2"
             >
               <span
-                className={`text-xs border px-1.5 py-0.5 rounded shrink-0 uppercase tracking-wider ${assetClass(asset.subtype)}`}
+                className={`shrink-0 rounded border px-1.5 py-0.5 text-xs uppercase tracking-wider ${assetClass(asset.subtype)}`}
               >
                 {asset.subtype}
               </span>
               <span
-                className={`text-sm ${colors.assets.linkText} transition-colors truncate flex-1`}
+                className={`text-sm ${colors.assets.linkText} flex-1 truncate transition-colors`}
               >
                 {asset.title}
               </span>
@@ -168,15 +169,15 @@ function LabeledTags({
   if (!hasTags && !legacyStage) return null;
 
   return (
-    <div className={`flex items-center gap-1 flex-wrap ${className ?? ""}`}>
-      <span className="text-xs text-neutral-600">
+    <div className={`flex flex-wrap items-center gap-1 ${className ?? ""}`}>
+      <span className="text-neutral-600 text-xs">
         {hasTags ? "Tag Chips:" : "Stage Chips:"}
       </span>
       {hasTags
         ? tags?.map((tag) => (
             <span
               key={tag}
-              className={`text-xs border px-1 py-0 rounded inline-block ${tagClass(tag, "track")} ${tagBgClass(tag, "track")}`}
+              className={`inline-block rounded border px-1 py-0 text-xs ${tagClass(tag, "track")} ${tagBgClass(tag, "track")}`}
             >
               {tag}
             </span>
@@ -184,7 +185,7 @@ function LabeledTags({
         : legacyStage && (
             <span
               title="Legacy stage value — not yet migrated to a tag"
-              className="text-xs border border-dashed border-neutral-700 text-neutral-500 px-1 py-0 rounded inline-block"
+              className="inline-block rounded border border-neutral-700 border-dashed px-1 py-0 text-neutral-500 text-xs"
             >
               {legacyStage}
             </span>
@@ -231,12 +232,12 @@ function TrackPlayer({
       <div className="flex items-center gap-3">
         <button
           onClick={onPlayClick}
-          className={`w-8 h-8 flex items-center justify-center rounded-full ${colors.trackPlayer.playButton} text-xs font-bold shrink-0 transition-colors`}
+          className={`flex h-8 w-8 items-center justify-center rounded-full ${colors.trackPlayer.playButton} shrink-0 font-bold text-xs transition-colors`}
         >
           {playing ? "❚❚" : "▶"}
         </button>
         <div
-          className="flex-1 h-1.5 bg-neutral-800 rounded-full cursor-pointer"
+          className="h-1.5 flex-1 cursor-pointer rounded-full bg-neutral-800"
           onClick={onSeek}
         >
           <div
@@ -247,7 +248,7 @@ function TrackPlayer({
           />
         </div>
         <span
-          className={`text-xs ${colors.trackPlayer.timestamp} tabular-nums shrink-0`}
+          className={`text-xs ${colors.trackPlayer.timestamp} shrink-0 tabular-nums`}
         >
           {fmt(progress)} / {fmt(duration)}
         </span>
@@ -297,7 +298,7 @@ function NoteThread({
           <span className={`${colors.noteThread.author} text-xs`}>
             {note.author.split("@")[0]}
           </span>
-          <span className={`${colors.noteThread.timestamp} text-xs ml-2`}>
+          <span className={`${colors.noteThread.timestamp} ml-2 text-xs`}>
             {new Date(note.createdAt).toLocaleString()}
           </span>
           <p className={`${colors.noteThread.body} mt-0.5 leading-relaxed`}>
@@ -310,12 +311,12 @@ function NoteThread({
           value={text}
           onChange={(e) => setText(e.target.value)}
           placeholder="Add a note..."
-          className={`flex-1 bg-neutral-900 border border-neutral-700 rounded px-3 py-1.5 text-sm ${colors.noteThread.inputText} ${colors.noteThread.placeholder} focus:outline-none ${colors.noteThread.focusBorder}`}
+          className={`flex-1 rounded border border-neutral-700 bg-neutral-900 px-3 py-1.5 text-sm ${colors.noteThread.inputText} ${colors.noteThread.placeholder} focus:outline-none ${colors.noteThread.focusBorder}`}
         />
         <button
           type="submit"
           disabled={loading || !text.trim()}
-          className={`px-3 py-1.5 bg-neutral-800 hover:bg-neutral-700 disabled:opacity-40 ${colors.noteThread.postBtn} text-sm rounded transition-colors`}
+          className={`bg-neutral-800 px-3 py-1.5 hover:bg-neutral-700 disabled:opacity-40 ${colors.noteThread.postBtn} rounded text-sm transition-colors`}
         >
           Post
         </button>
@@ -409,15 +410,15 @@ export default function TrackGroupPage({
             Edit
           </Link>
         </div>
-        <h1 className={`text-2xl font-bold ${colors.page.title} mt-2`}>
+        <h1 className={`font-bold text-2xl ${colors.page.title} mt-2`}>
           {trackGroup.title}
         </h1>
         {trackGroup.description && (
-          <p className={`${colors.page.description} text-sm mt-1`}>
+          <p className={`${colors.page.description} mt-1 text-sm`}>
             {trackGroup.description}
           </p>
         )}
-        <p className={`${colors.page.date} text-xs mt-2`}>
+        <p className={`${colors.page.date} mt-2 text-xs`}>
           {new Date(trackGroup.createdAt).toLocaleDateString()}
         </p>
       </div>
@@ -426,7 +427,7 @@ export default function TrackGroupPage({
         {/* Tracklist */}
         <div className="space-y-1">
           <p
-            className={`${colors.page.sectionLabel} text-xs uppercase tracking-wider mb-3`}
+            className={`${colors.page.sectionLabel} mb-3 text-xs uppercase tracking-wider`}
           >
             Tracks
           </p>
@@ -434,20 +435,20 @@ export default function TrackGroupPage({
             <button
               key={track.path}
               onClick={() => setActiveTrack(track.path)}
-              className={`w-full text-left px-3 py-2.5 rounded transition-colors flex items-start gap-3 ${
+              className={`flex w-full items-start gap-3 rounded px-3 py-2.5 text-left transition-colors ${
                 activeTrack === track.path
                   ? `bg-neutral-800 ${colors.tracklist.active}`
                   : `${colors.tracklist.idle} hover:bg-neutral-900`
               }`}
             >
               <span
-                className={`${colors.tracklist.number} text-xs tabular-nums w-4 shrink-0 mt-0.5`}
+                className={`${colors.tracklist.number} mt-0.5 w-4 shrink-0 text-xs tabular-nums`}
               >
                 {i + 1}
               </span>
               <div className="min-w-0 flex-1">
-                <div className="text-sm truncate">{track.title}</div>
-                <div className="flex items-center gap-1.5 flex-wrap mt-0.5">
+                <div className="truncate text-sm">{track.title}</div>
+                <div className="mt-0.5 flex flex-wrap items-center gap-1.5">
                   {songNameByPath.get(track.path) && (
                     <SongChip
                       name={songNameByPath.get(track.path) as string}
@@ -464,9 +465,9 @@ export default function TrackGroupPage({
         {/* Player + Notes */}
         <div>
           {active && (
-            <div className="border border-neutral-800 rounded-lg p-5 space-y-5">
+            <div className="space-y-5 rounded-lg border border-neutral-800 p-5">
               <div>
-                <h2 className={`text-lg font-semibold ${colors.page.title}`}>
+                <h2 className={`font-semibold text-lg ${colors.page.title}`}>
                   {active.title}
                 </h2>
                 <LabeledTags
@@ -486,9 +487,9 @@ export default function TrackGroupPage({
                   (t) => t.path === active.path,
                 )}
               />
-              <div className="border-t border-neutral-800 pt-4">
+              <div className="border-neutral-800 border-t pt-4">
                 <p
-                  className={`${colors.page.sectionLabel} text-xs uppercase tracking-wider mb-3`}
+                  className={`${colors.page.sectionLabel} mb-3 text-xs uppercase tracking-wider`}
                 >
                   Notes
                 </p>
