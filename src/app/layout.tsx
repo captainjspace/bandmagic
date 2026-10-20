@@ -4,7 +4,7 @@ import "./globals.css";
 import Image from "next/image";
 import backgroundImage from "#img/rollingblackoutlogo-fs-png.png";
 import { AppHeader } from "@/components/AppHeader";
-import { FooterPlayer } from "@/components/FooterPlayer";
+import { PlayerBar } from "@/components/PlayerBar";
 import { PlayerProvider } from "@/components/PlayerProvider";
 
 const mono = Geist_Mono({ subsets: ["latin"], variable: "--font-mono" });
@@ -35,10 +35,10 @@ export default function RootLayout({
               quality={75}
             />
           </div>
-          <main className="z-[10] mx-auto max-w-5xl px-6 pt-6 pb-24">
+          <main className="z-[10] mx-auto max-w-5xl px-4 pt-4 pb-10 sm:px-6 sm:pt-6 md:pb-28">
             {children}
           </main>
-          <FooterPlayer />
+          <PlayerBar placement="footer" />
         </PlayerProvider>
       </body>
     </html>

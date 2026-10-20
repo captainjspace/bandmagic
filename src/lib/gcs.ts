@@ -31,6 +31,11 @@ export async function uploadObject(
     .save(data, { contentType, resumable: false });
 }
 
+export async function objectExists(path: string): Promise<boolean> {
+  const [exists] = await storage.bucket(config.bucket).file(path).exists();
+  return exists;
+}
+
 export async function getReadStream(path: string): Promise<ReadableStream> {
   const file = storage.bucket(config.bucket).file(path);
   const nodeStream = file.createReadStream();

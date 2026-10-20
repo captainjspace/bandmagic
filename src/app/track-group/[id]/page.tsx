@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { AssetsLoadKind } from "@/components/AssetPicker";
 import { type PlayerTrack, usePlayer } from "@/components/PlayerProvider";
 import { SongChip } from "@/components/SongChip";
@@ -15,46 +15,6 @@ import type {
   Song,
   TrackGroup,
 } from "@/types";
-
-/** element colors */
-const colors = {
-  page: {
-    title: "text-rbpurple-700",
-    description:
-      "inline-block text-transparent bg-clip-text bg-gradient-to-r from-rbmist-300 via-rbviolet-300 to-rbpurple-700",
-    date: "text-rbpurple-300",
-    navLink: "text-rbyellow-500 hover:text-rborange-500",
-    sectionLabel: "text-rbblue-700",
-  },
-  tracklist: {
-    number: "text-rbred-200",
-    idle: "text-rb-yellow-200 hover:text-rb-rborange-200",
-    active: "text-rborange-100",
-  },
-  trackPlayer: {
-    playButton: "bg-green-500 hover:bg-green-400 text-black",
-    progressFill: "fill-gradient-brand",
-    timestamp: "text-rbblue-400",
-  },
-  noteThread: {
-    author: "text-rbcyan-700",
-    timestamp: "text-rbcyan-600",
-    body: "text-cyan-500",
-    inputText: "text-rbcyan-400",
-    placeholder: "placeholder-rbviolet-700",
-    focusBorder: "focus:border-rborange-600",
-    postBtn: "text-rbyellow-400",
-  },
-  assets: {
-    label: "text-rbblue-400",
-    linkText: "text-green-400 group-hover:text-green-300",
-    kindBadge: "text-rbred-600",
-    loadingRow: "text-rbred-500",
-    errorRow: "text-mist-400",
-    retryBtn: "text-rbmist-600 hover:text-rborange-300 underline",
-    missingRow: "text-rbred-300",
-  },
-};
 
 function AssetLinksSection({
   label,
@@ -73,17 +33,9 @@ function AssetLinksSection({
   return (
     <div className="border-t border-neutral-800 pt-4">
       <div className="mb-2 flex items-center justify-between">
-        <p
-          className={`${colors.assets.label} text-xs tracking-wider uppercase`}
-        >
-          {label}
-        </p>
+        <p className={`rb-label`}>{label}</p>
         {assetsLoad === "error" && (
-          <button
-            type="button"
-            onClick={onRetry}
-            className={`text-xs ${colors.assets.retryBtn} transition-colors`}
-          >
+          <button type="button" onClick={onRetry} className={"rb-nav-link"}>
             Retry
           </button>
         )}
@@ -92,20 +44,14 @@ function AssetLinksSection({
         {links.map((link) => {
           if (assetsLoad === "loading") {
             return (
-              <p
-                key={link.linkId}
-                className={`text-xs ${colors.assets.loadingRow}`}
-              >
+              <p key={link.linkId} className={"tg-meta"}>
                 loading…
               </p>
             );
           }
           if (assetsLoad === "error") {
             return (
-              <p
-                key={link.linkId}
-                className={`text-xs ${colors.assets.errorRow}`}
-              >
+              <p key={link.linkId} className={"rb-text-error"}>
                 load failed
               </p>
             );
@@ -113,10 +59,7 @@ function AssetLinksSection({
           const asset = assetsById.get(link.assetId);
           if (!asset) {
             return (
-              <p
-                key={link.linkId}
-                className={`text-xs ${colors.assets.missingRow} font-mono`}
-              >
+              <p key={link.linkId} className={"rb-text-error font-mono"}>
                 missing: {link.assetId}
               </p>
             );
@@ -135,12 +78,8 @@ function AssetLinksSection({
               >
                 {asset.subtype}
               </span>
-              <span
-                className={`text-sm ${colors.assets.linkText} flex-1 truncate transition-colors`}
-              >
-                {asset.title}
-              </span>
-              <span className={`text-xs ${colors.assets.kindBadge} shrink-0`}>
+              <span className={"tg-asset-link"}>{asset.title}</span>
+              <span className={"tg-meta shrink-0"}>
                 {asset.type}
                 {kind ? `·${kind}` : ""}
               </span>
@@ -230,26 +169,18 @@ function TrackPlayer({
   return (
     <div className="space-y-2">
       <div className="flex items-center gap-3">
-        <button
-          onClick={onPlayClick}
-          className={`flex h-8 w-8 items-center justify-center rounded-full ${colors.trackPlayer.playButton} shrink-0 text-xs font-bold transition-colors`}
-        >
+        <button onClick={onPlayClick} className={"rb-player-play"}>
           {playing ? "❚❚" : "▶"}
         </button>
-        <div
-          className="h-1.5 flex-1 cursor-pointer rounded-full bg-neutral-800"
-          onClick={onSeek}
-        >
+        <div className="rb-player-track mt-0 flex-1" onClick={onSeek}>
           <div
-            className={`h-full ${colors.trackPlayer.progressFill} rounded-full transition-all`}
+            className={"rb-player-fill"}
             style={{
               width: duration ? `${(progress / duration) * 100}%` : "0%",
             }}
           />
         </div>
-        <span
-          className={`text-xs ${colors.trackPlayer.timestamp} shrink-0 tabular-nums`}
-        >
+        <span className={"rb-player-time"}>
           {fmt(progress)} / {fmt(duration)}
         </span>
       </div>
@@ -295,15 +226,11 @@ function NoteThread({
     <div className="mt-4 space-y-3">
       {notes.map((note) => (
         <div key={note.id} className="text-sm">
-          <span className={`${colors.noteThread.author} text-xs`}>
-            {note.author.split("@")[0]}
-          </span>
-          <span className={`${colors.noteThread.timestamp} ml-2 text-xs`}>
+          <span className={"tg-note-author"}>{note.author.split("@")[0]}</span>
+          <span className={"tg-meta ml-2"}>
             {new Date(note.createdAt).toLocaleString()}
           </span>
-          <p className={`${colors.noteThread.body} mt-0.5 leading-relaxed`}>
-            {note.text}
-          </p>
+          <p className={"tg-note-body"}>{note.text}</p>
         </div>
       ))}
       <form onSubmit={submit} className="flex gap-2 pt-1">
@@ -311,12 +238,12 @@ function NoteThread({
           value={text}
           onChange={(e) => setText(e.target.value)}
           placeholder="Add a note..."
-          className={`flex-1 rounded border border-neutral-700 bg-neutral-900 px-3 py-1.5 text-sm ${colors.noteThread.inputText} ${colors.noteThread.placeholder} focus:outline-none ${colors.noteThread.focusBorder}`}
+          className={"rb-input flex-1"}
         />
         <button
           type="submit"
           disabled={loading || !text.trim()}
-          className={`bg-neutral-800 px-3 py-1.5 hover:bg-neutral-700 disabled:opacity-40 ${colors.noteThread.postBtn} rounded text-sm transition-colors`}
+          className={"rb-btn-secondary"}
         >
           Post
         </button>
@@ -337,6 +264,17 @@ export default function TrackGroupPage({
   const [trackGroupId, setTrackGroupId] = useState<string>("");
   const [catalog, setCatalog] = useState<CatalogEntry[]>([]);
   const [songs, setSongs] = useState<Song[]>([]);
+  const detailRef = useRef<HTMLDivElement>(null);
+
+  // Single-column below md: the detail panel sits under the tracklist, so
+  // bring it into view when a track is picked.
+  const selectTrack = (path: string) => {
+    setActiveTrack(path);
+    if (window.matchMedia("(min-width: 768px)").matches) return;
+    requestAnimationFrame(() =>
+      detailRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }),
+    );
+  };
 
   const fetchAssets = useCallback(async () => {
     try {
@@ -378,7 +316,7 @@ export default function TrackGroupPage({
   }, [params, fetchAssets]);
 
   if (!trackGroup) {
-    return <p className={`${colors.page.description} text-sm`}>Loading...</p>;
+    return <p className={"text-gradient-mistpurple text-sm"}>Loading...</p>;
   }
 
   const validTracks = trackGroup.tracks.filter((t) => t.path?.trim());
@@ -394,56 +332,38 @@ export default function TrackGroupPage({
   );
 
   return (
-    <div className="max-w-2xl">
+    <div className="max-w-4xl">
       <div className="mb-8">
         <div className="flex items-center justify-between">
-          <Link
-            href="/"
-            className={`${colors.page.navLink} text-xs transition-colors`}
-          >
+          <Link href="/" className={`rb-nav-link`}>
             ← TrackGroups
           </Link>
-          <Link
-            href={`/admin/${trackGroupId}`}
-            className={`${colors.page.navLink} text-xs transition-colors`}
-          >
+          <Link href={`/admin/${trackGroupId}`} className={`rb-nav-link`}>
             Edit
           </Link>
         </div>
-        <h1 className={`text-2xl font-bold ${colors.page.title} mt-2`}>
-          {trackGroup.title}
-        </h1>
+        <h1 className={"tg-title mt-2"}>{trackGroup.title}</h1>
         {trackGroup.description && (
-          <p className={`${colors.page.description} mt-1 text-sm`}>
+          <p className={"text-gradient-mistpurple mt-1 text-sm"}>
             {trackGroup.description}
           </p>
         )}
-        <p className={`${colors.page.date} mt-2 text-xs`}>
+        <p className={"tg-meta mt-2"}>
           {new Date(trackGroup.createdAt).toLocaleDateString()}
         </p>
       </div>
 
-      <div className="grid grid-cols-[280px_1fr] gap-6">
+      <div className="tg-layout">
         {/* Tracklist */}
         <div className="space-y-1">
-          <p
-            className={`${colors.page.sectionLabel} mb-3 text-xs tracking-wider uppercase`}
-          >
-            Tracks
-          </p>
+          <p className={`rb-label mb-3`}>Tracks</p>
           {validTracks.map((track, i) => (
             <button
               key={track.path}
-              onClick={() => setActiveTrack(track.path)}
-              className={`flex w-full items-start gap-3 rounded px-3 py-2.5 text-left transition-colors ${
-                activeTrack === track.path
-                  ? `bg-neutral-800 ${colors.tracklist.active}`
-                  : `${colors.tracklist.idle} hover:bg-neutral-900`
-              }`}
+              onClick={() => selectTrack(track.path)}
+              className={`tg-track-row ${activeTrack === track.path ? "tg-track-row-active" : ""}`}
             >
-              <span
-                className={`${colors.tracklist.number} mt-0.5 w-4 shrink-0 text-xs tabular-nums`}
-              >
+              <span className={"tg-meta mt-0.5 w-4 shrink-0 tabular-nums"}>
                 {i + 1}
               </span>
               <div className="min-w-0 flex-1">
@@ -465,11 +385,9 @@ export default function TrackGroupPage({
         {/* Player + Notes */}
         <div>
           {active && (
-            <div className="space-y-5 rounded-lg border border-neutral-800 p-5">
+            <div ref={detailRef} className="tg-detail">
               <div>
-                <h2 className={`text-lg font-semibold ${colors.page.title}`}>
-                  {active.title}
-                </h2>
+                <h2 className={"tg-title text-lg"}>{active.title}</h2>
                 <LabeledTags
                   tags={active.tags}
                   stage={active.stage}
@@ -488,11 +406,7 @@ export default function TrackGroupPage({
                 )}
               />
               <div className="border-t border-neutral-800 pt-4">
-                <p
-                  className={`${colors.page.sectionLabel} mb-3 text-xs tracking-wider uppercase`}
-                >
-                  Notes
-                </p>
+                <p className={`rb-label mb-3`}>Notes</p>
                 <NoteThread
                   trackGroupId={trackGroupId}
                   trackPath={active.path}
