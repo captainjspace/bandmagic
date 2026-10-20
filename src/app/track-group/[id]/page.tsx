@@ -276,7 +276,7 @@ function NoteThread({
       .then(setNotes);
   }, [trackGroupId, trackPath]);
 
-  const submit = async (e: React.FormEvent) => {
+  const submit = async (e: React.SubmitEvent) => {
     e.preventDefault();
     if (!text.trim()) return;
     setLoading(true);
