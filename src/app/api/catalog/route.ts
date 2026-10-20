@@ -2,7 +2,7 @@ import { type NextRequest, NextResponse } from "next/server";
 import { config } from "@/lib/config";
 import { errorResponse } from "@/lib/debug-mode";
 import { getCatalog, getSong, syncCatalog, updateSong } from "@/lib/firestore";
-import { isAudio, uploadObject } from "@/lib/gcs";
+import { isAudio, objectExists, uploadObject } from "@/lib/gcs";
 import { mockCatalog } from "@/lib/mock";
 import type { CatalogEntry } from "@/types";
 
@@ -27,6 +27,7 @@ export async function POST(req: NextRequest) {
   const songId = form.get("songId");
   const stage = form.get("stage");
   const title = form.get("title");
+  const overwrite = form.get("overwrite") === "true";
 
   if (!(file instanceof File) || !file.name) {
     return NextResponse.json({ error: 'Missing "file"' }, { status: 400 });
@@ -90,6 +91,14 @@ export async function POST(req: NextRequest) {
       title: typeof title === "string" && title.trim() ? title.trim() : mix,
       size: file.size,
     };
+
+    // Replacing an existing file must be confirmed by the client first.
+    if (!overwrite && (await objectExists(path))) {
+      return NextResponse.json(
+        { error: "A track with this filename already exists.", path },
+        { status: 409 },
+      );
+    }
 
     await uploadObject(
       path,

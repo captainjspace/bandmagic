@@ -49,12 +49,12 @@ export function NavMenu() {
   ));
 
   return (
-    <nav className="flex items-center gap-6 p-4">
+    <nav className="flex items-center gap-6 p-1 sm:p-4">
       <Menu as="div" className="relative">
-        <MenuButton className="text-gradient-yworange hover:text-rborange-500 text-6xl hover:underline">
+        <MenuButton className="text-gradient-yworange text-3xl hover:underline sm:text-5xl md:text-6xl">
           Rolling Blackout
         </MenuButton>
-        <MenuItems className="rbdrop rbpuff border-rborange-500 bg-rbpurple-700/75 text-bold text-shadow-rbred-500 absolute left-0 mt-2 w-80 rounded-md border-2 shadow-lg ring-1 ring-black/5 text-shadow-md">
+        <MenuItems className="rbdrop rbpuff border-rborange-500 bg-rbpurple-700/75 text-bold text-shadow-rbred-500 absolute left-0 z-50 mt-2 w-72 sm:w-80 rounded-md border-2 shadow-lg ring-1 ring-black/5 text-shadow-md">
           {menuItems}
         </MenuItems>
       </Menu>
