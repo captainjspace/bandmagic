@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@source inline("asset-card-{lyrics,lyrics-stripped,chord-chart,press-release,review,post,other} stage-card-{writing,tracking,mixing,mastering,ideation,morphing,overdubbing,scheduled,released,unknown} tag-{default,sky,indigo,emerald}");
 
 @font-face {
   font-family: "AgincourtStd";
@@ -8,229 +9,34 @@
   font-display: swap;
 }
 
-@layer base {
-  :root {
-    /* brand color primitives */
-    --rb-yellow: oklch(0.905 0.18 100.2);
-    --rb-purple: oklch(0.57 0.29 306.86);
-    --rb-red: oklch(0.54 0.22 28.76);
-    --rb-blue: oklch(0.56 0.22 259.44);
-    --rb-orange: oklch(0.8 0.88 100.44);
-    --rb-violet: oklch(0.14 0.66 250.44);
-    --rb-cyan: oklch(68.5% 0.169 237.323);
-    --rb-mist: oklch(37.8% 0.015 216);
+/* Core Theme Variables */
+/* {{{ */
+@theme {
 
-    /* feature title design tokens */
-    --feature-title-typeface-style-stack: "AgincourtStd", serif;
-    --feature-title-typeface-style-font-weight: 400;
-    --feature-title-typeface-style-font-style: normal;
-    --feature-title-typeface-size-number: 36px;
-    --feature-title-typeface-size-number-unitless: 36;
-    --feature-title-uppercase-boolean: false;
-    --menu-item-typeface-style: normal;
-  }
-
-  body {
-    color: oklch(90.5% 0.182 98.111);
-  }
-  div {
-    color: oklab(0.42 0.17 0.02);
-  }
-  span {
-    color: var(--rb-purple);
-  }
-  p {
-    color: var(--rb-blue);
-  }
-  a,
-  label,
-  input,
-  textarea {
-    color: var(--rb-yellow);
-  }
-  h1 {
-    color: var(--rb-blue);
-  }
-  h2 {
-    color: var(--rb-red);
-  }
-  h3 {
-    color: oklab(0.42 0.17 0.02);
-  }
-  h4 {
-    color: var(--rb-purple);
-  }
-}
-
-@layer components {
-  .catalog-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-    gap: 0.75rem;
-    align-items: start;
-  }
-
-  .rbdrop {
-    @apply fill-indigo-500 drop-shadow-lg drop-shadow-indigo-500/20;
-  }
-  .rbpuff {
-    @apply bg-blue-500 transition delay-150 duration-300 ease-in-out hover:-translate-y-1 hover:scale-110 hover:bg-indigo-500;
-  }
-
-  .text-gradient-brand {
-    @apply  inline-block text-transparent bg-clip-text 
-    bg-gradient-to-r from-rbcyan-500 via-rbpurple-500 to-rbred-500;
-  }
-
-  .text-gradient-yworange {
-    @apply  inline-block text-transparent bg-clip-text 
-    bg-gradient-to-r from-rbred-300 via-rborange-500 to-rbyellow-500;
-  }
-
-  .text-gradient-mistpurple {
-    @apply inline-block text-transparent bg-clip-text 
-    bg-gradient-to-r from-rbmist-300 via-rbviolet-300 to-rbpurple-700;
-  }
-  .stage-writing {
-    @apply text-rbblue-300 border-rbblue-700;
-  }
-  .stage-writing-bg {
-    @apply bg-rbblue-900/30;
-  }
-  .stage-tracking {
-    @apply text-rbyellow-400 border-rbyellow-800;
-  }
-  .stage-tracking-bg {
-    @apply bg-rbyellow-950/30;
-  }
-  .stage-mixing {
-    @apply text-rborange-400 border-rborange-800;
-  }
-  .stage-mixing-bg {
-    @apply bg-rborange-950/30;
-  }
-  .stage-mastering {
-    @apply text-rbpurple-400 border-rbpurple-800;
-  }
-  .stage-mastering-bg {
-    @apply bg-cyan-950/30;
-  }
-  .stage-unknown {
-    @apply text-rborange-700 border-rbyellow-200;
-  }
-
-  .stage-ideation {
-    @apply text-rbblue-300 border-rbblue-700;
-  }
-  .stage-ideation-bg {
-    @apply bg-red-950/30;
-  }
-  .stage-morphing {
-    @apply border-purple-800 text-purple-400;
-  }
-  .stage-morphing-bg {
-    @apply bg-purple-950/30;
-  }
-  .stage-overdubbing {
-    @apply border-mist-800 text-mist-400;
-  }
-  .stage-overdubbing-bg {
-    @apply bg-mist-950/30;
-  }
-  .stage-scheduled {
-    @apply border-cyan-800 text-cyan-400;
-  }
-  .stage-scheduled-bg {
-    @apply bg-cyan-950/30;
-  }
-  .stage-released {
-    @apply bg-rbpurple-900/20  border-orange-800;
-  }
-  .stage-released-bg {
-    @apply bg-red-950/30;
-  }
-
-  /*
-   * Generic color palette for tag chips — named by color, not by tag, so any
-   * number of tags can share one. Which tag uses which color is declared in
-   * tags.json (each tag's optional "color" field), not here — this file only
-   * defines what each color name looks like. Add a new one here only when a
-   * tags.json entry actually asks for a color CSS doesn't have yet.
-   */
-  .tag-default {
-    @apply text-rborange-100 border-rborange-700;
-  }
-  .tag-sky {
-    @apply text-rbcyan-300 border-rbcyan-700;
-  }
-  .tag-sky-bg {
-    @apply bg-rbcyan-700/30;
-  }
-  .tag-indigo {
-    @apply text-rbblue-100 border-rbviolet-500;
-  }
-  .tag-indigo-bg {
-    @apply bg-rbviolet-700/30;
-  }
-  .tag-emerald {
-    @apply border-emerald-800 text-emerald-400;
-  }
-  .tag-emerald-bg {
-    @apply bg-emerald-950/30;
-  }
-
-  .asset-lyrics {
-    @apply text-rbviolet-100 border-rbviolet-500;
-  }
-  .asset-lyrics-bg {
-    @apply bg-rbmist-900/30;
-  }
-  .asset-lyrics-stripped {
-    @apply text-rborange-500 border-rbred-700;
-  }
-  .asset-lyrics-stripped-bg {
-    @apply bg-rbred-500/30;
-  }
-  .asset-chord-chart {
-    @apply text-rbyellow-300 border-rborange-500;
-  }
-  .asset-chord-chart-bg {
-    @apply bg-rbviolet-300/30;
-  }
-  .asset-press-release {
-    @apply text-rbmist-500 border-rbred-500;
-  }
-  .asset-press-release-bg {
-    @apply bg-yellow-950/30;
-  }
-  .asset-review {
-    @apply text-rbcyan-300 border-rbblue-700;
-  }
-  .asset-review-bg {
-    @apply bg-rbpurple-700/30;
-  }
-  .asset-post {
-    @apply border-indigo-800 text-indigo-400;
-  }
-  .asset-post-bg {
-    @apply bg-indigo-950/30;
-  }
-  .asset-other {
-    @apply text-rborange-500 border-rbred-500;
-  }
-  .asset-other-bg {
-    @apply bg-rbblue-500/40;
-  }
-}
-
-@theme inline {
-  --font-mono: var(--font-mono);
-  --font-agincourt: var(--feature-title-typeface-style-stack);
-
-  --text-feature-title: var(--feature-title-typeface-size-number);
-
-  --drop-shadow-3xl: 0 35px 35px rgba(0, 0, 0, 0.25);
-
+  /* Theme Color Variables */
+  /* {{{ */
+  --rb-yellow: oklch(0.905 0.18 100.2);
+  --rb-purple: oklch(0.57 0.29 306.86);
+  --rb-red: oklch(0.54 0.22 28.76);
+  --rb-blue: oklch(0.56 0.22 259.44);
+  --rb-orange: oklch(0.8 0.88 100.44);
+  --rb-violet: oklch(0.14 0.66 250.44);
+  --rb-cyan: oklch(68.5% 0.169 237.323);
+  --rb-mist: oklch(37.8% 0.015 216);
+  /* --- 1. Base Colors --- */
+  --color-rbblue-500: oklch(0.56 0.22 259.44);
+  --color-rbviolet-100: oklch(0.94 0.04 290);
+  --color-rbviolet-300: oklch(0.74 0.12 293);
+  --color-rbviolet-500: oklch(0.53 0.24 296);
+  --color-rbcyan-300: oklch(0.85 0.08 210);
+  --color-rbcyan-500: oklch(0.67 0.17 215);
+  --color-rbpurple-500: oklch(0.48 0.23 282);
+  --color-rbpurple-700: oklch(0.32 0.18 285);
+  --color-rborange-500: oklch(0.68 0.21 48);
+  --color-rbred-500: oklch(0.58 0.23 24);
+  --color-rbred-700: oklch(0.42 0.22 26);
+  --color-rbmist-500: oklch(0.75 0.02 240);
+  --color-rbmist-900: oklch(0.22 0.03 240);
   /* rbyellow scale — 500 is the brand anchor oklch(0.91 0.185 98.9) */
   --color-rbyellow-100: oklch(0.96 0.05 100);
   --color-rbyellow-200: oklch(0.93 0.09 100);
@@ -298,16 +104,325 @@
   --color-rbmist-500: var(--rb-mist);
   --color-rbmist-700: oklch(91.8% 0.021 226);
   --color-rbmist-900: oklch(93.8% 0.024 226);
+  /* }}} */
 
+  /* --- 2. Advanced Spring Physics Easing --- */
+  /* Replaces stock ease-in-out with an energetic UI bounce */
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
   --animate-fade-in-scale: fade-in-scale 0.3s ease-out;
-  @keyframes fade-in-scale {
-    0% {
-      opacity: 0;
-      transform: scale(0.95);
-    }
-    100% {
-      opacity: 1;
-      transform: scale(1);
-    }
+
+  /* feature title design tokens */
+  --feature-title-typeface-style-stack: "AgincourtStd", serif;
+  --feature-title-typeface-style-font-weight: 400;
+  --feature-title-typeface-style-font-style: normal;
+  --feature-title-typeface-size-number: 36px;
+  --feature-title-typeface-size-number-unitless: 36;
+  --feature-title-uppercase-boolean: false;
+  --menu-item-typeface-style: normal;
+  --font-mono: var(--font-mono);
+  --font-agincourt: var(--feature-title-typeface-style-stack);
+  --text-feature-title: var(--feature-title-typeface-size-number);
+  --drop-shadow-3xl: 0 35px 35px rgba(0, 0, 0, 0.25);
+
+  /* --- 3. Refactored Asset Configurations --- */
+  --asset-lyrics-text: var(--color-rbviolet-100);
+  --asset-lyrics-border: var(--color-rbviolet-500);
+  --asset-lyrics-bg: var(--color-rbmist-900);
+  --asset-lyrics-bg-opacity: 0.3;
+
+  --asset-lyrics-stripped-text: var(--color-rborange-500);
+  --asset-lyrics-stripped-border: var(--color-rbred-700);
+  --asset-lyrics-stripped-bg: var(--color-rbred-500);
+  --asset-lyrics-stripped-bg-opacity: 0.3;
+
+  --asset-chord-chart-text: var(--color-rbyellow-300);
+  --asset-chord-chart-border: var(--color-rborange-500);
+  --asset-chord-chart-bg: var(--color-rbviolet-300);
+  --asset-chord-chart-bg-opacity: 0.3;
+
+  --asset-press-release-text: var(--color-rbmist-500);
+  --asset-press-release-border: var(--color-rbred-500);
+  --asset-press-release-bg: var(--color-yellow-950);
+  --asset-press-release-bg-opacity: 0.3;
+
+  --asset-review-text: var(--color-rbcyan-300);
+  --asset-review-border: var(--color-rbblue-700);
+  --asset-review-bg: var(--color-rbpurple-700);
+  --asset-review-bg-opacity: 0.3;
+
+  --asset-post-text: var(--color-indigo-400);
+  --asset-post-border: var(--color-indigo-800);
+  --asset-post-bg: var(--color-indigo-950);
+  --asset-post-bg-opacity: 0.3;
+
+  --asset-other-text: var(--color-rborange-500);
+  --asset-other-border: var(--color-rbred-500);
+  --asset-other-bg: var(--color-rbblue-500);
+  --asset-other-bg-opacity: 0.4;
+  /* Out-of-box opacity variance */
+
+  /* --- Production Stage Configuration Tokens --- */
+  --stage-writing-text: var(--color-rbblue-300);
+  --stage-writing-border: var(--color-rbblue-700);
+  --stage-writing-bg: var(--color-rbblue-900);
+
+  --stage-tracking-text: var(--color-rbyellow-400);
+  --stage-tracking-border: var(--color-rbyellow-800);
+  --stage-tracking-bg: var(--color-rbyellow-950);
+
+  --stage-mixing-text: var(--color-rborange-400);
+  --stage-mixing-border: var(--color-rborange-800);
+  --stage-mixing-bg: var(--color-rborange-950);
+
+  /* Note: your mastering config had a unique background swap */
+  --stage-mastering-text: var(--color-rbpurple-400);
+  --stage-mastering-border: var(--color-rbpurple-800);
+  --stage-mastering-bg: var(--color-cyan-950);
+
+  --stage-ideation-text: var(--color-rbblue-300);
+  --stage-ideation-border: var(--color-rbblue-700);
+  --stage-ideation-bg: var(--color-red-950);
+
+  --stage-morphing-text: var(--color-purple-400);
+  --stage-morphing-border: var(--color-purple-800);
+  --stage-morphing-bg: var(--color-purple-950);
+
+  --stage-overdubbing-text: var(--color-mist-400);
+  --stage-overdubbing-border: var(--color-mist-800);
+  --stage-overdubbing-bg: var(--color-mist-950);
+
+  --stage-scheduled-text: var(--color-cyan-400);
+  --stage-scheduled-border: var(--color-cyan-800);
+  --stage-scheduled-bg: var(--color-cyan-950);
+
+  /* Note: released had a composite bg tweak, cleanly handled here */
+  --stage-released-text: var(--color-purple-400); /* mapping text color */
+  --stage-released-border: var(--color-rborange-800);
+  --stage-released-bg: var(--color-red-950);
+
+  /* Unknown Fallback configuration */
+  --stage-unknown-text: var(--color-rborange-700);
+  --stage-unknown-border: var(--color-rbyellow-200);
+  --stage-unknown-bg: var(--color-neutral-950);
+
+  /* --- Tag Configuration Tokens --- */
+  --tag-default-text: var(--color-rborange-100);
+  --tag-default-border: var(--color-rborange-700);
+  --tag-default-bg: var(--color-rborange-950);
+
+  /* Added standard fallback background */
+
+  --tag-sky-text: var(--color-rbcyan-300);
+  --tag-sky-border: var(--color-rbcyan-700);
+  --tag-sky-bg: var(--color-rbcyan-700);
+
+  /* Note: Your indigo tag maps uniquely to your rbviolet token scale */
+  --tag-indigo-text: var(--color-rbblue-100);
+  --tag-indigo-border: var(--color-rbviolet-500);
+  --tag-indigo-bg: var(--color-rbviolet-700);
+
+  --tag-emerald-text: var(--color-emerald-400);
+  --tag-emerald-border: var(--color-emerald-800);
+  --tag-emerald-bg: var(--color-emerald-950);
+
+  --app-max-width: 1440px;
+  --custom-scrollbar-width: 8px;
+}
+/* }}} */
+
+/* --- 4. The Master Interactive Component Utilities --- */
+/* {{{ */
+
+@utility asset-card-* {
+  color: --value(--asset-*-text);
+  border-color: --value(--asset-*-border);
+  --asset-card-background: --value(--asset-*-bg);
+  --asset-card-opacity: --value(--asset-*-bg-opacity);
+  background-color: color-mix(
+    in srgb,
+    var(--asset-card-background) calc(var(--asset-card-opacity) * 100%),
+    transparent
+  );
+  @apply transition duration-500 ease-[var(--ease-spring)] transform-gpu;
+  backface-visibility: hidden;
+
+  &:hover {
+    @apply -translate-y-1.5 scale-[1.03] shadow-2xl;
+    border-color: currentColor;
   }
 }
+
+@utility stage-card-* {
+  color: --value(--stage-*-text);
+  border-color: --value(--stage-*-border);
+  background-color: color-mix(in srgb, --value(--stage-*-bg) 30%, transparent);
+  @apply transform-gpu transition duration-500 ease-[var(--ease-spring)];
+  backface-visibility: hidden;
+
+  &:hover {
+    @apply -translate-y-1.5 scale-[1.03] shadow-2xl;
+    border-color: currentColor;
+  }
+}
+
+@utility stage-card-released {
+  color: var(--stage-released-text);
+  border-color: var(--stage-released-border);
+  background-color: color-mix(in srgb, var(--stage-released-bg) 20%, transparent);
+  @apply transform-gpu transition duration-500 ease-[var(--ease-spring)];
+  backface-visibility: hidden;
+
+  &:hover {
+    @apply -translate-y-1.5 scale-[1.03] shadow-2xl;
+    border-color: currentColor;
+  }
+}
+
+@utility tag-* {
+  color: --value(--tag-*-text);
+  border-color: --value(--tag-*-border);
+  background-color: color-mix(in srgb, --value(--tag-*-bg) 30%, transparent);
+  @apply inline-flex transform-gpu items-center justify-center rounded border px-2.5 py-0.5 text-xs font-medium transition duration-300 ease-[var(--ease-spring)];
+  backface-visibility: hidden;
+
+  &:hover {
+    @apply scale-105;
+    border-color: currentColor;
+  }
+}
+
+@layer utilities {
+  .asset-card-fallback {
+    @apply text-neutral-300 border-neutral-700 bg-neutral-900/30
+      transition duration-500 ease-[var(--ease-spring)] transform-gpu;
+    backface-visibility: hidden;
+
+    &:hover {
+      @apply -translate-y-1.5 scale-[1.03] border-neutral-400;
+    }
+  }
+
+  .text-gradient-brand {
+    @apply inline-block text-transparent bg-clip-text
+      bg-gradient-to-r from-rbcyan-500 via-rbpurple-500 to-rbred-500
+      bg-[length:100%_auto] transition duration-700 ease-[var(--ease-spring)]
+      transform-gpu;
+
+    backface-visibility: hidden;
+
+    &:hover {
+      background-position: right center;
+    }
+  }
+
+  .text-gradient-yworange {
+    @apply inline-block text-transparent bg-clip-text
+      bg-gradient-to-r from-rbred-300 via-rborange-500 to-rbyellow-500;
+
+    backface-visibility: hidden;
+
+    &:hover {
+      background-position: right center;
+    }
+  }
+
+ .text-gradient-mistpurple {
+     @apply inline-block text-transparent bg-clip-text
+      bg-gradient-to-r from-rbmist-300 via-rbviolet-300 to-rbpurple-500/70;
+
+    backface-visibility: hidden;
+
+    &:hover {
+      background-position: right center;
+    }
+  }
+
+  .text-shadow-rbdrop {
+    @apply text-shadow-lg 
+  }
+
+  .rbpuff {
+    @apply bg-rbblue-500 transform-gpu transition delay-150 duration-300 ease-in-out;
+    backface-visibility: hidden;
+
+    &:hover {
+      @apply bg-rbviolet-500 -translate-y-1 scale-110;
+    }
+  }
+
+  .tag-sky-bg {
+    background-color: color-mix(in srgb, var(--tag-sky-bg) 30%, transparent);
+  }
+
+  .tag-indigo-bg {
+    background-color: color-mix(in srgb, var(--tag-indigo-bg) 30%, transparent);
+  }
+
+  .tag-emerald-bg {
+    background-color: color-mix(in srgb, var(--tag-emerald-bg) 30%, transparent);
+  }
+}
+/* }}} */
+
+/* Basic HTML Definitions */
+/* {{{ */
+body {
+  /* @apply bg-rbmist-900 text-neutral-100 antialiased;*/
+  max-width: var(--app-max-width);
+  margin: 0 auto;
+  /* color: oklch(90.5% 0.182 98.111); */
+}
+div {
+  /* color: oklab(0.42 0.17 0.02);*/
+}
+span {
+  @apply text-base
+}
+p {
+  @apply text-base 
+}
+
+a,
+label,
+input,
+textarea {
+}
+h1 {
+  @apply text-rbblue-700 text-3xl text-shadow-lg text-shadow-orange-500
+}
+h2 {
+  @apply text-rbcyan-500 text-2xl text-shadow-lg text-shadow-red-600 
+}
+h3 {
+  @apply text-rbblue-500 text-xl text-shadow-sm text-shadow-yellow-300 
+}
+h4 {
+  @apply text-rbpurple-300 text-xl text-shadow-sm text-shadow-rbmist-300
+}
+.catalog-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 0.75rem;
+  align-items: start;
+}
+/* Custom scrollbars or globally inherited interactive states */
+::-webkit-scrollbar {
+  width: var(--custom-scrollbar-width);
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-rbblue-500 rounded;
+}
+
+@keyframes fade-in-scale {
+  0% {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+/* }}} */
+

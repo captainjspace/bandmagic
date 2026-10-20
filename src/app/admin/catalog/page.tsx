@@ -181,6 +181,7 @@ export default function AdminCatalogPage() {
       )}
 
       <input
+        id="catalog-search"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         placeholder="Search title, path, or song…"

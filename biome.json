@@ -32,9 +32,6 @@
   "linter": {
     "enabled": true,
     "rules": {
-      "nursery": {
-        "useSortedClasses": "info"
-      },
       "preset": "recommended",
       "a11y": {
         "preset": "none"
