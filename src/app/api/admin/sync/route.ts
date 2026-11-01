@@ -2,17 +2,13 @@ import { type NextRequest, NextResponse } from "next/server";
 import { config } from "@/lib/config";
 import { getSongs, matchSong, syncCatalog, updateSong } from "@/lib/firestore";
 import { isAudio, listObjects, stageFromPath, titleFromPath } from "@/lib/gcs";
+import { userEmail } from "@/lib/identity";
 
 export async function POST(req: NextRequest) {
   if (config.useMock)
     return NextResponse.json({ synced: 0, message: "mock mode" });
 
-  const actor =
-    req.headers
-      .get("x-goog-authenticated-user-email")
-      ?.replace("accounts.google.com:", "") ??
-    process.env.LOCAL_USER_EMAIL ??
-    "unknown";
+  const actor = userEmail(req.headers) ?? "unknown";
 
   const objects = await listObjects(config.prefix);
   const audio = objects.filter((o) => isAudio(o.name));

@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { config } from "@/lib/config";
 import { createAsset, getAssets } from "@/lib/firestore";
+import { userEmail } from "@/lib/identity";
 import { mockAssets } from "@/lib/mock";
 
 export async function GET() {
@@ -13,12 +14,7 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
-  const author =
-    req.headers
-      .get("x-goog-authenticated-user-email")
-      ?.replace("accounts.google.com:", "") ??
-    process.env.LOCAL_USER_EMAIL ??
-    "unknown";
+  const author = userEmail(req.headers) ?? "unknown";
 
   if (config.useMock) {
     const now = new Date().toISOString();

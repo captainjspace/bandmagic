@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { config } from "@/lib/config";
 import { seedSongs } from "@/lib/firestore";
+import { userEmail } from "@/lib/identity";
 
 /** Parses "Name" or "Name (Alias)" per line into {name, aliases}, deduped case-insensitively. */
 function parseSongList(text: string): { name: string; aliases?: string[] }[] {
@@ -32,12 +33,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Missing "text" body' }, { status: 400 });
   }
 
-  const author =
-    req.headers
-      .get("x-goog-authenticated-user-email")
-      ?.replace("accounts.google.com:", "") ??
-    process.env.LOCAL_USER_EMAIL ??
-    "unknown";
+  const author = userEmail(req.headers) ?? "unknown";
 
   const entries = parseSongList(text);
 
