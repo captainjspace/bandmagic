@@ -1,59 +1,109 @@
-# UPDATE
+# Rolling Blackout Application Updates
 
-I have stashed the old CLAUDE.md as it was too large and confusing
-Since the app is live and getting better by we'll prep updates like this and per branch to stay focused
 
-## Branch focus 
-Responsive Design 
+Trackgroup Update
 
-### Mobile First Player
-On mobile we have to collapse to a single column on thye track group pages.
+## Add Edit Notes -- Trackgroup detail page 
+- Notes live on tracks within tracked group
+- they are solid but using them i noticed a simple typo i need to edit in firebase.
+- add edit function
 
-It can stay be auto in the footer but its needs a little more height and reability
-Or ir might be better to have a completely different flavor component  up 
-top.
+## Add Tagging - Trackgroup summary page
+-- we'll use the tags for organization later 
+-- now i just need to be able to bang down the list / prework
 
-It should not start the right any more too hard to use on mobile.
+## Add Stars ***** -- 1-5 arbitrary sort - the star go with the user id - 
+-- this will help organize that page quickly sort on stars then data 
+-- each start is 100 click to set the start at 300 -- double click to type 301
+-- star in an int...  display max at 5 stars --
 
-It could also just be a 2nd Tier header component at all times on mobile
-so like the header the data scrolls under
-It could as colllapsible div in that case.
+## active/inactive an time based inactive drops to bottom 
+-- boolean lets us deactivate 
+-- active until (optional field) (ie.  Dr Rick gig was last Saturday)
 
-Weigh it out and choose - we wont know until we play with it.
-Not a big deal if we change it a few times...
+sort active, 5 stars, most recent on top
+inactive, no stars, oldest on bottom
 
-Sizing of the actions box should contract and nav as well
+-----------------
+Planning more Navigation
 
-### Universal Search Type Ahead and Results Page
 
-this isa big addition a universal search and result Page
-This shoudl go in the header center bottom 
 
-typing searches for track groups, songs, assets and "enter" 
-takes us to search results page flex layout here we can rely good differentiation in the component
-cards - search results should have some flag as to the entity Type
+## Tasks - Trackgroups/Songs (not tracks-likely the tasks will mean replacing a track)
+-- add tasks -- "hey john listen to this Trackgroup tag tracks write notes for improvments on the tracks.
+-- john logs in and see his actions listens to track writes notes - tasks mark complete.
+-- bill add lyrics asset to "Song" - Trail of Broken Love
+     
+     
+## We're moving towards as new entry page 
 
-### Global.css vs in page javascript
+FLEX (standard vertical fhone - but on my 32 inch better to have more visible on teh screen)
+|My favorities
+|My tasks
+|Band Pinned Items
+|5 star active
+|4 star...
 
-So I think we got a a little carried away with so much flexibilty in the colors section
-Lets peel back to defined css utiility classes for any thing new.
-take advantage of the refactorign process.  the most importnat part here is the responsive 
-and clear layering of classes
+### Display Links/Icons to keep it manageable we dont need the full card 
+These will be less decorative card limited track group name, key icon
+these would be hot links to the trackgroup  pins for pin a mini rolling blackout logo for admin pinned and some kind of font awesome icon for tasks.
+it might to just be a menu nav ?
 
-### Final item for today 
-I went to "replace" a track - and got an error - so I replaced it manually.
-But instead of an error when uploading - let's just get confirmation 
-Are you sure you want to replace this track
+### a bit more context 
+For example June 2026 is that the bottom - the first list of 10 songs to learn.
+I need to mark that a priority. 
+Dr Rick's was critical to get ready for gig but it's expire the gig in the past -- we don't need actively surfaced.  
+the list active -- i think this managed with both a boolean to deactivate or date based active until which mr
 
-## Work Strategy 
-I've started a fresh branch - the code base is clean
-Work through in auto mode - you have permission to execute and standard local code/shell
-And I just refreshed the GCP auth login.
+### Purpose and Classifications
+The real tagging ... 
+- Typically there is a reason i assemble the lists -- learn these songs, check out this old stuff i found
+- study these for a recording session, prep a gig, this has mixes requiring feedback. my favorite or listening 
+- finally there are the albums.  
 
-If you have questions have me answer them upfront.  And work all the way through.
-when you are ready commit and open a pr.  I will working with 2 other claude sessions.
+this classification system is will emerge no point in commiting to somehing firm yet
+right now it could Album with deadlines to i like lists.... there won't enough data to ever cause problem
 
-10/20/2026
+### Tags / Search -- search by attribute would be good fro exmaple overdubbing - if coudl search for overdubbng and take thsoe seachg resulst and save as a atrack gorup and assign overdub tasks to the band in a list that has a deadline 2 weeks out - and the list is inactive that isa legit use case
+an option to search by tag - i looked for overdubbing
+----------------------
+
+
+# Songs / Inherited Traits -- this goes for the asset /tags
+
+- inheritance got a little weird along the way.  
+- if a songs has an asset the track inherits - adding lyrics to night angel should be inherited on in the track group my new version should show the link to the lyrics.
+- on the track group listing page - it's showing the track tags overdubbing and almost.  
+we don't need to remove that now but i'm pretty sure means if 20 songs have fre form tags that does;t play - on th detail page worth - it doesn't need to be removed yet -- let sleeping dogs lie 
+
+-------------------
+
+
+## Track Information and ID3 Tags
+- this is a major port 
+- 3-4 years ago i wrote a cli tool using the mutant library in python.
+- we're porting to node id3 - cli tool, api the package can should live independently of this application.
+
+requirements are best extracted from the code itself but this is how had success
+yaml - yaml is easier to write than json
+stacked yaml - band., album, track - minimizes redundnacy and errors
+the merged yaml then needs to locate the album are and lyrics - these are generally easy entries.
+- encoded image 
+- effectively encoded lyrics
+- identifying candidates need to find the art image, resize the frane 300x300 i believe
+cover.jpg, album.jpg etc - common name list - or take name - suggest we always rename to a standard and place in the song folder
+same with lyrics which are just text - there is a gotcha which uploading to drive my complicate access the - we have to have user upload to the application
+to avoid security problems.
+other key feature - the app always reads the existing tags and archives them dated, gzipped  for rollback
+- again best case scenario is use the tool to tag the mp3 in advance and updload the assets but unlike chord chart
+- since we moving to node - internally we operate with json - so yaml is is just transform and out.
+
+### Track Tag Capture and Display
+- is reading the tags for the player or the songs - i think it safe to say 95% of the tags are song 
+- storage ... ID3 documents - even i have yaml we should probably store the json docs in firestore and interface there
+which mean an editor page band album song - album art and lyrics and dynamic assembly of the final document to be applied.
+
+#### ID3 owner entity will be song but final override can be at the track level 00 BUT limited to things liek dates or session details.
 
 
 

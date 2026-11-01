@@ -7,6 +7,7 @@ import { AssetPicker, type AssetsLoadKind } from "@/components/AssetPicker";
 import { SongChip } from "@/components/SongChip";
 import { SongPicker } from "@/components/SongPicker";
 import { TagChips } from "@/components/TagChips";
+import { TaskList } from "@/components/TaskList";
 import { TrackChip } from "@/components/TrackChip";
 import {
   assetLinkIds,
@@ -587,6 +588,12 @@ function BrowsePageInner() {
                       >
                         cancel
                       </button>
+                    </div>
+                    <div className="border-t border-neutral-800 pt-2">
+                      <p className="rb-label mb-2">Tasks</p>
+                      <TaskList
+                        target={{ kind: "song", id: song.id, name: song.name }}
+                      />
                     </div>
                   </div>
                 </div>
