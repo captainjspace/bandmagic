@@ -95,10 +95,11 @@ export default async function SearchPage({
     : tag
       ? entitiesByTag(tag, sources)
       : searchEntities(q, sources);
-  const tagged =
-    tag && sources
-      ? tracksByTag(tag, { ...sources, catalog: await loadCatalog() })
-      : [];
+  // Plain queries check tags too — "#" only narrows the entity results to tags.
+  const tagTerm = tag ?? q;
+  const tagged = sources
+    ? tracksByTag(tagTerm, { ...sources, catalog: await loadCatalog() })
+    : [];
   const counts = SEARCH_KINDS.map((kind) => ({
     kind,
     n: results.filter((r) => r.kind === kind).length,
@@ -111,7 +112,7 @@ export default async function SearchPage({
         <p className="mt-1 text-sm text-rbcyan-300">
           {q
             ? `${results.length} result${results.length === 1 ? "" : "s"} for “${q}”`
-            : "Type in the search box above and press Enter. Start with # to search by tag (e.g. #overdubbing)."}
+            : "Type in the search box above and press Enter. Start with # to search only by tag (e.g. #overdubbing)."}
         </p>
         {counts.length > 0 && (
           <p className="mt-2 flex flex-wrap gap-3 text-xs text-neutral-400">
@@ -123,7 +124,9 @@ export default async function SearchPage({
           </p>
         )}
       </div>
-      {tag && <TaggedTracks tag={tag} tracks={tagged} />}
+      {(tag || tagged.length > 0) && (
+        <TaggedTracks tag={tagTerm} tracks={tagged} />
+      )}
       {results.length > 0 && (
         <div className="rb-result-grid">
           {results.map((r) => (

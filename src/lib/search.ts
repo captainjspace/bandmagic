@@ -80,7 +80,10 @@ function toResults(
         [
           tg.description ?? "",
           ...(tg.tags ?? []),
-          ...tg.tracks.map((t) => t.title),
+          ...tg.tracks.flatMap((t) => [
+            t.title,
+            ...effectiveTags(t.tags, t.stage),
+          ]),
         ],
       ),
     })),
