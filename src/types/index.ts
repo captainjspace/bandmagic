@@ -10,7 +10,11 @@ export type TrackStage =
   | "released";
 
 export type TrackStatus =
-  "active" | "inactive" | "queued" | "tabled" | "dropped";
+  | "active"
+  | "inactive"
+  | "queued"
+  | "tabled"
+  | "dropped";
 
 export type NextTrackAction =
   | "Finish Music"
@@ -77,6 +81,15 @@ export interface TrackGroup {
   createdBy: string;
   tracks: Track[];
   assets?: AssetLink[];
+  tags?: string[];
+  /** email → integer rating. 100 per displayed star (capped at 5); anything
+   *  past that is a free tiebreaker so a favorite can be bubbled to the top. */
+  ratings?: Record<string, number>;
+  /** undefined = active. false = manually shelved. */
+  active?: boolean;
+  /** YYYY-MM-DD; after this date the group is treated as inactive. */
+  activeUntil?: string;
+  pinned?: boolean;
 }
 
 export interface Note {
@@ -85,6 +98,23 @@ export interface Note {
   text: string;
   trackPath: string;
   createdAt: string;
+  editedAt?: string;
+}
+
+export type TaskTargetKind = "track-group" | "song";
+
+export interface Task {
+  id: string;
+  title: string;
+  assignee: string;
+  /** Denormalized name so task lists don't N+1 fetch their targets. */
+  target: { kind: TaskTargetKind; id: string; name: string };
+  done: boolean;
+  dueDate?: string;
+  createdAt: string;
+  createdBy: string;
+  completedAt?: string;
+  completedBy?: string;
 }
 
 export interface GCSObject {

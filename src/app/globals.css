@@ -532,6 +532,85 @@
   .tg-detail {
     @apply scroll-mt-40 space-y-5 rounded-lg border border-neutral-800 p-4 md:scroll-mt-28 md:p-5;
   }
+  .tg-chip {
+    @apply inline-block rounded border px-1.5 py-0.5 text-xs;
+  }
+  .tg-chip-label {
+    @apply text-xs text-neutral-500;
+  }
+  .tg-chip-legacy {
+    @apply border-dashed border-neutral-700 text-neutral-500;
+  }
+  .tg-pin-icon {
+    @apply mr-1.5 inline-block h-4 w-4 shrink-0 align-[-2px];
+  }
+
+  /* track-group list — one card per group; inactive ones sink and fade */
+  .rb-page-title {
+    @apply text-3xl font-bold tracking-tight text-rbblue-500;
+  }
+  .rb-new-link {
+    @apply flex items-center gap-1 rounded border border-rbyellow-700 px-3 py-1.5 text-sm text-rbyellow-500 transition-colors hover:border-rbred-500 hover:text-rbred-300;
+  }
+  .tg-card {
+    @apply rounded-lg border border-rbblue-700 transition-all hover:border-rbred-500 hover:bg-rbblue-900/30;
+  }
+  .tg-card-inactive {
+    @apply opacity-60 hover:opacity-100;
+  }
+  .tg-card-title {
+    @apply truncate font-semibold text-rbyellow-500 transition-colors group-hover:text-rbred-300;
+  }
+  .tg-card-edit {
+    @apply flex shrink-0 items-center gap-1 rounded-tr-lg px-3 py-5 text-sm text-rbpurple-300 transition-colors hover:bg-rbpurple-900/60 hover:text-rbred-300;
+  }
+  .tg-card-controls {
+    @apply flex flex-wrap items-center gap-3 px-5 pb-4;
+  }
+  .rb-stars {
+    @apply inline-flex items-center gap-0.5;
+  }
+  .rb-star {
+    @apply text-neutral-700 transition-colors hover:text-rbyellow-300;
+  }
+  .rb-star-on {
+    @apply text-rbyellow-400;
+  }
+  .rb-toggle {
+    @apply rounded border border-neutral-700 px-2 py-0.5 text-xs text-neutral-400 transition-colors hover:border-rbyellow-600;
+  }
+  .rb-toggle-on {
+    @apply border-rbcyan-500 text-rbcyan-300;
+  }
+
+  /* tasks */
+  .rb-task {
+    @apply flex items-start gap-3 rounded border border-neutral-800 px-3 py-2;
+  }
+  .rb-task-done {
+    @apply opacity-50;
+  }
+  .rb-task-title {
+    @apply text-sm text-rbcyan-100;
+  }
+  .rb-task-done .rb-task-title {
+    @apply line-through;
+  }
+  .rb-task-form {
+    @apply flex flex-col gap-2 sm:flex-row sm:items-center;
+  }
+
+  /* home — link sections flow into more columns on big screens; each box
+     is as tall as its own content (no stretching, no inner scroll, no clipping) */
+  .rb-dash {
+    @apply gap-4 md:columns-2 xl:columns-3 2xl:columns-4;
+  }
+  .rb-dash-section {
+    @apply mb-4 break-inside-avoid rounded-lg border border-rbpurple-700 p-4;
+  }
+  .rb-dash-link {
+    @apply flex items-start gap-2 rounded px-2 py-1.5 text-sm text-rbyellow-300 transition-colors hover:bg-rbpurple-900/60 hover:text-rbcyan-300;
+  }
 }
 /* }}} */
 

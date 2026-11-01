@@ -5,7 +5,13 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { AssetsLoadKind } from "@/components/AssetPicker";
 import { type PlayerTrack, usePlayer } from "@/components/PlayerProvider";
 import { SongChip } from "@/components/SongChip";
-import { assetClass, driveDocKind } from "@/lib/asset";
+import { TaskList } from "@/components/TaskList";
+import {
+  assetClass,
+  driveDocKind,
+  type EffectiveAssetLink,
+  effectiveAssets,
+} from "@/lib/asset";
 import { tagBgClass, tagClass } from "@/lib/tag";
 import type {
   Asset,
@@ -24,7 +30,7 @@ function AssetLinksSection({
   onRetry,
 }: {
   label: string;
-  links: AssetLink[];
+  links: (AssetLink | EffectiveAssetLink)[];
   assetsById: Map<string, Asset>;
   assetsLoad: AssetsLoadKind;
   onRetry: () => void;
@@ -79,6 +85,11 @@ function AssetLinksSection({
                 {asset.subtype}
               </span>
               <span className={"tg-asset-link"}>{asset.title}</span>
+              {"inherited" in link && link.inherited && (
+                <span className="tg-meta shrink-0" title="Linked on the song">
+                  from song
+                </span>
+              )}
               <span className={"tg-meta shrink-0"}>
                 {asset.type}
                 {kind ? `·${kind}` : ""}
@@ -188,12 +199,125 @@ function TrackPlayer({
   );
 }
 
+function NoteItem({
+  note,
+  mine,
+  url,
+  onSaved,
+  onDeleted,
+}: {
+  note: Note;
+  mine: boolean;
+  url: string;
+  onSaved: (note: Note) => void;
+  onDeleted: () => void;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [confirming, setConfirming] = useState(false);
+  const [draft, setDraft] = useState(note.text);
+  const [error, setError] = useState("");
+
+  const save = async () => {
+    const text = draft.trim();
+    if (!text || text === note.text) return setEditing(false);
+    const res = await fetch(url, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text }),
+    });
+    if (!res.ok) return setError((await res.json()).error ?? "Save failed.");
+    onSaved({ ...note, ...(await res.json()) });
+    setEditing(false);
+  };
+
+  const remove = async () => {
+    const res = await fetch(url, { method: "DELETE" });
+    if (!res.ok) return setError("Delete failed.");
+    onDeleted();
+  };
+
+  return (
+    <div className="text-sm">
+      <span className={"tg-note-author"}>{note.author.split("@")[0]}</span>
+      <span className={"tg-meta ml-2"}>
+        {new Date(note.createdAt).toLocaleString()}
+        {note.editedAt && " (edited)"}
+      </span>
+      {mine && !editing && (
+        <span className="ml-2 inline-flex gap-2">
+          <button
+            type="button"
+            onClick={() => {
+              setDraft(note.text);
+              setEditing(true);
+            }}
+            className="rb-nav-link"
+          >
+            edit
+          </button>
+          <button
+            type="button"
+            onClick={() => setConfirming(true)}
+            className="rb-nav-link"
+          >
+            delete
+          </button>
+        </span>
+      )}
+      {editing ? (
+        <div className="mt-1 flex gap-2">
+          <input
+            autoFocus
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") save();
+              if (e.key === "Escape") setEditing(false);
+            }}
+            className="rb-input flex-1"
+          />
+          <button type="button" onClick={save} className="rb-btn-secondary">
+            Save
+          </button>
+          <button
+            type="button"
+            onClick={() => setEditing(false)}
+            className="rb-nav-link"
+          >
+            Cancel
+          </button>
+        </div>
+      ) : (
+        <p className={"tg-note-body"}>{note.text}</p>
+      )}
+      {confirming && (
+        <div className="rb-confirm mt-1 flex items-center gap-3">
+          <span className="text-sm">Delete this note?</span>
+          <button type="button" onClick={remove} className="rb-btn-secondary">
+            Delete
+          </button>
+          <button
+            type="button"
+            onClick={() => setConfirming(false)}
+            className="rb-nav-link"
+          >
+            Cancel
+          </button>
+        </div>
+      )}
+      {error && <p className="rb-text-error">{error}</p>}
+    </div>
+  );
+}
+
 function NoteThread({
   trackGroupId,
   trackPath,
+  viewer,
 }: {
   trackGroupId: string;
   trackPath: string;
+  viewer: string;
 }) {
   const [notes, setNotes] = useState<Note[]>([]);
   const [text, setText] = useState("");
@@ -225,13 +349,18 @@ function NoteThread({
   return (
     <div className="mt-4 space-y-3">
       {notes.map((note) => (
-        <div key={note.id} className="text-sm">
-          <span className={"tg-note-author"}>{note.author.split("@")[0]}</span>
-          <span className={"tg-meta ml-2"}>
-            {new Date(note.createdAt).toLocaleString()}
-          </span>
-          <p className={"tg-note-body"}>{note.text}</p>
-        </div>
+        <NoteItem
+          key={note.id}
+          note={note}
+          mine={!!viewer && note.author === viewer}
+          url={`/api/track-groups/${trackGroupId}/notes/${note.id}`}
+          onSaved={(n) =>
+            setNotes((prev) => prev.map((x) => (x.id === n.id ? n : x)))
+          }
+          onDeleted={() =>
+            setNotes((prev) => prev.filter((x) => x.id !== note.id))
+          }
+        />
       ))}
       <form onSubmit={submit} className="flex gap-2 pt-1">
         <input
@@ -264,6 +393,7 @@ export default function TrackGroupPage({
   const [trackGroupId, setTrackGroupId] = useState<string>("");
   const [catalog, setCatalog] = useState<CatalogEntry[]>([]);
   const [songs, setSongs] = useState<Song[]>([]);
+  const [viewer, setViewer] = useState("");
   const detailRef = useRef<HTMLDivElement>(null);
 
   // Single-column below md: the detail panel sits under the tracklist, so
@@ -313,6 +443,10 @@ export default function TrackGroupPage({
       .then((r) => r.json())
       .then(setSongs)
       .catch(() => {});
+    fetch("/api/auth/me")
+      .then((r) => r.json())
+      .then((u) => setViewer(u.email ?? ""))
+      .catch(() => {});
   }, [params, fetchAssets]);
 
   if (!trackGroup) {
@@ -325,17 +459,20 @@ export default function TrackGroupPage({
   // Track (embedded in TrackGroup) has no songId of its own — derive song
   // ownership the same way Browse does, by joining on path via the catalog.
   const songsById = new Map(songs.map((s) => [s.id, s]));
-  const songNameByPath = new Map(
+  const songByPath = new Map(
     catalog
-      .filter((e) => e.songId)
-      .map((e) => [e.path, songsById.get(e.songId as string)?.name]),
+      .filter((e) => e.songId && songsById.has(e.songId))
+      .map((e) => [e.path, songsById.get(e.songId as string) as Song]),
+  );
+  const songNameByPath = new Map(
+    [...songByPath].map(([path, song]) => [path, song.name]),
   );
 
   return (
     <div className="max-w-4xl">
       <div className="mb-8">
         <div className="flex items-center justify-between">
-          <Link href="/" className={`rb-nav-link`}>
+          <Link href="/track-groups" className={`rb-nav-link`}>
             ← TrackGroups
           </Link>
           <Link href={`/admin/${trackGroupId}`} className={`rb-nav-link`}>
@@ -410,12 +547,16 @@ export default function TrackGroupPage({
                 <NoteThread
                   trackGroupId={trackGroupId}
                   trackPath={active.path}
+                  viewer={viewer}
                 />
               </div>
 
               <AssetLinksSection
                 label="Documents & links"
-                links={active.assets ?? []}
+                links={effectiveAssets(
+                  active.assets,
+                  songByPath.get(active.path)?.assets,
+                )}
                 assetsById={assetsById}
                 assetsLoad={assetsLoad}
                 onRetry={retryAssets}
@@ -430,6 +571,17 @@ export default function TrackGroupPage({
             </div>
           )}
         </div>
+      </div>
+
+      <div className="tg-detail mt-8">
+        <p className="rb-label">Tasks</p>
+        <TaskList
+          target={{
+            kind: "track-group",
+            id: trackGroupId,
+            name: trackGroup.title,
+          }}
+        />
       </div>
     </div>
   );

@@ -1,4 +1,9 @@
-import { FieldValue, Firestore, Timestamp } from "@google-cloud/firestore";
+import {
+  FieldPath,
+  FieldValue,
+  Firestore,
+  Timestamp,
+} from "@google-cloud/firestore";
 import { normalize, SWEEP_THRESHOLD, scoreMatch } from "@/lib/filename-match";
 import type {
   Asset,
@@ -6,6 +11,7 @@ import type {
   CatalogEntry,
   Note,
   Song,
+  Task,
   TrackGroup,
 } from "@/types";
 
@@ -14,6 +20,7 @@ const firestoreConfig = {
   coredb: "track-groups",
   assetsdb: "assets",
   songsdb: "songs",
+  tasksdb: "tasks",
 };
 
 let _db: Firestore | null = null;
@@ -85,11 +92,66 @@ export async function addNote(
   return { id: doc.id, ...doc.data() } as Note;
 }
 
-export async function updateTrackGroup(
+function notesRef(trackGroupId: string) {
+  return db()
+    .collection(firestoreConfig.coredb)
+    .doc(trackGroupId)
+    .collection("notes");
+}
+
+export async function getNote(
+  trackGroupId: string,
+  noteId: string,
+): Promise<Note | null> {
+  const doc = await notesRef(trackGroupId).doc(noteId).get();
+  return doc.exists ? ({ id: doc.id, ...doc.data() } as Note) : null;
+}
+
+export async function updateNote(
+  trackGroupId: string,
+  noteId: string,
+  text: string,
+): Promise<Note> {
+  const ref = notesRef(trackGroupId).doc(noteId);
+  await ref.update({ text, editedAt: new Date().toISOString() });
+  const doc = await ref.get();
+  return { id: doc.id, ...doc.data() } as Note;
+}
+
+export async function deleteNote(
+  trackGroupId: string,
+  noteId: string,
+): Promise<void> {
+  await notesRef(trackGroupId).doc(noteId).delete();
+}
+
+/** Sets one person's rating without touching anyone else's. FieldPath, not a
+ *  dotted string — emails contain dots. 0 removes the rating. */
+export async function setTrackGroupRating(
   id: string,
-  patch: Partial<Omit<TrackGroup, "id">>,
+  email: string,
+  rating: number,
 ): Promise<TrackGroup> {
   const ref = db().collection(firestoreConfig.coredb).doc(id);
+  await ref.update(
+    new FieldPath("ratings", email),
+    rating > 0 ? rating : FieldValue.delete(),
+  );
+  const doc = await ref.get();
+  return { id: doc.id, ...doc.data() } as TrackGroup;
+}
+
+export async function updateTrackGroup(
+  id: string,
+  input: Partial<Omit<TrackGroup, "id">>,
+): Promise<TrackGroup> {
+  const ref = db().collection(firestoreConfig.coredb).doc(id);
+  // null clears an optional field (e.g. activeUntil); Firestore rejects undefined.
+  const patch = Object.fromEntries(
+    Object.entries(input)
+      .filter(([, v]) => v !== undefined)
+      .map(([k, v]) => [k, v === null ? FieldValue.delete() : v]),
+  ) as Partial<Omit<TrackGroup, "id">>;
   if (patch.tracks !== undefined || patch.assets !== undefined) {
     await db().runTransaction(async (tx) => {
       const snap = await tx.get(ref);
@@ -121,6 +183,53 @@ export async function deleteTrackGroup(id: string): Promise<void> {
     await applyAssetUsageDelta(negative);
   }
   await db().collection(firestoreConfig.coredb).doc(id).delete();
+}
+
+// --- tasks ---
+
+/** One equality filter at most, sorted in memory — avoids composite indexes. */
+export async function getTasks(filter: {
+  assignee?: string;
+  targetId?: string;
+}): Promise<Task[]> {
+  let query: FirebaseFirestore.Query = db().collection(firestoreConfig.tasksdb);
+  if (filter.targetId) query = query.where("target.id", "==", filter.targetId);
+  else if (filter.assignee)
+    query = query.where("assignee", "==", filter.assignee);
+  const snap = await query.get();
+  return snap.docs
+    .map((d) => ({ id: d.id, ...d.data() }) as Task)
+    .filter((t) => !filter.assignee || t.assignee === filter.assignee)
+    .sort(
+      (a, b) =>
+        Number(a.done) - Number(b.done) ||
+        (a.dueDate ?? "9999").localeCompare(b.dueDate ?? "9999") ||
+        a.createdAt.localeCompare(b.createdAt),
+    );
+}
+
+export async function createTask(
+  task: Omit<Task, "id" | "createdAt" | "done">,
+): Promise<Task> {
+  const ref = await db()
+    .collection(firestoreConfig.tasksdb)
+    .add({ ...task, done: false, createdAt: new Date().toISOString() });
+  const doc = await ref.get();
+  return { id: doc.id, ...doc.data() } as Task;
+}
+
+export async function updateTask(
+  id: string,
+  patch: Partial<Omit<Task, "id">>,
+): Promise<Task> {
+  const ref = db().collection(firestoreConfig.tasksdb).doc(id);
+  await ref.update(patch);
+  const doc = await ref.get();
+  return { id: doc.id, ...doc.data() } as Task;
+}
+
+export async function deleteTask(id: string): Promise<void> {
+  await db().collection(firestoreConfig.tasksdb).doc(id).delete();
 }
 
 // --- assets ---

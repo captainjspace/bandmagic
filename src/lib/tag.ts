@@ -32,3 +32,13 @@ export function effectiveTags(tags?: string[], stage?: string): string[] {
   if (stage && stage !== "unknown") return [stage];
   return [];
 }
+
+/** Taxonomy tags for an entity plus free-form ones already in use — tags are
+ *  still emerging, so what people actually typed counts as vocabulary too. */
+export function tagSuggestions(
+  entityType: string,
+  inUse: string[] = [],
+): string[] {
+  const known = Object.keys(TAXONOMY[entityType]?.tags ?? {});
+  return [...new Set([...known, ...inUse])].sort();
+}

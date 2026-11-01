@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { scoreFields, searchEntities } from "@/lib/search";
+import { scoreFields, searchEntities, tracksByTag } from "@/lib/search";
 import type { Asset, Song, TrackGroup } from "@/types";
 
 const song = (id: string, name: string, aliases?: string[]): Song => ({
@@ -85,5 +85,41 @@ describe("searchEntities", () => {
   it("drops non-matches and respects the limit", () => {
     expect(searchEntities("zzz", sources)).toEqual([]);
     expect(searchEntities("a", sources, 1)).toHaveLength(1);
+  });
+});
+
+describe("tag matching", () => {
+  it("finds a track group by its tracks' tags, not just names", () => {
+    const tg = {
+      id: "g",
+      title: "Final Cuts Only",
+      createdAt: "",
+      createdBy: "",
+      tracks: [{ path: "a.mp3", title: "Night Angel", tags: ["overdubbing"] }],
+    };
+    const hits = searchEntities("overdubbing", {
+      trackGroups: [tg],
+      songs: [],
+      assets: [],
+    });
+    expect(hits.map((h) => h.id)).toEqual(["g"]);
+  });
+
+  it("tracksByTag matches the full tag and a prefix of it", () => {
+    const sources = {
+      trackGroups: [],
+      songs: [],
+      catalog: [
+        {
+          id: "c",
+          path: "a.mp3",
+          title: "Night Angel",
+          stage: "",
+          tags: ["overdubbing"],
+        },
+      ] as never,
+    };
+    for (const q of ["overdubbing", "overdub", "Overdubbing"])
+      expect(tracksByTag(q, sources).map((t) => t.path)).toEqual(["a.mp3"]);
   });
 });

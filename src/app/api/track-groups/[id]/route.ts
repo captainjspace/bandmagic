@@ -23,7 +23,8 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params;
-  const body = await req.json();
+  // Ratings are per-person and go through /rating so nobody overwrites another's.
+  const { ratings: _ratings, ...body } = await req.json();
   if (config.useMock) return NextResponse.json({ id, ...body });
   const trackGroup = await updateTrackGroup(id, body);
   return NextResponse.json(trackGroup);

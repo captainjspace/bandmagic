@@ -20,11 +20,12 @@ const menuLinks: MenuLink[] = [
   //    href: "/",
   //  },
   //
+  { index: 0, name: "home", displayName: "Home", href: "/" },
   {
     index: 1,
     name: "trackgroups",
     displayName: "Track Groups & Playlists",
-    href: "/",
+    href: "/track-groups",
   },
   {
     index: 2,
