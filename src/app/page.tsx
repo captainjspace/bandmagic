@@ -12,7 +12,6 @@ import {
   bandRating,
   isActive,
   MAX_STARS,
-  ratingOf,
   STAR_UNIT,
   sortTrackGroups,
   starsFor,
@@ -75,7 +74,7 @@ function GroupLink({ tg, icon }: { tg: TrackGroup; icon?: ReactNode }) {
     <li>
       <Link href={`/track-group/${tg.id}`} className="rb-dash-link">
         {icon ?? (tg.pinned ? <PinIcon /> : null)}
-        <span className="truncate">{tg.title}</span>
+        <span>{tg.title}</span>
       </Link>
     </li>
   );
@@ -90,10 +89,12 @@ function TaskLink({ task }: { task: Task }) {
     <li>
       <Link href={href} className="rb-dash-link">
         <TaskIcon />
-        <span className="truncate">{task.title}</span>
-        <span className="tg-meta shrink-0">
-          {task.target.name}
-          {task.dueDate && ` · ${task.dueDate}`}
+        <span className="flex flex-col">
+          <span>{task.title}</span>
+          <span className="tg-meta">
+            {task.target.name}
+            {task.dueDate && ` · due ${task.dueDate}`}
+          </span>
         </span>
       </Link>
     </li>
@@ -113,7 +114,6 @@ export default async function HomePage() {
     viewer,
   );
 
-  const favorites = active.filter((g) => ratingOf(g, viewer) > 0);
   const pinned = sortTrackGroups(
     groups.filter((g) => g.pinned),
     viewer,
@@ -140,22 +140,6 @@ export default async function HomePage() {
         </Link>
       </div>
       <div className="rb-dash">
-        <Section
-          title={
-            <>
-              <StarIcon className="text-rbyellow-400" /> My Favorites
-            </>
-          }
-          empty="Star a track group to see it here."
-        >
-          {favorites.map((g) => (
-            <GroupLink
-              key={g.id}
-              tg={g}
-              icon={<Stars n={starsFor(ratingOf(g, viewer))} />}
-            />
-          ))}
-        </Section>
         <Section
           title={
             <>
