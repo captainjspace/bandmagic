@@ -3,6 +3,7 @@ import { config } from "@/lib/config";
 import { errorResponse } from "@/lib/debug-mode";
 import { getCatalog, getSong, syncCatalog, updateSong } from "@/lib/firestore";
 import { isAudio, objectExists, uploadObject } from "@/lib/gcs";
+import { userEmail as callerEmail } from "@/lib/identity";
 import { mockCatalog } from "@/lib/mock";
 import type { CatalogEntry } from "@/types";
 
@@ -15,12 +16,7 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  const userEmail =
-    req.headers
-      .get("x-goog-authenticated-user-email")
-      ?.replace("accounts.google.com:", "") ??
-    process.env.LOCAL_USER_EMAIL ??
-    "unknown";
+  const userEmail = callerEmail(req.headers) ?? "unknown";
 
   const form = await req.formData();
   const file = form.get("file");

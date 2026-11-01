@@ -14,6 +14,7 @@ import {
   getTrackGroup,
   updateTrackGroup,
 } from "@/lib/firestore";
+import { userEmail as callerEmail } from "@/lib/identity";
 import { mockDriveFiles } from "@/lib/mock";
 import type { AssetLink, Track } from "@/types";
 
@@ -34,12 +35,7 @@ export async function POST(req: NextRequest) {
       { status: 400 },
     );
 
-  const userEmail =
-    req.headers
-      .get("x-goog-authenticated-user-email")
-      ?.replace("accounts.google.com:", "") ??
-    process.env.LOCAL_USER_EMAIL ??
-    "";
+  const userEmail = callerEmail(req.headers) ?? "";
 
   if (config.useMock) {
     return NextResponse.json(mockSweep());

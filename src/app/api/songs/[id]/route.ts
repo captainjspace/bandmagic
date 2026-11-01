@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { config } from "@/lib/config";
 import { getSong, updateSong } from "@/lib/firestore";
+import { userEmail } from "@/lib/identity";
 import { mockSongs } from "@/lib/mock";
 
 export async function GET(
@@ -74,12 +75,7 @@ export async function PATCH(
     );
   }
 
-  const author =
-    req.headers
-      .get("x-goog-authenticated-user-email")
-      ?.replace("accounts.google.com:", "") ??
-    process.env.LOCAL_USER_EMAIL ??
-    "unknown";
+  const author = userEmail(req.headers) ?? "unknown";
 
   const patch = {
     ...(name !== undefined ? { name: name.trim() } : {}),

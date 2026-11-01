@@ -2,6 +2,7 @@ import { type NextRequest, NextResponse } from "next/server";
 import { config } from "@/lib/config";
 import { errorResponse } from "@/lib/debug-mode";
 import { searchFiles } from "@/lib/drive";
+import { userEmail as callerEmail } from "@/lib/identity";
 import { mockDriveFiles } from "@/lib/mock";
 
 export async function GET(req: NextRequest) {
@@ -12,12 +13,7 @@ export async function GET(req: NextRequest) {
 
   if (!q.trim()) return NextResponse.json([]);
 
-  const userEmail =
-    req.headers
-      .get("x-goog-authenticated-user-email")
-      ?.replace("accounts.google.com:", "") ??
-    process.env.LOCAL_USER_EMAIL ??
-    "";
+  const userEmail = callerEmail(req.headers) ?? "";
 
   if (config.useMock) {
     const needle = q.toLowerCase();

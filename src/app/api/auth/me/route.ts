@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { roleFor } from "@/lib/auth/roleFor";
+import { userEmail } from "@/lib/identity";
 
 /**
  * GET /api/auth/me — returns the current caller's identity + derived role.
@@ -9,12 +10,7 @@ import { roleFor } from "@/lib/auth/roleFor";
  * thing to test the wiring against.
  */
 export async function GET(req: NextRequest) {
-  const email =
-    req.headers
-      .get("x-goog-authenticated-user-email")
-      ?.replace("accounts.google.com:", "") ??
-    process.env.LOCAL_USER_EMAIL ??
-    null;
+  const email = userEmail(req.headers);
 
   const role = await roleFor(email);
 
